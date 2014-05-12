@@ -4,31 +4,30 @@
 
 CC="gcc"
 
-
-$(SAMPLING_INFRASTRUCTURE_BENCHMARK): $(SAMPLING_INFRASTRUCTURE_SRC) 
-	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -DINTERNAL_BENCHMARK -o $@ $(SAMPLING_INFRASTRUCTURE_SRC) -lc $(PAPI_LD_FLAGS) -lpapi -lrt
-
-libemptypushpop:
-	$(CC) -O2 -fPIC -shared -o libemptypushpop.so emptypushpop.c
-
-libshadowstack:
-	$(CC) --version
-	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -DSHADOWSTACK_ONLY -o libshadowstack.so $(SAMPLING_INFRASTRUCTURE_SRC) -lc $(PAPI_LD_FLAGS) -lpapi
-
-libshadowstack-fast:
-	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -DSHADOWSTACK_ONLY -o libshadowstack-f.so $(SAMPLING_INFRASTRUCTURE_SRC) -lc $(PAPI_LD_FLAGS) -lpapi
-
-test:
-	$(CC) -g -O0 -DSTACK_IS_UNDER_TEST $(SAMPLING_INFRASTRUCTURE_SRC)
-
-
 CFLAGS=-g -O3 -fPIC
 LDFLAGS=-lc
 
-OBJECTS := $(patsubst %.c,%.o,$(wildcard *.c))
+# Our empty implementation of the cyg_profile_func_enter/exit interface
+libemptypushpop:
+	$(CC) -O2 -fPIC -shared -o libemptypushpop.so emptypushpop.c
 
-sampling_tool: $(OBJECTS)
-	$(CC) $(PAPI_INCLUDE_FLAGS) $(CFLAGS) -shared -o sampling_tool.so $(OBJECTS) $(LDFLAGS) $(PAPI_LD_FLAGS)
+
+# --- Start of the sampling tool ---
+
+objects = driver.o stack.o
+
+sampling_tool: $(objects)
+	$(CC) $(PAPI_INCLUDE_FLAGS) $(CFLAGS) -shared -o sampling_tool.so $(objects) $(LDFLAGS) $(PAPI_LD_FLAGS)
+
+$(objects): %.o: %.c
+	$(CC) $(PAPI_INCLUDE_FLAGS) -c $(CFLAGS) $< -o $@
+
+# We can build the shadow stack as a library to link against GCC instrumented binaries.
+libshadowstack-fast:
+	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -DSHADOWSTACK_ONLY -o libshadowstack-f.so $(SAMPLING_INFRASTRUCTURE_SRC) -lc $(PAPI_LD_FLAGS) -lpapi
+
+
+
 
 .PHONY : clean
 clean:

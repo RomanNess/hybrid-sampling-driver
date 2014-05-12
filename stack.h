@@ -26,10 +26,14 @@ struct Stack {
 
 	struct StackEvent* _start, _end, _cur;
 	unsigned int _size, _maxSize;
-
+	short _initialized;
 
 };
 
-void pushEvent(struct Stack* stack, struct StackEvent event);
 
+void pushEvent(struct Stack* stack, struct StackEvent event);
 void popEvent(struct Stack* stack);
+
+void initStack(struct Stack* stack, unsigned int maxSize);
+void deallocateStack(struct Stack* stack);
+

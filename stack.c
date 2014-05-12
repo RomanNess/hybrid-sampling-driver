@@ -7,7 +7,7 @@
  */
 void pushEvent(struct Stack* stack, struct StackEvent event){
 #ifdef SHADOWSTACK_ONLY
-	if(_initialized == 0)
+	if(stack->_initialized != 1)
 		initStack(stack, STACK_SIZE);
 #endif
 	
@@ -38,3 +38,36 @@ void popEvent(struct Stack* stack){
 }
 
 
+void initStack(struct Stack* stack, unsigned int maxSize){
+fprintf(stderr, "initStack\n");
+	if(stack->_initialized == 1)
+		return;
+
+	// initialize stack
+	stack->_start = (struct StackEvent*) malloc(maxSize * sizeof(struct StackEvent));
+	if(stack->_start == 0){
+		fprintf(stderr, "Could not allocate shadowstack with max size: %u\n", maxSize);
+		exit(-1);
+	}
+	stack->_maxSize = maxSize;
+	stack->_end = stack->_start[maxSize-1];
+	stack->_cur = stack->_start[0];
+	stack->_size = 0;
+	stack->_initialized = 1;
+
+//	printf("Stack initialized with max size of %u elements\n", stack->_maxSize);
+#ifdef SHADOWSTACK_ONLY
+	initBuffer();
+#endif
+}
+
+/*
+ * Deallocates the stack and frees the memory
+ */
+void deallocateStack(struct Stack* stack){
+#ifdef STACK_IS_UNDER_TEST	
+	flushStackToFile(stack);
+#endif
+	free(stack->_start);
+	stack->_initialized = 0;
+}
