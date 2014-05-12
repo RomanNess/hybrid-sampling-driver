@@ -7,6 +7,8 @@ CC="gcc"
 CFLAGS=-g -O3 -fPIC
 LDFLAGS=-lc
 
+INSTRO_FLAGS=-DWITH_MAX_SIZE
+
 # Our empty implementation of the cyg_profile_func_enter/exit interface
 libemptypushpop:
 	$(CC) -O2 -fPIC -shared -o libemptypushpop.so emptypushpop.c
@@ -17,14 +19,14 @@ libemptypushpop:
 objects = driver.o stack.o
 
 sampling_tool: $(objects)
-	$(CC) $(PAPI_INCLUDE_FLAGS) $(CFLAGS) -shared -o sampling_tool.so $(objects) $(LDFLAGS) $(PAPI_LD_FLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) $(INSTRO_FLAGS) $(CFLAGS) -shared -o sampling_tool.so $(objects) $(LDFLAGS) $(PAPI_LD_FLAGS)
 
 $(objects): %.o: %.c
 	$(CC) $(PAPI_INCLUDE_FLAGS) -c $(CFLAGS) $< -o $@
 
 # We can build the shadow stack as a library to link against GCC instrumented binaries.
 libshadowstack-fast:
-	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -DSHADOWSTACK_ONLY -o libshadowstack-f.so $(SAMPLING_INFRASTRUCTURE_SRC) -lc $(PAPI_LD_FLAGS) -lpapi
+	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -o libshadowstack-fast.so stack.c -lc $(PAPI_LD_FLAGS) -lpapi
 
 
 
