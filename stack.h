@@ -2,7 +2,7 @@
 
 #include "stdio.h"
 #include "stdlib.h"
-
+#include "limits.h"
 
 
 /*
@@ -38,6 +38,9 @@ struct Stack {
 //#define NUMBER_OF_THREADS 4
 int instroUseMultithread;
 static struct Stack** _multithreadStack = 0;
+
+
+__thread pthread_key_t key = 0;
 
 
 

@@ -18,18 +18,41 @@ createStackInstance(){
 
 
 	if(_multithreadStack == 0){
-		_multithreadStack = (struct Stack*) malloc(instroUseMultithread * sizeof(struct Stack));
+		_multithreadStack = (struct Stack**) malloc(instroUseMultithread * sizeof(struct Stack*));
 		int i = 0;
 		for(; i < instroUseMultithread; i++){
 			_multithreadStack[i] = (struct Stack*) malloc(sizeof(struct Stack));
 			if(! _multithreadStack[i])
 				fprintf(stderr, "Could no allocate memory for multithread stack\n");
 
+			fprintf(stderr, "createStackInstance:\nstack-base  %i: %p\nNow initializing...",i, _multithreadStack[i]);
 			initStack(_multithreadStack[i], STACK_SIZE);
 		}
 
+	fprintf(stderr, "Construction done for %i threads.\n", i);
+
 	}
-	fprintf(stderr, "Construction done for %i threads.\n", instroUseMultithread);
+}
+
+void initStack(struct Stack* stack, unsigned int maxSize){
+if(stack != NULL)
+fprintf(stderr, "initStack neq NULL: %p\n", stack);
+	if(stack->_initialized == 1)
+		return;
+
+	// initialize stack
+	stack->_start = (struct StackEvent*) malloc(maxSize * sizeof(struct StackEvent));
+	if(stack->_start == NULL){
+		fprintf(stderr, "Could not allocate shadowstack with max size: %u\n", maxSize);
+		exit(-1);
+	}
+	stack->_maxSize = maxSize;
+	stack->_end = stack->_start[maxSize-1];
+	stack->_cur = stack->_start[0];
+	stack->_size = 0;
+	stack->_initialized = 1;
+
+	fprintf(stderr, "Init Stack:\nStack base: %p\nstack->start at: %p\n", stack, stack->_start);
 }
 
 
@@ -38,18 +61,17 @@ createStackInstance(){
  * (internal interface)
  */
 void pushEvent(struct Stack* stack, struct StackEvent event){
-#ifdef SHADOWSTACK_ONLY
-	if(stack->_initialized != 1)
-		initStack(stack, STACK_SIZE);
-#endif
-	fprintf(stderr, "stack: %p \n", stack);	
-	fflush(stderr);
+	fprintf(stderr, "Function Enter: push event:\nstack-base: %p\nstack-size:%i\nadding element at stack[size]: %p.\nstack base: %p\n", stack, stack->_size, stack->_start[stack->_size], stack->_start);
+//	fflush(stderr);
 	if(stack->_size == stack->_maxSize){
 		fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
 	}
 
-	stack->_start[stack->_size] = event;
-	stack->_size++;
+	stack->_start[stack->_size].thread = event.thread;
+	stack->_start[stack->_size].identifier = event.identifier;
+	stack->_size += 1;
+	fprintf(stderr, "Function Leave: push event:\nstack-base: %p\nstack-size:%i\nadding element at stack[size]: %p.\nstack base: %p + stack->_size * sizeof(StackEvent) = %p\n", stack, stack->_size, stack->_start[stack->_size], stack, (stack->_start+((stack->_size+1) * sizeof(struct StackEvent))));
+
 #ifdef WITH_MAX_SIZE
 	if(stack->_size > stackMaxSize)
 		stackMaxSize = stack->_size;
@@ -71,31 +93,6 @@ void popEvent(struct Stack* stack){
 }
 
 
-void initStack(struct Stack* stack, unsigned int maxSize){
-if(stack != NULL)
-fprintf(stderr, "initStack neq NULL: %p\n", stack);
-	if(stack->_initialized == 1)
-		return;
-
-	// initialize stack
-	stack->_start = (struct StackEvent*) malloc(maxSize * sizeof(struct StackEvent));
-	if(stack->_start == 0){
-		fprintf(stderr, "Could not allocate shadowstack with max size: %u\n", maxSize);
-		exit(-1);
-	}
-	stack->_maxSize = maxSize;
-	stack->_end = stack->_start[maxSize-1];
-	stack->_cur = stack->_start[0];
-	stack->_size = 0;
-	stack->_initialized = 1;
-
-//	printf("Stack initialized with max size of %u elements\n", stack->_maxSize);
-#ifdef SHADOWSTACK_ONLY
-	initBuffer();
-#endif
-	fprintf(stderr, "Leaving init stack.\n");
-}
-
 /*
  * Deallocates the stack and frees the memory
  */
@@ -114,24 +111,25 @@ void deallocateStack(struct Stack* stack){
  * This is our public interface for the InstRO Sampling driver.
  */
 void _instroPushIdentifier(unsigned long long functionIdentifier, unsigned long long threadIdentifier){
-	/* This is now done during set-up time of the sample driver */
-#ifdef SHADOWSTACK_ONLY	
-	if(_multithreadStack == 0){
-		_multithreadStack = (struct Stack*) malloc(instroUseMultithread * sizeof(struct Stack));
-		if(_threadStack == 0){
-			fprintf(stderr, "Could not allocate stack.\n");
-			exit(-3);
-		}
-		initStack(_threadStack, STACK_SIZE);
+	if(key == 0){
+		pthread_key_create(&key, 0);
+		threadIdentifier = key;
+		printf("In Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
 	}
-#endif
-	fprintf(stderr, "Pushing %i to thread %i\n", functionIdentifier, threadIdentifier);
-	fflush(stderr);
+//	fprintf(stderr, "Pushing %i to thread %i and key is: %lu\n", functionIdentifier, threadIdentifier, key);
+//	fprintf(stderr, "Pushing %i to thread %i\n", functionIdentifier, threadIdentifier);
+//	fflush(stderr);
 	struct StackEvent event;
 	event.thread = threadIdentifier;
 	event.identifier = functionIdentifier;
-	fprintf(stderr, "now pushing!Stack: %p\n", _multithreadStack);
-	pushEvent(_multithreadStack[threadIdentifier], event);
+
+	fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n", threadIdentifier, _multithreadStack[threadIdentifier]);
+	if(threadIdentifier >= instroUseMultithread){
+		fprintf(stderr, "ERROR: Requestin stack for thread ID > %i\n", instroUseMultithread);
+	}
+	
+	struct Stack* st = _multithreadStack[threadIdentifier-1];
+	pushEvent(st, event);
 }
 
 
@@ -140,7 +138,7 @@ void _instroPushIdentifier(unsigned long long functionIdentifier, unsigned long 
  * This is our public interface for the InstRO sampling.
  */
 void _instroPopIdentifier(unsigned long long threadIdentifier){
-	popEvent(_multithreadStack[threadIdentifier]);
+	popEvent(_multithreadStack[threadIdentifier-1]);
 }
 
 

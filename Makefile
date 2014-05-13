@@ -26,7 +26,7 @@ $(objects): %.o: %.c
 
 # We can build the shadow stack as a library to link against GCC instrumented binaries.
 libshadowstack-fast:
-	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -o libshadowstack-fast.so stack.c -lc $(PAPI_LD_FLAGS) -lpapi
+	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -o libshadowstack-fast.so stack.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
 
 
 
