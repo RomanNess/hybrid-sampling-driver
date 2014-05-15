@@ -1,8 +1,7 @@
-#include "omp.h"
 #include "driver.h"
 
 void initBuffer(){
-fprintf(stderr, "initBuffer\n");
+//fprintf(stderr, "initBuffer\n");
 	if(_flushToDiskBuffer != 0)
 		return;
 
@@ -181,12 +180,14 @@ void __cyg_profile_func_exit(void* func, void* callsite){
  */
 void handler(int EventSet, void *address, long_long overflow_vector, void *context)
 {
+	if(ssReady == 0)
+		return;
 //      fprintf(stderr, "handler(%d) Overflow at %p! vector=0x%llx\n",                      EventSet, address, overflow_vector);
         sampleCount++;
 //	flushStackToFile(_threadStack); // Flushes the actual state of the stack to a file.
 //	flushStackToBuffer(_threadStack, _flushToDiskBuffer, address);//, _stupidCopy);
-	fprintf(stderr, "Handler for thread. %i\n", PAPI_thread_id());
-	fflush(stderr);
+	fprintf(stderr, "Handler for thread. %u\n", PAPI_thread_id());
+//	fflush(stderr);
 	flushStackToBuffer(getStack(PAPI_thread_id()), _flushToDiskBuffer, address);//, _stupidCopy);
 
 }
@@ -251,7 +252,8 @@ init_sampling_driver()
 
 	if(useMultithread > 1){
 		fprintf(stderr, "Initializing for multithread support.\n");
-		if(PAPI_thread_init(omp_get_thread_num) != PAPI_OK){
+//		if(PAPI_thread_init(pthread_self) != PAPI_OK){
+		if(PAPI_thread_init(instro_get_thread_id) != PAPI_OK){
 			fprintf(stderr, "Could init papi multithread things\n");
 			exit(-1);
 		}

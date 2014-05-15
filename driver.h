@@ -20,27 +20,28 @@
 #endif
 
 /*
- * TODO 2014-05-12 JP: Use an array of stacks to have a per-thread shadow stack
  * TODO 2014-05-12 JP: Implement functionality to write the output to a user defined location
  * TODO 2014-05-12 JP: What data is needed per sample event?
- * TODO 2014-05-12 JP: 
  */
 
-
+#ifndef H_STACK__
 #include "stack.h"
+#endif
 #include "event.h"
 
-// is stack initialized?
-// 2014-05-12 JP: I try if it is ok, if each stack knows whether its initialized or not
-//static int _initialized = 0;
 
 /*
  * This is the global for a thread's stack. At the moment we are only supporting single thread.
  * XXX DEPRECATED
  */
 static struct Stack* _threadStack = 0;
+
 // This is our write buffer
 static struct SampleEvent* _flushToDiskBuffer = 0;
+/*
+ * NUMBER of elements in buffer.
+ * TODO Rename this variable
+ */
 static unsigned int bufferElements = 0;
 
 
@@ -68,7 +69,7 @@ long overflowCountForSamples=2600000; // Now we sample every 2 600 000 cycles
 #define WRITE_BUFFER_SIZE 50000
 
 /*
- * If the compiler flag is set, the shadow stack will tell us which was the maximum
+ * If the compiler flag is set at compilation time, the shadow stack will tell us which was the maximum
  * stack depth during the sampling run.
  */
 #ifdef WITH_MAX_SIZE

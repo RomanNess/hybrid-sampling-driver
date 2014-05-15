@@ -1,16 +1,35 @@
 
 #include "stack.h"
 
+__thread pthread_key_t key = 0;
+__thread long unsigned int _instro_thread_id = 0;
+volatile int ssReady = 0;
+volatile unsigned int maxThreadNr = 1;
+
+long unsigned int instro_get_thread_id(){
+	if(_instro_thread_id == 0){
+		_instro_thread_id = maxThreadNr;
+		maxThreadNr++;
+//		fprintf(stderr, "instro_thread_identifier set\n");
+	}
+
+	return _instro_thread_id;
+}
+
+
 void
 __attribute__((constructor))
 createStackInstance(){
-
 	// XXX JP: I added the getting of the multi thread env var here, because we have to know at creation
 	// time whether its multi thread or not...
 	char *instroUseMultithreadVariable = getenv("INSTRO_USE_THREAD_NUMBER");
+	char *ompNumThreadsEnvVariable = getenv("OMP_NUM_THREADS");
+
 	// get the number of threads
 	if(instroUseMultithreadVariable != NULL){
 		instroUseMultithread = atoi(instroUseMultithreadVariable);
+	} else if(ompNumThreadsEnvVariable != NULL){
+		instroUseMultithread = atoi(ompNumThreadsEnvVariable);
 	} else {
 		printf("Not using multithreading, setting thread level to one thread\n");
 		instroUseMultithread = 1;
@@ -25,18 +44,25 @@ createStackInstance(){
 			if(! _multithreadStack[i])
 				fprintf(stderr, "Could no allocate memory for multithread stack\n");
 
-			fprintf(stderr, "createStackInstance:\nstack-base  %i: %p\nNow initializing...",i, _multithreadStack[i]);
+//			fprintf(stderr, "createStackInstance:\nstack-base  %i: %p\nNow initializing...",i, _multithreadStack[i]);
 			initStack(_multithreadStack[i], STACK_SIZE);
 		}
 
-	fprintf(stderr, "Construction done for %i threads.\n", i);
+	/* What happens if that is moved here... */
+	if(key == 0){
+		pthread_key_create(&key, 0);
+		printf("Create Stack Instance:\nIn Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
+	}
 
+//	fprintf(stderr, "Construction done for %i threads.\n", i);
+	ssReady = 1;
+	fprintf(stderr, "Ready flag set\n");
 	}
 }
 
 void initStack(struct Stack* stack, unsigned int maxSize){
-if(stack != NULL)
-fprintf(stderr, "initStack neq NULL: %p\n", stack);
+//if(stack != NULL)
+//fprintf(stderr, "initStack neq NULL: %p\n", stack);
 	if(stack->_initialized == 1)
 		return;
 
@@ -61,7 +87,7 @@ fprintf(stderr, "initStack neq NULL: %p\n", stack);
  * (internal interface)
  */
 void pushEvent(struct Stack* stack, struct StackEvent event){
-	fprintf(stderr, "Function Enter: push event:\nstack-base: %p\nstack-size:%i\nadding element at stack[size]: %p.\nstack base: %p\n", stack, stack->_size, stack->_start[stack->_size], stack->_start);
+//	fprintf(stderr, "Function Enter: push event:\nstack-base: %p\nstack-size:%i\nadding element at stack[size]: %p.\nstack base: %p\n", stack, stack->_size, &(stack->_start[stack->_size]), stack->_start);
 //	fflush(stderr);
 	if(stack->_size == stack->_maxSize){
 		fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
@@ -70,7 +96,7 @@ void pushEvent(struct Stack* stack, struct StackEvent event){
 	stack->_start[stack->_size].thread = event.thread;
 	stack->_start[stack->_size].identifier = event.identifier;
 	stack->_size += 1;
-	fprintf(stderr, "Function Leave: push event:\nstack-base: %p\nstack-size:%i\nadding element at stack[size]: %p.\nstack base: %p + stack->_size * sizeof(StackEvent) = %p\n", stack, stack->_size, stack->_start[stack->_size], stack, (stack->_start+((stack->_size+1) * sizeof(struct StackEvent))));
+//	fprintf(stderr, "Function Leave: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack base: %p\n", stack, stack->_size, &(stack->_start[stack->_size]), stack->_start);
 
 #ifdef WITH_MAX_SIZE
 	if(stack->_size > stackMaxSize)
@@ -123,8 +149,8 @@ void _instroPushIdentifier(unsigned long long functionIdentifier, unsigned long 
 	event.thread = threadIdentifier;
 	event.identifier = functionIdentifier;
 
-	fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n", threadIdentifier, _multithreadStack[threadIdentifier]);
-	if(threadIdentifier >= instroUseMultithread){
+//	fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n", threadIdentifier, _multithreadStack[threadIdentifier]);
+	if(threadIdentifier > instroUseMultithread){
 		fprintf(stderr, "ERROR: Requestin stack for thread ID > %i\n", instroUseMultithread);
 	}
 	
@@ -146,6 +172,6 @@ struct Stack* getStack(unsigned long long threadIdentifier){
 	if(threadIdentifier > instroUseMultithread){
 		fprintf(stderr, "Requested a stack to a thread with a greater thread number than specified. %llu\n", threadIdentifier);
 	}
-
-	return _multithreadStack[threadIdentifier];
+//	fprintf(stderr, "Using key-1 : %u to fetch the shadow stack.\n", key-1);
+	return _multithreadStack[key-1];
 }

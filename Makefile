@@ -16,7 +16,7 @@ libemptypushpop:
 
 # --- Start of the sampling tool ---
 
-objects = driver.o stack.o
+objects = stack.o driver.o
 
 sampling_tool: $(objects)
 	$(CC) $(PAPI_INCLUDE_FLAGS) $(INSTRO_FLAGS) $(CFLAGS) -shared -o sampling_tool.so $(objects) $(LDFLAGS) $(PAPI_LD_FLAGS)
