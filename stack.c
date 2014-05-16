@@ -41,7 +41,7 @@ createStackInstance(){
 		instroUseMultithread = 1;
 	}
 
-
+	// XXX Is this check necessary?
 	if(_multithreadStack == 0){
 		_multithreadStack = (struct Stack**) malloc(instroUseMultithread * sizeof(struct Stack*));
 		int i = 0;
@@ -54,21 +54,19 @@ createStackInstance(){
 			initStack(_multithreadStack[i], STACK_SIZE);
 		}
 
-	/* What happens if that is moved here... */
-	if(key == 0){
-		pthread_key_create(&key, 0);
-		printf("Create Stack Instance:\nIn Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
-	}
+		/* What happens if that is moved here... */
+		if(key == 0){
+			pthread_key_create(&key, 0);
+			printf("Create Stack Instance:\nIn Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
+		}
 
-//	fprintf(stderr, "Construction done for %i threads.\n", i);
-	ssReady = 1;
-	fprintf(stderr, "Ready flag set\n");
+//		fprintf(stderr, "Construction done for %i threads.\n", i);
+		ssReady = 1;
+		fprintf(stderr, "Ready flag set\n");
 	}
 }
 
 void initStack(struct Stack* stack, unsigned int maxSize){
-//if(stack != NULL)
-//fprintf(stderr, "initStack neq NULL: %p\n", stack);
 	if(stack->_initialized == 1)
 		return;
 
@@ -80,7 +78,7 @@ void initStack(struct Stack* stack, unsigned int maxSize){
 	}
 	stack->_maxSize = maxSize;
 	stack->_end = stack->_start[maxSize-1];
-	stack->_cur = stack->_start[0];
+	stack->_cur = stack->_start[0]; // XXX I think we can delete the _cur field.
 	stack->_size = 0;
 	stack->_initialized = 1;
 

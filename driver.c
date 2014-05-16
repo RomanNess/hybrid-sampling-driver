@@ -28,6 +28,8 @@ void deallocateWriteOutBuffer(){
 /*
  * This flushes the actual state of the stack to file.
  * I guess that this function at the moment is our bottleneck, since we flush buffers all the time.
+ *
+ * XXX This function is useless I guess.
  */
 void flushStackToFile(struct Stack* stack){
 	FILE* fp = fopen("myOutStack.txt", "a+");
@@ -144,6 +146,7 @@ void flushBufferToFile(struct SampleEvent* buffer){
 /*
  * We implemented the GNU cyg_profile interface to profile a shadow stack
  * full-instrumentation.
+ * Can we determine the thread identifier within this function?
  */
 void __cyg_profile_func_enter(void* func, void* callsite){
 #ifdef SHADOWSTACK_ONLY	
@@ -184,11 +187,11 @@ void handler(int EventSet, void *address, long_long overflow_vector, void *conte
 		return;
 //      fprintf(stderr, "handler(%d) Overflow at %p! vector=0x%llx\n",                      EventSet, address, overflow_vector);
         sampleCount++;
-//	flushStackToFile(_threadStack); // Flushes the actual state of the stack to a file.
 //	flushStackToBuffer(_threadStack, _flushToDiskBuffer, address);//, _stupidCopy);
-	fprintf(stderr, "Handler for thread. %u\n", PAPI_thread_id());
-//	fflush(stderr);
-	flushStackToBuffer(getStack(PAPI_thread_id()), _flushToDiskBuffer, address);//, _stupidCopy);
+//	fprintf(stderr, "Handler for thread. %u\n", PAPI_thread_id());
+
+	// This is where the work happens
+	flushStackToBuffer(getStack(PAPI_thread_id()), _flushToDiskBuffer, address);
 
 }
 
@@ -239,21 +242,13 @@ init_sampling_driver()
                printf("Failing in %s at line %i with code %i\n",__FILE__,__LINE__,retval);
                return;
         }
-	char *instroUseMultithreadVariable = getenv("INSTRO_USE_THREAD_NUMBER");
-	int useMultithread;
-	// get the number of threads
-	if(instroUseMultithreadVariable != NULL){
-		useMultithread = atoi(instroUseMultithreadVariable);
-	} else {
-		printf("Not using multithreading, setting thread level to one thread\n");
-		useMultithread = 1;
-	}
 
-
-	if(useMultithread > 1){
+	/* The variable gets defined in stack.c */
+	if(instroUseMultithread > 1){
 		fprintf(stderr, "Initializing for multithread support.\n");
 //		if(PAPI_thread_init(pthread_self) != PAPI_OK){
-		if(PAPI_thread_init(instro_get_thread_id) != PAPI_OK){
+//		if(PAPI_thread_init(instro_get_thread_id) != PAPI_OK){
+		if(PAPI_thread_init(getKey) != PAPI_OK){
 			fprintf(stderr, "Could init papi multithread things\n");
 			exit(-1);
 		}

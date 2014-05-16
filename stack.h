@@ -9,6 +9,7 @@
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
  * This limits our capabilities sampling programs with very very deep call trees.
+ * But we only do one allocation at start up
  */
 #define STACK_SIZE 100000
 
