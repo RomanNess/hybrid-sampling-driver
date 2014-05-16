@@ -68,6 +68,7 @@ volatile int ssReady;
  * it needs to be declared as extern __thread in the target application.
  * This would be one possibility, but we would need to have a mapping 
  * between the pthread IDs and the instro id, if we do it that way.
+ * XXX JP: This seems to be the faster way!
  */
 extern __thread pthread_key_t key;
 pthread_key_t getKey();
