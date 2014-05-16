@@ -70,6 +70,7 @@ volatile int ssReady;
  * between the pthread IDs and the instro id, if we do it that way.
  */
 extern __thread pthread_key_t key;
+pthread_key_t getKey();
 
 /*
  * Starting here this is another idea: We keep track of threads ourselves

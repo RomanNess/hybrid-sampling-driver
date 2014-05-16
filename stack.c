@@ -16,6 +16,12 @@ long unsigned int instro_get_thread_id(){
 	return _instro_thread_id;
 }
 
+pthread_key_t getKey(){
+	if(key == 0)
+		pthread_key_create(&key, 0);
+
+	return key;
+}
 
 void
 __attribute__((constructor))
@@ -137,11 +143,16 @@ void deallocateStack(struct Stack* stack){
  * This is our public interface for the InstRO Sampling driver.
  */
 void _instroPushIdentifier(unsigned long long functionIdentifier, unsigned long long threadIdentifier){
+/*
+ * XXX JP: I guess if we use the way with our own lookup function for thread identifier,
+ * 	we do not need the call to the pthread key create thing... 
+ */
 	if(key == 0){
 		pthread_key_create(&key, 0);
 		threadIdentifier = key;
 		printf("In Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
 	}
+
 //	fprintf(stderr, "Pushing %i to thread %i and key is: %lu\n", functionIdentifier, threadIdentifier, key);
 //	fprintf(stderr, "Pushing %i to thread %i\n", functionIdentifier, threadIdentifier);
 //	fflush(stderr);
