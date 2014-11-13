@@ -2,7 +2,7 @@
 #SAMPLING_DRIVER_OBJ=$(SAMPLING_DRIVER_SRC:.cpp=.o)
 #SAMPLING_DRIVER=PAPI_driver_test.so
 
-CC="gcc"
+CC="icc"
 
 CFLAGS=-g -O3 -fPIC -Wall
 LDFLAGS=-lc
@@ -28,13 +28,17 @@ $(objects): %.o: %.c
 
 # We can build the shadow stack as a library to link against GCC instrumented binaries.
 libshadowstack-fast:
-	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -o libshadowstack-fast.so stack.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -O3 -fPIC -shared -o libshadowstack-fast.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
+
+libshadowstack-debug:
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DDEBUG -DSHADOWSTACK_ONLY -g -O0 -fPIC -shared -o libshadowstack-debug.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
+
 
 
 sampling-as-lib:
-	$(CC) -g -Og -DSAMPLING_AS_LIB $(PAPI_INCLUDE_FLAGS) -I. -fPIC -O0 -shared -o libsampling-debug.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpthread -lpapi
+	$(CC) -g -DSAMPLING_AS_LIB $(PAPI_INCLUDE_FLAGS) -I. -fPIC -O0 -shared -o libsampling-debug.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpthread -lpapi
 testStack: sampling-as-lib
-	$(CC) -g -Og -I. $(PAPI_INCLUDE_FLAGS)  -O0 -o test_stack.exe test.c   $(PAPI_LD_FLAGS) -L. -lsampling-debug -lpapi -lpthread
+	$(CC) -g  -I. $(PAPI_INCLUDE_FLAGS)  -O0 -o test_stack.exe test.c   $(PAPI_LD_FLAGS) -L. -lsampling-debug -lpapi -lpthread
 
 
 .PHONY : clean

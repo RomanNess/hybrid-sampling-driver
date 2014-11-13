@@ -53,7 +53,7 @@ int instroUseMultithread;
  *
  * XXX rename this variable!
  */
-static struct Stack **_multithreadStack = 0;
+extern struct Stack **_multithreadStack;
 
 /*
  * We need some flag to indicate, whether we can start to sample events.

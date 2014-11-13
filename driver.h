@@ -46,6 +46,7 @@ static struct SampleEvent *_flushBufferB = 0;
  */
 static unsigned int bufferElements = 0;
 
+struct Stack **_multithreadStack = 0;
 
 /*
  * GLOBALS SEGMENT

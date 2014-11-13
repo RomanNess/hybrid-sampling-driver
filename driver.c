@@ -205,29 +205,50 @@ void pthread_flushBufferToFile(void *data) {
  * Can we determine the thread identifier within this function?
  */
 void __cyg_profile_func_enter(void *func, void *callsite) {
-  #ifdef SHADOWSTACK_ONLY
+ #ifdef DEBUG
+
+  fprintf(stderr, "Entering cyg_profile_func_enter \n");
+#endif
+#ifdef SHADOWSTACK_ONLY
   if(_multithreadStack == 0) {
-    _multithreadStack = (struct Stack *) malloc(1 * sizeof(struct Stack));
-    if(_multithreadStack[0] == 0) {
-      fprintf(stderr, "Could not allocate stack.\n");
-      exit(-3);
-    }
-    initStack(_multithreadStack[0], STACK_SIZE);
+    fprintf(stderr, "We would call another createStackInstance()\n");
+    createStackInstance();
+//  if(_multithreadStack == 0){
+//    fprintf(stderr, "In %s : Could not allocate any stack.\n", __FILE__);
+//  }
+//    _multithreadStack = (struct Stack *) malloc(1 * sizeof(struct Stack));
+//    if(_multithreadStack[0] == 0) {
+//      fprintf(stderr, "In %s : Could not allocate stack nr %u.\n", __FILE__, 0);
+//      exit(-3);
+//    }
+//    initStack(_multithreadStack[0], STACK_SIZE);
   }
-  #endif
+#endif
 
   struct StackEvent event;
   event.thread = 0;
   event.identifier = (unsigned int) func;
   pushEvent(_multithreadStack[0], event);
+ #ifdef DEBUG
 
+  fprintf(stderr, "Exit cyg_profile_func_enter \n");
+#endif
 }
 
 /*
  *
  */
 void __cyg_profile_func_exit(void *func, void *callsite) {
+  #ifdef DEBUG
+
+  fprintf(stderr, "Entering cyg_profile_func_exit \n");
+#endif
+ 
   popEvent(_multithreadStack[0]);
+ #ifdef DEBUG
+
+  fprintf(stderr, "Exit cyg_profile_func_exit \n");
+#endif
 }
 
 /*
@@ -256,7 +277,7 @@ void handler(int EventSet, void *address, long_long overflow_vector, void *conte
 }
 
 
-
+#ifndef SHADOWSTACK_ONLY
 void
 #ifndef SAMPLING_AS_LIB
 __attribute__ ((constructor))
@@ -362,5 +383,5 @@ finish_sampling_driver() {
   #endif
 
 }
-
+#endif
 

@@ -44,8 +44,21 @@ createStackInstance() {
 
   // XXX Is this check necessary?
   if(_multithreadStack == 0) {
+#ifdef DEBUG
+    fprintf(stderr, "Allocating stack **\n");
+#endif
     _multithreadStack = (struct Stack **) malloc(instroUseMultithread * sizeof(struct Stack *));
-    int i = 0;
+    if(_multithreadStack == 0){
+      fprintf(stderr, "Allocation failed in %s in %s\n", __FILE__, __FUNCTION__ );
+    }
+ #ifdef DEBUG
+   if(_multithreadStack[0] == 0) {
+      fprintf(stderr, "if(_multithreadStack[0] == 0) -- true\n");
+    } else {
+      fprintf(stderr, "ThreadStack: %p \n", _multithreadStack);
+    }
+ #endif
+   int i = 0;
     for(; i < instroUseMultithread; i++) {
       _multithreadStack[i] = (struct Stack *) malloc(sizeof(struct Stack));
       if(! _multithreadStack[i]) {
@@ -55,8 +68,12 @@ createStackInstance() {
       //                      fprintf(stderr, "createStackInstance:\nstack-base  %i: %p\nNow initializing...",i, _multithreadStack[i]);
       initStack(_multithreadStack[i], STACK_SIZE);
     }
-
-    /* What happens if that is moved here... */
+ #ifdef DEBUG
+   if(_multithreadStack[0] == 0) {
+      fprintf(stderr, "IF YOU CAN READ THIS TEXT, IT IS BAD\n");
+    } 
+ #endif
+   /* What happens if that is moved here... */
     if(key == 0) {
       pthread_key_create(&key, 0);
       printf("Create Stack Instance:\nIn Shadow stack creating key for thread: %u with key: %u\n",
@@ -67,6 +84,9 @@ createStackInstance() {
     ssReady = 1;
     fprintf(stderr, "Ready flag set\n");
   }
+ #ifdef DEBUG
+ fprintf(stderr, "end of createStackInstance()\n");
+#endif
 }
 
 void initStack(struct Stack *stack, unsigned int maxSize) {
@@ -85,8 +105,9 @@ void initStack(struct Stack *stack, unsigned int maxSize) {
   stack->_cur = stack->_start[0]; // XXX I think we can delete the _cur field.
   stack->_size = 0;
   stack->_initialized = 1;
-
+ #ifdef DEBUG
   fprintf(stderr, "Init Stack:\nStack base: %p\nstack->start at: %p\n", stack, stack->_start);
+#endif
 }
 
 
@@ -95,7 +116,9 @@ void initStack(struct Stack *stack, unsigned int maxSize) {
  * (internal interface)
  */
 void pushEvent(struct Stack *stack, struct StackEvent event) {
-  //      fprintf(stderr, "Function Enter: push event:\nstack-base: %p\nstack-size:%i\nadding element at stack[size]: %p.\nstack base: %p\n", stack, stack->_size, &(stack->_start[stack->_size]), stack->_start);
+ #ifdef DEBUG
+      fprintf(stderr, "Enter Function: push event:\nstack-base: %p\nstack-size:%i\nadding at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_start[stack->_size]), stack->_start);
+ #endif
   //      fflush(stderr);
   if(stack->_size == stack->_maxSize) {
     fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
@@ -104,7 +127,9 @@ void pushEvent(struct Stack *stack, struct StackEvent event) {
   stack->_start[stack->_size].thread = event.thread;
   stack->_start[stack->_size].identifier = event.identifier;
   stack->_size += 1;
-//  fprintf(stderr, "Function Leave: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack base: %p\n", stack, stack->_size, &(stack->_start[stack->_size]), stack->_start);
+ #ifdef DEBUG
+  fprintf(stderr, "Leave Function: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_start[stack->_size-1]), stack->_start);
+ #endif
 
   #ifdef WITH_MAX_SIZE
   if(stack->_size > stackMaxSize) {
@@ -157,19 +182,24 @@ void _instroPushIdentifier(unsigned long long functionIdentifier,
     printf("In Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
   }
 
-  //      fprintf(stderr, "Pushing %i to thread %i and key is: %lu\n", functionIdentifier, threadIdentifier, key);
+//      fprintf(stderr, "Pushing %i to thread %i and key is: %lu\n", functionIdentifier, threadIdentifier, key);
   //      fprintf(stderr, "Pushing %i to thread %i\n", functionIdentifier, threadIdentifier);
   //      fflush(stderr);
   struct StackEvent event;
   event.thread = threadIdentifier;
   event.identifier = functionIdentifier;
 
-//  fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n", threadIdentifier, _multithreadStack[threadIdentifier]);
+ #ifdef DEBUG
+  fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n",
+    threadIdentifier, _multithreadStack[threadIdentifier]);
+ #endif
   if(threadIdentifier > instroUseMultithread) {
     fprintf(stderr, "ERROR: Requestin stack for thread ID > %i\n", instroUseMultithread);
     abort();
   }
-//  fprintf(stderr, "Retrieving stack for threadIdentifier %i\n", threadIdentifier -1);
+ #ifdef DEBUG
+  fprintf(stderr, "Retrieving stack for threadIdentifier %i\n", threadIdentifier -1);
+ #endif
   struct Stack *st = _multithreadStack[threadIdentifier - 1];
   pushEvent(st, event);
 }
@@ -185,7 +215,7 @@ void _instroPopIdentifier(unsigned long long threadIdentifier) {
 
 
 struct Stack *getStack(unsigned long threadIdentifier) {
-  if(threadIdentifier > instroUseMultithread) {
+  if(threadIdentifier < 0 || threadIdentifier > instroUseMultithread) {
     fprintf(stderr, "Requested a stack to a thread with a greater thread number than specified. %llu\n",
             threadIdentifier);
     abort();
