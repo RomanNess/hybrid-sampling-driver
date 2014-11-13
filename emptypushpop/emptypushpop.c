@@ -4,11 +4,11 @@ void _instroPushIdentifier (unsigned long long funcIdentifier, unsigned long lon
 void printBenchmarkResult(){}
 
 void _instroPushIdentifier(unsigned long long funcIdentifier, unsigned long long threadIdentifier){
-	// Nothings happens here.
-	return;
+        // Nothings happens here.
+        return;
 }
 
 void _instroPopIdentifier(unsigned long long threadIdentifier){
-	// honthing happens here.
-	return;
+        // honthing happens here.
+        return;
 }

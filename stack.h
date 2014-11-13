@@ -15,14 +15,14 @@
 
 /*
  * Represents one single event on the stack (a certain thread is in function with identifier)
- * XXX JP: Since we have multiple stacks, may be we can omit the thread identifier per 
+ * XXX JP: Since we have multiple stacks, may be we can omit the thread identifier per
  * StackEvent, so we would further decrease memory footprint.
  *
  */
 struct StackEvent {
 
-	unsigned long long thread;
-	unsigned long long identifier;
+  unsigned long long thread;
+  unsigned long long identifier;
 
 };
 
@@ -32,13 +32,13 @@ struct StackEvent {
  * _size is the number of elements
  * _maxSize is the maximum number of elements the Stack can hold
  * _initialized was used to indicate between driver and stack whether the stack was initialized
- * 		or not. XXX Maybe this can be removed, too.
+ *              or not. XXX Maybe this can be removed, too.
  */
 struct Stack {
 
-	struct StackEvent* _start, _end, _cur;
-	unsigned int _size, _maxSize;
-	short _initialized;
+  struct StackEvent *_start, _end, _cur;
+  unsigned int _size, _maxSize;
+  short _initialized;
 
 };
 
@@ -50,10 +50,10 @@ struct Stack {
 int instroUseMultithread;
 /*
  * This is the array of shadow stacks.
- * 
+ *
  * XXX rename this variable!
  */
-static struct Stack** _multithreadStack = 0;
+static struct Stack **_multithreadStack = 0;
 
 /*
  * We need some flag to indicate, whether we can start to sample events.
@@ -67,7 +67,7 @@ volatile int ssReady;
 /*
  * At the moment this key is used to determine a threads id. Therefore
  * it needs to be declared as extern __thread in the target application.
- * This would be one possibility, but we would need to have a mapping 
+ * This would be one possibility, but we would need to have a mapping
  * between the pthread IDs and the instro id, if we do it that way.
  * XXX JP: This seems to be the faster way!
  */
@@ -80,7 +80,7 @@ pthread_key_t getKey();
  * local storage to have a thread id inside each thread. We would provide
  * papi with our own get_thread_id function.
  * We really have to evaluate in terms of performance and maintainability.
- * 
+ *
  */
 volatile unsigned int maxThreadNr;
 extern __thread unsigned long _instro_thread_id;
@@ -92,20 +92,20 @@ long unsigned int instro_get_thread_id();
  * pushEvent adds one element (event) to stack (stack)
  * popEvent removes one element from stack (stack)
  */
-void pushEvent(struct Stack* stack, struct StackEvent event);
-void popEvent(struct Stack* stack);
+void pushEvent(struct Stack *stack, struct StackEvent event);
+void popEvent(struct Stack *stack);
 
 /*
  * Initializes the stack.
  * The function calls malloc
  */
-void initStack(struct Stack* stack, unsigned int maxSize);
+void initStack(struct Stack *stack, unsigned int maxSize);
 /*
  * Deallocates the stack.
  * XXX This function needs some attention!
  * This function actually calls free.
  */
-void deallocateStack(struct Stack* stack);
+void deallocateStack(struct Stack *stack);
 
 /*
  * This is the public interface.
@@ -114,7 +114,8 @@ void deallocateStack(struct Stack* stack);
  * The correct stack corresponding to threadIdentifier is selected and then pushEvent
  * is called with these two things as parameters.
  */
-void _instroPushIdentifier(unsigned long long functionIdentifier, unsigned long long threadIdentifier);
+void _instroPushIdentifier(unsigned long long functionIdentifier,
+                           unsigned long long threadIdentifier);
 /*
  * Calls popEvent with the correct stack as argument.
  */
@@ -125,6 +126,8 @@ void _instroPopIdentifier(unsigned long long threadIdentifier);
  * This has to do with how we handle threads. I believe there is some
  * better solution to all this, but I havent had the idea so far.
  */
-struct Stack* getStack(unsigned long long threadIdentifier);
+struct Stack *getStack(unsigned long threadIdentifier);
 
 #endif
+
+

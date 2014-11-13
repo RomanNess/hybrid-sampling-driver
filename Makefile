@@ -4,8 +4,10 @@
 
 CC="gcc"
 
-CFLAGS=-g -O3 -fPIC
+CFLAGS=-g -O3 -fPIC -Wall
 LDFLAGS=-lc
+
+MT_FLAGS=-DUSE_THREAD_WRITE_OUT
 
 INSTRO_FLAGS=-DWITH_MAX_SIZE
 
@@ -29,6 +31,10 @@ libshadowstack-fast:
 	$(CC) $(PAPI_INCLUDE_FLAGS) -O3 -fPIC -shared -o libshadowstack-fast.so stack.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
 
 
+sampling-as-lib:
+	$(CC) -g -Og -DSAMPLING_AS_LIB $(PAPI_INCLUDE_FLAGS) -I. -fPIC -O0 -shared -o libsampling-debug.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpthread -lpapi
+testStack: sampling-as-lib
+	$(CC) -g -Og -I. $(PAPI_INCLUDE_FLAGS)  -O0 -o test_stack.exe test.c   $(PAPI_LD_FLAGS) -L. -lsampling-debug -lpapi -lpthread
 
 
 .PHONY : clean
