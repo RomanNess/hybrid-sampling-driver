@@ -2,7 +2,7 @@
 #SAMPLING_DRIVER_OBJ=$(SAMPLING_DRIVER_SRC:.cpp=.o)
 #SAMPLING_DRIVER=PAPI_driver_test.so
 
-CC="icc"
+CC=gcc
 
 CFLAGS=-g -O3 -fPIC -Wall
 LDFLAGS=-lc
