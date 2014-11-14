@@ -13,7 +13,7 @@ INSTRO_FLAGS=-DWITH_MAX_SIZE
 
 # Our empty implementation of the cyg_profile_func_enter/exit interface
 libemptypushpop:
-	$(CC) -O2 -fPIC -shared -o libemptypushpop.so emptypushpop.c
+	$(CC) -O2 -fPIC -shared -o libemptypushpop.so emptypushpop/emptypushpop.c
 
 
 # --- Start of the sampling tool ---
