@@ -37,6 +37,8 @@ libshadowstack-debug:
 
 sampling-as-lib:
 	$(CC) -g -DSAMPLING_AS_LIB $(PAPI_INCLUDE_FLAGS) -I. -fPIC -O0 -shared -o libsampling-debug.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpthread -lpapi
+
+
 testStack: sampling-as-lib
 	$(CC) -g  -I. $(PAPI_INCLUDE_FLAGS)  -O0 -o test_stack.exe test.c   $(PAPI_LD_FLAGS) -L. -lsampling-debug -lpapi -lpthread
 
@@ -45,3 +47,4 @@ testStack: sampling-as-lib
 clean:
 	rm -f *.so
 	rm -f *.o
+	rm -f test_stack.exe
