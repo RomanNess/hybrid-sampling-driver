@@ -5,8 +5,10 @@
  *
  * Authors:     Jan-Patrick Lehr
  *              Christian Iwainsky
+ *              Roman Ness
  */
 #ifndef STD_INCLUDES
+
 #define STD_INCLUDES
 #include "stdio.h"
 #include "stdlib.h"
@@ -17,7 +19,8 @@
 #ifndef STACK_IS_UNDER_TEST
 #include "math.h"
 #endif
-#endif
+
+#endif	// STD_INCLUDES
 
 /*
  * TODO 2014-05-12 JP: Implement functionality to write the output to a user defined location
@@ -29,15 +32,8 @@
 #endif
 #include "event.h"
 
-/*
- * This is the global for a thread's stack. At the moment we are only supporting single thread.
- * XXX DEPRECATED
- */
-static struct Stack *_threadStack = 0;
-
 // This is our write buffer
 static struct SampleEvent *_flushToDiskBuffer = 0;
-static struct SampleEvent *_flushToDiskBuffer2 = 0;
 static struct SampleEvent *_flushBufferB = 0;
 /*
  * NUMBER of elements in buffer.
@@ -57,10 +53,10 @@ int sampling_driver_enabled = 0; /* global to know if sampling driver is enabled
 int EventSet = PAPI_NULL; /* PAPI related thing */
 
 /*
- * We use a standard of a sample each 2,600,00 cpu cycles
+ * CPU-cycles per sample.
  * This can be changes using the env var INSTRO_SAMPLE_FREQ
  */
-long overflowCountForSamples = 2600000; // Now we sample every 2 600 000 cycles
+long overflowCountForSamples = 2600000;
 
 /*
  * This is not a size in bytes or something, but the number of sampling events
@@ -89,8 +85,6 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 
 void flushBufferToFile(struct SampleEvent *buffer);
 
-void pthread_flushBufferToFile(void *data);
-
 void __cyg_profile_func_enter(void *func, void *callsite);
 
 void __cyg_profile_func_exit(void *func, void *callsite);
@@ -106,4 +100,4 @@ void finish_sampling_driver();
  */
 pthread_t writeThread;
 pthread_attr_t detachAttr;
-void pthread_flushBufferToFile(void *data);
+void* pthread_flushBufferToFile(void *data);

@@ -1,26 +1,23 @@
 #include "stack.h"
 
 __thread pthread_key_t key = 0;
-__thread long unsigned int _instro_thread_id = 0;
+__thread unsigned long _instro_thread_id = 0;
 volatile int ssReady = 0;
 volatile unsigned int maxThreadNr = 1;
 
-long unsigned int instro_get_thread_id() {
+unsigned long instro_get_thread_id() {
 	if (_instro_thread_id == 0) {
 		_instro_thread_id = maxThreadNr;
 		maxThreadNr++;
-		//              fprintf(stderr, "instro_thread_identifier set\n");
 	}
-
 	return _instro_thread_id;
 }
 
-pthread_key_t getKey() {
+unsigned long getKey() {
 	if (key == 0) {
 		pthread_key_create(&key, 0);
 	}
-
-	return key;
+	return (unsigned long) key;
 }
 
 void
@@ -61,10 +58,9 @@ createStackInstance() {
 		for (; i < instroUseMultithread; i++) {
 			_multithreadStack[i] = (struct Stack *) malloc(sizeof(struct Stack));
 			if (!_multithreadStack[i]) {
-				fprintf(stderr, "Could no allocate memory for multithread stack\n");
+				fprintf(stderr, "Could not allocate memory for multithread stack\n");
 			}
 
-			//                      fprintf(stderr, "createStackInstance:\nstack-base  %i: %p\nNow initializing...",i, _multithreadStack[i]);
 			initStack(_multithreadStack[i], STACK_SIZE);
 		}
 #ifdef DEBUG
@@ -79,7 +75,6 @@ createStackInstance() {
 					pthread_self(), key);
 		}
 
-		//              fprintf(stderr, "Construction done for %i threads.\n", i);
 		ssReady = 1;
 		fprintf(stderr, "Ready flag set\n");
 	}
@@ -117,7 +112,7 @@ void pushEvent(struct Stack *stack, struct StackEvent event) {
 #ifdef DEBUG
 	fprintf(stderr, "Enter Function: push event:\nstack-base: %p\nstack-size:%i\nadding at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_start[stack->_size]), stack->_start);
 #endif
-	//      fflush(stderr);
+
 	if (stack->_size == stack->_maxSize) {
 		fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
 	}
