@@ -1,10 +1,8 @@
-
 #ifndef H_STACK__
 #define H_STACK__
 #include "stdio.h"
 #include "stdlib.h"
 #include "limits.h"
-
 
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
@@ -21,8 +19,8 @@
  */
 struct StackEvent {
 
-  unsigned long long thread;
-  unsigned long long identifier;
+	unsigned long long thread;
+	unsigned long long identifier;
 
 };
 
@@ -36,9 +34,9 @@ struct StackEvent {
  */
 struct Stack {
 
-  struct StackEvent *_start, _end, _cur;
-  unsigned int _size, _maxSize;
-  short _initialized;
+	struct StackEvent *_start, _end, _cur;
+	unsigned int _size, _maxSize;
+	short _initialized;
 
 };
 
@@ -114,8 +112,7 @@ void deallocateStack(struct Stack *stack);
  * The correct stack corresponding to threadIdentifier is selected and then pushEvent
  * is called with these two things as parameters.
  */
-void _instroPushIdentifier(unsigned long long functionIdentifier,
-                           unsigned long long threadIdentifier);
+void _instroPushIdentifier(unsigned long long functionIdentifier, unsigned long long threadIdentifier);
 /*
  * Calls popEvent with the correct stack as argument.
  */
@@ -129,5 +126,4 @@ void _instroPopIdentifier(unsigned long long threadIdentifier);
 struct Stack *getStack(unsigned long threadIdentifier);
 
 #endif
-
 
