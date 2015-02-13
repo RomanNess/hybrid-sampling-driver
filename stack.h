@@ -86,7 +86,7 @@ long unsigned int instro_get_thread_id();
 /***/
 
 /*
- * Our "internal" interface of the stack.
+ * "internal" stack interface
  * pushEvent adds one element (event) to stack (stack)
  * popEvent removes one element from stack (stack)
  */

@@ -39,7 +39,7 @@ createStackInstance() {
 	}
 
 	// XXX Is this check necessary?
-	if (_multithreadStack == 0) {
+	if (_multithreadStack == NULL) {
 #ifdef DEBUG
 		fprintf(stderr, "Allocating stack **\n");
 #endif
@@ -57,7 +57,7 @@ createStackInstance() {
 		int i = 0;
 		for (; i < instroUseMultithread; i++) {
 			_multithreadStack[i] = (struct Stack *) malloc(sizeof(struct Stack));
-			if (!_multithreadStack[i]) {
+			if (_multithreadStack[i] == NULL) {
 				fprintf(stderr, "Could not allocate memory for multithread stack\n");
 			}
 
@@ -120,6 +120,7 @@ void pushEvent(struct Stack *stack, struct StackEvent event) {
 	stack->_start[stack->_size].thread = event.thread;
 	stack->_start[stack->_size].identifier = event.identifier;
 	stack->_size += 1;
+
 #ifdef DEBUG
 	fprintf(stderr, "Leave Function: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_start[stack->_size-1]), stack->_start);
 #endif
@@ -138,10 +139,6 @@ void pushEvent(struct Stack *stack, struct StackEvent event) {
  * (internal interface)
  */
 void popEvent(struct Stack *stack) {
-	/*
-	 * If this if/else is in use the pop operation is extremely expensive
-	 * Generally the pop operation seems to be more expensive than the push operation...
-	 */
 	stack->_size -= 1;
 }
 
@@ -204,12 +201,9 @@ void _instroPopIdentifier(unsigned long long threadIdentifier) {
 
 struct Stack *getStack(unsigned long threadIdentifier) {
 	if (threadIdentifier < 0 || threadIdentifier > instroUseMultithread) {
-		fprintf(stderr, "Requested a stack to a thread with a greater thread number than specified. %llu\n",
-				threadIdentifier);
+		fprintf(stderr, "Requested the stack for an invalid threadIdentifier: %llu\n", threadIdentifier);
 		abort();
 	}
-	//      fprintf(stderr, "Using key-1 : %u to fetch the shadow stack.\n", key-1);
 	return _multithreadStack[threadIdentifier];
-//  return _multithreadStack[key - 1];
 }
 

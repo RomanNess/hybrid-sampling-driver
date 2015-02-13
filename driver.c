@@ -11,8 +11,6 @@ void initBuffer() {
 	if (_flushToDiskBuffer == 0) {
 		errx(1, "Could not allocate a write-out buffer with size: %i", 2 * WRITE_BUFFER_SIZE);
 	}
-
-//	memset(_flushToDiskBuffer, 0, WRITE_BUFFER_SIZE * sizeof(struct SampleEvent)); // Is this line correct?
 }
 
 void deallocateWriteOutBuffer() {
@@ -54,28 +52,14 @@ void flushStackToFile(struct Stack *stack) {
  *
  * This is the function to be called when PAPI interrupts and a sample is taken by our handler
  * It saves the state of the shadow stack and the PAPI instruction counter address to a
- * SampleEvent object and puts it on our buffer. XXX At least that's what it should do!
- *
- *
+ * SampleEvent object and puts it on our buffer.
+ * XXX JP: At least that's what it should do!
  */
 void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *icAddress) {
+
 	if (stack == 0 || buffer == 0) {
-		fprintf(stderr, "An error occured, where either stack or buffer was NULL. Exiting.\n"), exit(-5);
+		errx(-5, "An error occured, where either stack or buffer was NULL. Exiting.");
 	}
-	/*
-	 if(bufferElements == WRITE_BUFFER_SIZE){
-	 //              printf("A buffer flush would have been called.\n The actual stack size is %u", stack->_size);
-	 struct SampleEvent sampleEvent = buffer[bufferElements];
-	 buffer[bufferElements].icAddress = icAddress;
-	 buffer[bufferElements].sampleNumber = sampleCount;
-	 int k = 0;
-	 int BORDER = (buffer[bufferElements].numStackEvents < stack->_size)?buffer[bufferElements].numStackEvents : stack->_size;
-	 for(;k < BORDER; k++){
-	 buffer[bufferElements].stackEvents[k] = stack->_start[k];
-	 }
-	 return;
-	 }
-	 */
 
 	struct SampleEvent sampleEvent = buffer[bufferElements];
 	buffer[bufferElements].icAddress = (long) icAddress;
@@ -104,44 +88,12 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 	bufferElements++;
 }
 
-/*
- * Flushes the SampleEvents to a file called "myOutStack.txt"
- * XXX: ATTENTION this produces LOTS OF DATA
- * We need to provide functionality to e.g. specify where the output has to go.
- * For example we could use /scratch to output lots of GB...
- * Dataformat:
- * [Sample ID] [icAddress] [stackelems]
- *
- * XXX 2014-05-12 JP: Move the whole file operation thing to a different file?
- * XXX 2014-05-12 JP: Use the cube file writer lib to output cubex files?
- */
+/* Forward the flush to the pthread method */
 void flushBufferToFile(struct SampleEvent *buffer) {
 //  void *res;
 	pthread_attr_init(&detachAttr);
 	pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
 	int err = pthread_create(&writeThread, &detachAttr, pthread_flushBufferToFile, _flushToDiskBuffer);
-
-	return;
-
-	FILE *fp = fopen("myOutStack.txt", "a+");
-
-	if (fp) {
-		int i = 0;
-		// write all buffered elements to a file
-		for (; i < bufferElements; i++) {
-			const struct StackEvent *stackEvents = buffer[i].stackEvents;
-			fprintf(fp, "Sample: %lu\nAddress: %lu\n", buffer[i].sampleNumber, buffer[i].icAddress);
-			int j = 0;
-			for (; j < buffer[i].numStackEvents; j++) {
-				fprintf(fp, "Thread: %llu in Function: %llu\n", stackEvents[j].thread, stackEvents[j].identifier);
-			}
-			free((struct StackEvent*) stackEvents);
-		}
-		bufferElements = 0;
-		fclose(fp);
-	} else {
-		fprintf(stderr, "Could not open file for writing.\n");
-	}
 }
 
 /*
@@ -172,10 +124,6 @@ void* pthread_flushBufferToFile(void *data) {
 			}
 			free((struct StackEvent *) stackEvents);
 		}
-
-		// reset buffer
-		// maybe we can get rid of this memcpy, since we one take bufferElements
-//    memset(buffer, 0, WRITE_BUFFER_SIZE * sizeof(struct SampleEvent));
 		bufferElements = 0;
 
 		int fErr = fclose(fp);
@@ -244,7 +192,6 @@ void handler(int EventSet, void *address, long_long overflow_vector, void *conte
 	} else {
 		flushStackToBuffer(getStack(0), _flushToDiskBuffer, address);
 	}
-
 }
 
 #ifndef SHADOWSTACK_ONLY
@@ -267,8 +214,8 @@ init_sampling_driver() {
 	printf("With current config we allocate: %li bytes\n",
 	WRITE_BUFFER_SIZE * 2 * sizeof(struct SampleEvent));
 	initBuffer();
-	printf("Enabling PAPI for sampling\n");
 
+	printf("Enabling Sampling Driver\n");
 	int retval;
 	/* start the PAPI Library */
 	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
@@ -303,10 +250,11 @@ void
 __attribute__ ((destructor))
 #endif
 finish_sampling_driver() {
-	printf("sampling_tool Finalizer\n");
+	printf("Disabling Sampling Driver\n");
 	if (sampling_driver_enabled) {
 		long long instructionCounter;
 		PAPI_stop(EventSet, &instructionCounter);
+
 		printf("%li samples taken\n", sampleCount);
 		printf("%lli elements in buffer\n", bufferElements);
 
@@ -322,7 +270,7 @@ finish_sampling_driver() {
 
 		printf("Sampling Driver Disabled\n");
 	} else {
-		printf("Sampling was disabled due to an error\n");
+		printf("Sampling was already disabled due to an error\n");
 	}
 
 #ifdef WITH_MAX_SIZE
