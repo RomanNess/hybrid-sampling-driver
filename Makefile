@@ -28,7 +28,7 @@ $(objects): %.o: %.c
 
 # We can build the shadow stack as a library to link against GCC instrumented binaries.
 libshadowstack-fast:
-	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -O3 -fPIC -shared -o libshadowstack-fast.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
+	$(CC) -fopenmp $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -O3 -fPIC -shared -o libshadowstack-fast.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
 
 libshadowstack-debug:
 	$(CC) $(PAPI_INCLUDE_FLAGS) -DDEBUG -DSHADOWSTACK_ONLY -g -O0 -fPIC -shared -o libshadowstack-debug.so stack.c driver.c -lc $(PAPI_LD_FLAGS) -lpapi -lpthread
@@ -42,9 +42,12 @@ sampling-as-lib:
 testStack: sampling-as-lib
 	$(CC) -g  -I. $(PAPI_INCLUDE_FLAGS)  -O0 -o test_stack.exe test.c   $(PAPI_LD_FLAGS) -L. -lsampling-debug -lpapi -lpthread
 
-
+.PHONY : target
+target: libshadowstack-fast
+	$(CC) -fopenmp -finstrument-functions -g target.c libshadowstack-fast.so -o target -std=c99
+	
 .PHONY : clean
 clean:
 	rm -f *.so
 	rm -f *.o
-	rm -f test_stack.exe
+	rm -f *.exe
