@@ -153,6 +153,7 @@ void __cyg_profile_func_enter(void *func, void *callsite) {
 	struct StackEvent event;
 	event.thread = 0;
 	event.identifier = (unsigned long long) func;		// RN: some smaller identifier for performance reasons?
+
 	pushEvent(_multithreadStack[0], event);
 
 #ifdef DEBUG
@@ -187,7 +188,7 @@ void handler(int EventSet, void *address, long_long overflow_vector, void *conte
 	sampleCount++;
 
 	// This is where the work happens
-	if (instroUseMultithread > 1) {
+	if (instroNumThreads > 1) {
 		flushStackToBuffer(getStack(PAPI_thread_id()), _flushToDiskBuffer, address);
 	} else {
 		flushStackToBuffer(getStack(0), _flushToDiskBuffer, address);
@@ -195,6 +196,7 @@ void handler(int EventSet, void *address, long_long overflow_vector, void *conte
 }
 
 #ifndef SHADOWSTACK_ONLY
+
 void
 #ifndef SAMPLING_AS_LIB
 __attribute__ ((constructor))
@@ -222,7 +224,7 @@ init_sampling_driver() {
 		errx(retval, "PAPI_library_init failed with %i", retval);
 	}
 
-	if (instroUseMultithread > 1) { /* defined in stack.c */
+	if (instroNumThreads > 1) { /* defined in stack.c */
 		fprintf(stderr, "Initializing for multithread support.\n");
 		if ((retval = PAPI_thread_init(getKey)) != PAPI_OK) {
 			errx(retval, "PAPI_thread_init failed with %i", retval);

@@ -23,27 +23,26 @@ unsigned long getKey() {
 void
 __attribute__((constructor))
 createStackInstance() {
-	// XXX JP: I added the getting of the multi thread env var here, because we have to know at creation
-	// time whether its multi thread or not...
-	char *instroUseMultithreadVariable = getenv("INSTRO_USE_THREAD_NUMBER");
+
+	char *instroNumThreadsEnvVariable = getenv("INSTRO_NUM_THREADS");
 	char *ompNumThreadsEnvVariable = getenv("OMP_NUM_THREADS");
 
 	// get the number of threads
-	if (instroUseMultithreadVariable != NULL) {
-		instroUseMultithread = atoi(instroUseMultithreadVariable);
+	if (instroNumThreadsEnvVariable != NULL) {
+		instroNumThreads = atoi(instroNumThreadsEnvVariable);
 	} else if (ompNumThreadsEnvVariable != NULL) {
-		instroUseMultithread = atoi(ompNumThreadsEnvVariable);
+		instroNumThreads = atoi(ompNumThreadsEnvVariable);
 	} else {
-		printf("Not using multithreading, setting thread level to one thread\n");
-		instroUseMultithread = 1;
+		instroNumThreads = 1;
 	}
+	printf("Running with %i threads.\n", instroNumThreads);
 
 	// XXX Is this check necessary?
 	if (_multithreadStack == NULL) {
 #ifdef DEBUG
 		fprintf(stderr, "Allocating stack **\n");
 #endif
-		_multithreadStack = (struct Stack **) malloc(instroUseMultithread * sizeof(struct Stack *));
+		_multithreadStack = (struct Stack **) malloc(instroNumThreads * sizeof(struct Stack *));
 		if (_multithreadStack == 0) {
 			fprintf(stderr, "Allocation failed in %s in %s\n", __FILE__, __FUNCTION__);
 		}
@@ -55,7 +54,7 @@ createStackInstance() {
 		}
 #endif
 		int i = 0;
-		for (; i < instroUseMultithread; i++) {
+		for (; i < instroNumThreads; i++) {
 			_multithreadStack[i] = (struct Stack *) malloc(sizeof(struct Stack));
 			if (_multithreadStack[i] == NULL) {
 				fprintf(stderr, "Could not allocate memory for multithread stack\n");
@@ -180,8 +179,8 @@ void _instroPushIdentifier(unsigned long long functionIdentifier,
 	fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n",
 			threadIdentifier, _multithreadStack[threadIdentifier]);
 #endif
-	if (threadIdentifier > instroUseMultithread) {
-		fprintf(stderr, "ERROR: Requestin stack for thread ID > %i\n", instroUseMultithread);
+	if (threadIdentifier > instroNumThreads) {
+		fprintf(stderr, "ERROR: Requestin stack for thread ID > %i\n", instroNumThreads);
 		abort();
 	}
 #ifdef DEBUG
@@ -200,7 +199,7 @@ void _instroPopIdentifier(unsigned long long threadIdentifier) {
 }
 
 struct Stack *getStack(unsigned long threadIdentifier) {
-	if (threadIdentifier < 0 || threadIdentifier > instroUseMultithread) {
+	if (threadIdentifier < 0 || threadIdentifier > instroNumThreads) {
 		fprintf(stderr, "Requested the stack for an invalid threadIdentifier: %llu\n", threadIdentifier);
 		abort();
 	}

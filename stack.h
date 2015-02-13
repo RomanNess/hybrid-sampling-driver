@@ -41,11 +41,10 @@ struct Stack {
 };
 
 /*
- * instroUseMultithread hold a value read from two environment Vars: Either
- * INSTRO_USE_THREAD_NUMBER or OMP_NUM_THREADS (yes, this is exclusive or)
- * Maybe we should rename the INSTRO... var to INSTRO_NUM_THREADS.
+ * The number of threads to be used.
+ * Filled by env var INSTRO_NUM_THREADS or OMP_NUM_THREADS (in this order)
  */
-int instroUseMultithread;
+int instroNumThreads;
 /*
  * This is the array of shadow stacks.
  *
