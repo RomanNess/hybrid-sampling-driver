@@ -168,9 +168,6 @@ void _instroPushIdentifier(unsigned long long functionIdentifier,
 		printf("In Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
 	}
 
-//      fprintf(stderr, "Pushing %i to thread %i and key is: %lu\n", functionIdentifier, threadIdentifier, key);
-	//      fprintf(stderr, "Pushing %i to thread %i\n", functionIdentifier, threadIdentifier);
-	//      fflush(stderr);
 	struct StackEvent event;
 	event.thread = threadIdentifier;
 	event.identifier = functionIdentifier;

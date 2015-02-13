@@ -4,6 +4,8 @@
 #include "stdlib.h"
 #include "limits.h"
 
+#include "pthread.h"
+
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
  * This limits our capabilities sampling programs with very very deep call trees.
@@ -43,6 +45,7 @@ struct Stack {
 /*
  * The number of threads to be used.
  * Filled by env var INSTRO_NUM_THREADS or OMP_NUM_THREADS (in this order)
+ * TODO: RN Consider that the current call stack is missing in newly forked threads
  */
 int instroNumThreads;
 /*

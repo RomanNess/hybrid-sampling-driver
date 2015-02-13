@@ -135,8 +135,7 @@ void* pthread_flushBufferToFile(void *data) {
 }
 
 /*
- * We implemented the GNU cyg_profile interface to profile a shadow stack full-instrumentation.
- * Can we determine the thread identifier within this function?
+ * The interface for full GNU instrumentation with shadow stack
  */
 void __cyg_profile_func_enter(void *func, void *callsite) {
 #ifdef DEBUG
@@ -150,26 +149,27 @@ void __cyg_profile_func_enter(void *func, void *callsite) {
 	}
 #endif	// SHADOWSTACK_ONLY
 
+	if (key == 0) {
+		pthread_key_create(&key, 0);
+	}
+
 	struct StackEvent event;
 	event.thread = 0;
 	event.identifier = (unsigned long long) func;		// RN: some smaller identifier for performance reasons?
 
-	pushEvent(_multithreadStack[0], event);
+	pushEvent(_multithreadStack[key - 1], event);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_enter \n");
 #endif
 }
 
-/*
- *
- */
 void __cyg_profile_func_exit(void *func, void *callsite) {
 #ifdef DEBUG
 	fprintf(stderr, "Entering cyg_profile_func_exit \n");
 #endif
 
-	popEvent(_multithreadStack[0]);
+	popEvent(_multithreadStack[key -1]);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_exit \n");
@@ -191,7 +191,7 @@ void handler(int EventSet, void *address, long_long overflow_vector, void *conte
 	if (instroNumThreads > 1) {
 		flushStackToBuffer(getStack(PAPI_thread_id()), _flushToDiskBuffer, address);
 	} else {
-		flushStackToBuffer(getStack(0), _flushToDiskBuffer, address);
+		flushStackToBuffer(getStack(0), _flushToDiskBuffer, address); 	// PAPI not initialized
 	}
 }
 
