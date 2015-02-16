@@ -70,7 +70,7 @@ createStackInstance() {
 		/* What happens if that is moved here... */
 		if (key == 0) {
 			pthread_key_create(&key, 0);
-			printf("Create Stack Instance:\nIn Shadow stack creating key for thread: %u with key: %u\n",
+			printf("Create Stack Instance:\nIn Shadow stack creating key for thread: %lu with key: %u\n",
 					pthread_self(), key);
 		}
 
@@ -165,7 +165,7 @@ void _instroPushIdentifier(unsigned long long functionIdentifier,
 	if (key == 0) {
 		pthread_key_create(&key, 0);
 		threadIdentifier = key;
-		printf("In Shadow stack creating key for thread: %u with key: %u\n", pthread_self(), key);
+		printf("In Shadow stack creating key for thread: %lu with key: %u\n", pthread_self(), key);
 	}
 
 	struct StackEvent event;
@@ -197,7 +197,7 @@ void _instroPopIdentifier(unsigned long long threadIdentifier) {
 
 struct Stack *getStack(unsigned long threadIdentifier) {
 	if (threadIdentifier < 0 || threadIdentifier > instroNumThreads) {
-		fprintf(stderr, "Requested the stack for an invalid threadIdentifier: %llu\n", threadIdentifier);
+		fprintf(stderr, "Requested the stack for an invalid threadIdentifier: %lu\n", threadIdentifier);
 		abort();
 	}
 	return _multithreadStack[threadIdentifier];

@@ -34,12 +34,7 @@
 
 // This is our write buffer
 static struct SampleEvent *_flushToDiskBuffer = 0;
-static struct SampleEvent *_flushBufferB = 0;
-/*
- * NUMBER of elements in buffer.
- * TODO Rename this variable
- */
-static unsigned int bufferElements = 0;
+static unsigned int numberOfBufferElements = 0;
 
 struct Stack **_multithreadStack = 0;
 

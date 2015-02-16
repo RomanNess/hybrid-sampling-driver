@@ -16,7 +16,7 @@ void initBuffer() {
 void deallocateWriteOutBuffer() {
 	if (_flushToDiskBuffer != 0) {
 		int i;
-		for (i = 0; i < bufferElements; i++) {
+		for (i = 0; i < numberOfBufferElements; i++) {
 			free(_flushToDiskBuffer[i].stackEvents); // Correct?
 		}
 		free(_flushToDiskBuffer);
@@ -61,31 +61,31 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 		errx(-5, "An error occured, where either stack or buffer was NULL. Exiting.");
 	}
 
-	struct SampleEvent sampleEvent = buffer[bufferElements];
-	buffer[bufferElements].icAddress = (long) icAddress;
-	buffer[bufferElements].sampleNumber = sampleCount;
+//	struct SampleEvent sampleEvent = buffer[bufferElements];
+	buffer[numberOfBufferElements].icAddress = (long) icAddress;
+	buffer[numberOfBufferElements].sampleNumber = sampleCount;
 	if (stack->_size == 0) {
-		fprintf(stderr, "FlushStackToBuffer: %i with stack size == 0\n", sampleCount);
-		bufferElements++;
+		fprintf(stderr, "FlushStackToBuffer: %li with stack size == 0\n", sampleCount);
+		numberOfBufferElements++;
 		return;
 	}
 
-	buffer[bufferElements].stackEvents = (struct StackEvent *) malloc(
+	buffer[numberOfBufferElements].stackEvents = (struct StackEvent *) malloc(
 			stack->_size * sizeof(struct StackEvent));
 
-	if (buffer[bufferElements].stackEvents == 0) {
+	if (buffer[numberOfBufferElements].stackEvents == 0) {
 		errx(-7, "Error creating buffer[bufferElements].stackEvents buffer");
 	}
 	int i;
 	for (i = 0; i < stack->_size; i++) {
-		buffer[bufferElements].stackEvents[i] = stack->_start[i];
+		buffer[numberOfBufferElements].stackEvents[i] = stack->_start[i];
 	}
 	//      sampleEvent.numStackEvents = i;
-	buffer[bufferElements].numStackEvents = i;
+	buffer[numberOfBufferElements].numStackEvents = i;
 	fprintf(stderr, "Wrote %i stack elements\n", i);
 
 	//      buffer[bufferElements] = *sampleEvent;
-	bufferElements++;
+	numberOfBufferElements++;
 }
 
 /* Forward the flush to the pthread method */
@@ -93,7 +93,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 //  void *res;
 	pthread_attr_init(&detachAttr);
 	pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
-	int err = pthread_create(&writeThread, &detachAttr, pthread_flushBufferToFile, _flushToDiskBuffer);
+	pthread_create(&writeThread, &detachAttr, pthread_flushBufferToFile, _flushToDiskBuffer);
 }
 
 /*
@@ -115,7 +115,7 @@ void* pthread_flushBufferToFile(void *data) {
 	if (fp) {
 		int i = 0;
 		// write all buffered elements to a file
-		for (; i < bufferElements; i++) {
+		for (; i < numberOfBufferElements; i++) {
 			const struct StackEvent *stackEvents = buffer[i].stackEvents;
 			fprintf(fp, "Sample: %lu\nAddress: %lu\n", buffer[i].sampleNumber, buffer[i].icAddress);
 			int j = 0;
@@ -124,7 +124,7 @@ void* pthread_flushBufferToFile(void *data) {
 			}
 			free((struct StackEvent *) stackEvents);
 		}
-		bufferElements = 0;
+		numberOfBufferElements = 0;
 
 		int fErr = fclose(fp);
 		fprintf(stdout, "fclose exited with %i\n", fErr);
@@ -258,7 +258,7 @@ finish_sampling_driver() {
 		PAPI_stop(EventSet, &instructionCounter);
 
 		printf("%li samples taken\n", sampleCount);
-		printf("%lli elements in buffer\n", bufferElements);
+		printf("%u elements in buffer\n", numberOfBufferElements);
 
 #ifndef USE_THREAD_WRITE_OUT
 		flushBufferToFile(_flushToDiskBuffer);
