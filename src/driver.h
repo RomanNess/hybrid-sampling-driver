@@ -16,6 +16,8 @@
 #include "pthread.h"
 #include "string.h" // for memset
 
+#include "monitor.h"
+
 #ifndef STACK_IS_UNDER_TEST
 #include "math.h"
 #endif
@@ -46,7 +48,7 @@ long int sampleCount = 0; /* total overflows */
 
 int sampling_driver_enabled = 0; /* global to know if sampling driver is enabled*/
 
-int EventSet = PAPI_NULL; /* PAPI related thing */
+__thread int EventSet = PAPI_NULL; /* PAPI related thing */
 
 /*
  * CPU-cycles per sample.
@@ -84,6 +86,7 @@ void flushBufferToFile(struct SampleEvent *buffer);
 void handler(int EventSet, void *address, long_long overflow_vector, void *context);
 
 void init_sampling_driver();
+void registerPAPI();
 
 void finish_sampling_driver();
 

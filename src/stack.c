@@ -13,18 +13,28 @@ unsigned long instro_get_thread_id() {
 	return _instro_thread_id;
 }
 
+//unsigned long getKey() {
+//	if (key == 0) {
+//		pthread_key_create(&key, 0);
+//
+//		///XXX
+//		printf("# getKey() created: %u\n", key);
+//	}
+//	return (unsigned long) key;
+//}
+
 unsigned long getKey() {
 	if (key == 0) {
-		pthread_key_create(&key, 0);
+		key = counter++;
 
-		///XXX
-		printf("# getKey() created: %u\n", key);
+		printf("# created key: %u \n", key);
 	}
-	return (unsigned long) key;
+	return key;
 }
 
+
 void
-__attribute__((constructor))
+//__attribute__((constructor))
 createStackInstance() {
 
 	char *instroNumThreadsEnvVariable = getenv("INSTRO_NUM_THREADS");
@@ -213,7 +223,7 @@ void __cyg_profile_func_exit(void *func, void *callsite) {
 	fprintf(stderr, "Entering cyg_profile_func_exit \n");
 #endif
 
-	popEvent(_multithreadStack[key -1]);
+	popEvent(_multithreadStack[key - 1]);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_exit \n");

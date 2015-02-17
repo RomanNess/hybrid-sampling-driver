@@ -75,6 +75,7 @@ volatile int ssReady;
  */
 extern __thread pthread_key_t key;
 unsigned long getKey();
+static unsigned int counter = 1; /* XXX thread ids */
 
 /*
  * Starting here this is another idea: We keep track of threads ourselves

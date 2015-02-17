@@ -138,10 +138,10 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 		return;
 	}
 	sampleCount++;
-
-	if (key == 0) {
-		pthread_key_create(&key, 0);
-	}
+//XXX
+//	if (key == 0) {
+//		pthread_key_create(&key, 0);
+//	}
 	///XXX
 	printf("#handler in key: %u\n", key);
 
@@ -155,10 +155,26 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 
 #ifndef SHADOWSTACK_ONLY
 
+void registerPAPI() {
+	int retval;
+	if ((retval = PAPI_create_eventset(&EventSet)) != PAPI_OK) {
+		errx(retval, "PAPI_create_eventset failed with %i", retval);
+	}
+	if ((retval = PAPI_add_event(EventSet, PAPI_TOT_CYC)) != PAPI_OK) {
+		errx(retval, "PAPI_create_eventset failed with %i", retval);
+	}
+	if ((retval = PAPI_overflow(EventSet, PAPI_TOT_CYC, overflowCountForSamples, 0, handler)) != PAPI_OK) {
+		errx(retval, "PAPI_overflow failed with %i", retval);
+	}
+	if ((retval = PAPI_start(EventSet)) != PAPI_OK) {
+		errx(retval, "PAPI_start failed with %i", retval);
+	}
+}
+
 void
-#ifndef SAMPLING_AS_LIB
-__attribute__ ((constructor))
-#endif
+//#ifndef SAMPLING_AS_LIB
+//__attribute__ ((constructor))
+//#endif
 init_sampling_driver() {
 
 	/* read environment variable to control the sampling driver */
@@ -187,26 +203,16 @@ init_sampling_driver() {
 		errx(retval, "PAPI_thread_init failed with %i", retval);
 	}
 
-	if ((retval = PAPI_create_eventset(&EventSet)) != PAPI_OK) {
-		errx(retval, "PAPI_create_eventset failed with %i", retval);
-	}
-	if ((retval = PAPI_add_event(EventSet, PAPI_TOT_CYC)) != PAPI_OK) {
-		errx(retval, "PAPI_create_eventset failed with %i", retval);
-	}
-	if ((retval = PAPI_overflow(EventSet, PAPI_TOT_CYC, overflowCountForSamples, 0, handler)) != PAPI_OK) {
-		errx(retval, "PAPI_overflow failed with %i", retval);
-	}
-	if ((retval = PAPI_start(EventSet)) != PAPI_OK) {
-		errx(retval, "PAPI_start failed with %i", retval);
-	}
+	registerPAPI();
+
 	sampling_driver_enabled = 1;
 	printf("Sampling Driver Enabled\n");
 }
 
 void
-#ifndef SAMPLING_AS_LIB
-__attribute__ ((destructor))
-#endif
+//#ifndef SAMPLING_AS_LIB
+//__attribute__ ((destructor))
+//#endif
 finish_sampling_driver() {
 	printf("Disabling Sampling Driver\n");
 	if (sampling_driver_enabled) {
@@ -240,3 +246,27 @@ finish_sampling_driver() {
 }
 #endif	// SHADOWSTACK_ONLY
 
+void *monitor_init_process(int *argc, char **argv, void *data) {
+
+	counter = 1; // TODO WTF? why is this necessary?
+
+	getKey();
+
+	init_sampling_driver();
+	createStackInstance();
+
+	return NULL;
+}
+
+void monitor_fini_process(int how, void* data) {
+	finish_sampling_driver();
+}
+
+void *monitor_init_thread(int tid, void *data) {
+	PAPI_register_thread();
+	getKey();
+
+	registerPAPI();
+
+	return NULL;
+}
