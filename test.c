@@ -11,13 +11,13 @@ void runSimpleTests(){
   assert(stackUnderTest->_initialized == 1);
   assert(stackUnderTest->_size == 0);
 
-  _instroPushIdentifier(42, key);
+  _instroPushIdentifier(42);
   assert(stackUnderTest->_size == 1);
 
-  _instroPushIdentifier(42, key);
+  _instroPushIdentifier(42);
   assert(stackUnderTest->_size == 2);
 
-  _instroPopIdentifier(key);
+  _instroPopIdentifier();
   assert(stackUnderTest->_size == 1);
 }
 

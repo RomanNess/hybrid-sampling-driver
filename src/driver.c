@@ -50,10 +50,9 @@ void flushStackToFile(struct Stack *stack) {
 /*
  * XXX JP: The function needs some attention.
  *
- * This is the function to be called when PAPI interrupts and a sample is taken by our handler
+ * This is the function to be called when PAPI interrupts and a sample is taken by our handler.
  * It saves the state of the shadow stack and the PAPI instruction counter address to a
  * SampleEvent object and puts it on our buffer.
- * XXX JP: At least that's what it should do!
  */
 void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *icAddress) {
 
@@ -61,7 +60,6 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 		errx(-5, "An error occured, where either stack or buffer was NULL. Exiting.");
 	}
 
-//	struct SampleEvent sampleEvent = buffer[bufferElements];
 	buffer[numberOfBufferElements].icAddress = (long) icAddress;
 	buffer[numberOfBufferElements].sampleNumber = sampleCount;
 	if (stack->_size == 0) {
@@ -70,27 +68,23 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 		return;
 	}
 
-	buffer[numberOfBufferElements].stackEvents = (struct StackEvent *) malloc(
-			stack->_size * sizeof(struct StackEvent));
-
+	buffer[numberOfBufferElements].stackEvents = (struct StackEvent *) malloc(stack->_size * sizeof(struct StackEvent));
 	if (buffer[numberOfBufferElements].stackEvents == 0) {
 		errx(-7, "Error creating buffer[bufferElements].stackEvents buffer");
 	}
+
 	int i;
 	for (i = 0; i < stack->_size; i++) {
 		buffer[numberOfBufferElements].stackEvents[i] = stack->_start[i];
 	}
-	//      sampleEvent.numStackEvents = i;
 	buffer[numberOfBufferElements].numStackEvents = i;
-	fprintf(stderr, "Wrote %i stack elements\n", i);
+//	fprintf(stderr, "Wrote %i stack elements\n", i);
 
-	//      buffer[bufferElements] = *sampleEvent;
 	numberOfBufferElements++;
 }
 
 /* Forward the flush to the pthread method */
 void flushBufferToFile(struct SampleEvent *buffer) {
-//  void *res;
 	pthread_attr_init(&detachAttr);
 	pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
 	pthread_create(&writeThread, &detachAttr, pthread_flushBufferToFile, _flushToDiskBuffer);
@@ -181,15 +175,21 @@ void __cyg_profile_func_exit(void *func, void *callsite) {
  */
 
 /* PAPI Sampling handler */
-void handler(int EventSet, void *address, long_long overflow_vector, void *context) {
+void handler(int EventSet, void *address, long long overflow_vector, void *context) {
 	if (ssReady == 0) {
 		return;
 	}
 	sampleCount++;
 
+	if (key == 0) {
+		pthread_key_create(&key, 0);
+	}
+	///XXX
+	printf("#handler in key: %u\n", key);
+
 	// This is where the work happens
 	if (instroNumThreads > 1) {
-		flushStackToBuffer(getStack(PAPI_thread_id()), _flushToDiskBuffer, address);
+		flushStackToBuffer(getStack(key-1), _flushToDiskBuffer, address);
 	} else {
 		flushStackToBuffer(getStack(0), _flushToDiskBuffer, address); 	// PAPI not initialized
 	}
@@ -269,6 +269,8 @@ finish_sampling_driver() {
 //		int err = pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
 //		err = pthread_create(&writeThread, 0, pthread_flushBufferToFile, _flushToDiskBuffer);
 #endif
+
+		deallocateWriteOutBuffer();
 
 		printf("Sampling Driver Disabled\n");
 	} else {

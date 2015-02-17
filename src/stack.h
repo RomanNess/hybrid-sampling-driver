@@ -110,15 +110,9 @@ void deallocateStack(struct Stack *stack);
 /*
  * This is the public interface.
  * Calls to these functions should be inserted to target source.
- * At the moment the events are create in the _instroPushIdentifier function.
- * The correct stack corresponding to threadIdentifier is selected and then pushEvent
- * is called with these two things as parameters.
  */
-void _instroPushIdentifier(unsigned long long functionIdentifier, unsigned long long threadIdentifier);
-/*
- * Calls popEvent with the correct stack as argument.
- */
-void _instroPopIdentifier(unsigned long long threadIdentifier);
+void _instroPushIdentifier(unsigned long long functionIdentifier);
+void _instroPopIdentifier();
 
 /*
  * Used in the PAPI handler function, each time the sample is taken.

@@ -153,37 +153,32 @@ void deallocateStack(struct Stack *stack) {
 }
 
 /*
- * Pushes an identifier to the stack corresponding to threadIdentifier.
+ * Pushes an identifier to the stack.
  * This is our public interface for the InstRO Sampling driver.
  */
-void _instroPushIdentifier(unsigned long long functionIdentifier,
-		unsigned long long threadIdentifier) {
-	/*
-	 * XXX JP: I guess if we use the way with our own lookup function for thread identifier,
-	 *      we do not need the call to the pthread key create thing...
-	 */
+void _instroPushIdentifier(unsigned long long functionIdentifier) {
+
 	if (key == 0) {
 		pthread_key_create(&key, 0);
-		threadIdentifier = key;
 		printf("In Shadow stack creating key for thread: %lu with key: %u\n", pthread_self(), key);
 	}
 
 	struct StackEvent event;
-	event.thread = threadIdentifier;
+	event.thread = key;
 	event.identifier = functionIdentifier;
 
 #ifdef DEBUG
 	fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n",
 			threadIdentifier, _multithreadStack[threadIdentifier]);
 #endif
-	if (threadIdentifier > instroNumThreads) {
-		fprintf(stderr, "ERROR: Requestin stack for thread ID > %i\n", instroNumThreads);
+	if (key > instroNumThreads) {
+		fprintf(stderr, "ERROR: Requesting stack for thread ID > %i\n", instroNumThreads);
 		abort();
 	}
 #ifdef DEBUG
 	fprintf(stderr, "Retrieving stack for threadIdentifier %i\n", threadIdentifier -1);
 #endif
-	struct Stack *st = _multithreadStack[threadIdentifier - 1];
+	struct Stack *st = _multithreadStack[key - 1];
 	pushEvent(st, event);
 }
 
@@ -191,8 +186,8 @@ void _instroPushIdentifier(unsigned long long functionIdentifier,
  * Removes a stack event from the threadIdentifier corresponding stack.
  * This is our public interface for the InstRO sampling.
  */
-void _instroPopIdentifier(unsigned long long threadIdentifier) {
-	popEvent(_multithreadStack[threadIdentifier - 1]);
+void _instroPopIdentifier() {
+	popEvent(_multithreadStack[key - 1]);
 }
 
 struct Stack *getStack(unsigned long threadIdentifier) {

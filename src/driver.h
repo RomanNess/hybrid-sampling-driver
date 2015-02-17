@@ -27,16 +27,17 @@
  * TODO 2014-05-12 JP: What data is needed per sample event?
  */
 
-#ifndef H_STACK__
 #include "stack.h"
-#endif
 #include "event.h"
 
-// This is our write buffer
+/* the actual shadow stack (for multithreading) */
+struct Stack **_multithreadStack = 0;
+
+/* write buffer */
 static struct SampleEvent *_flushToDiskBuffer = 0;
 static unsigned int numberOfBufferElements = 0;
 
-struct Stack **_multithreadStack = 0;
+
 
 /*
  * GLOBALS SEGMENT
