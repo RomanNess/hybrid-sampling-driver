@@ -138,10 +138,7 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 		return;
 	}
 	sampleCount++;
-//XXX
-//	if (key == 0) {
-//		pthread_key_create(&key, 0);
-//	}
+
 	///XXX
 	printf("#handler in key: %u\n", key);
 
@@ -171,11 +168,7 @@ void registerPAPI() {
 	}
 }
 
-void
-//#ifndef SAMPLING_AS_LIB
-//__attribute__ ((constructor))
-//#endif
-init_sampling_driver() {
+void init_sampling_driver() {
 
 	/* read environment variable to control the sampling driver */
 	char *instroFreqVariable = getenv("INSTRO_SAMPLE_FREQ");
@@ -187,8 +180,7 @@ init_sampling_driver() {
 		printf("INSTRO_SAMPLE_FREQ not set, using a sample each 2600000 cycles\n");
 	}
 
-	printf("With current config we allocate: %li bytes\n",
-	WRITE_BUFFER_SIZE * 2 * sizeof(struct SampleEvent));
+	printf("With current config we allocate: %li bytes\n", WRITE_BUFFER_SIZE * 2 * sizeof(struct SampleEvent));
 	initBuffer();
 
 	printf("Enabling Sampling Driver\n");
@@ -209,11 +201,7 @@ init_sampling_driver() {
 	printf("Sampling Driver Enabled\n");
 }
 
-void
-//#ifndef SAMPLING_AS_LIB
-//__attribute__ ((destructor))
-//#endif
-finish_sampling_driver() {
+void finish_sampling_driver() {
 	printf("Disabling Sampling Driver\n");
 	if (sampling_driver_enabled) {
 		long long instructionCounter;

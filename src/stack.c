@@ -13,29 +13,18 @@ unsigned long instro_get_thread_id() {
 	return _instro_thread_id;
 }
 
-//unsigned long getKey() {
-//	if (key == 0) {
-//		pthread_key_create(&key, 0);
-//
-//		///XXX
-//		printf("# getKey() created: %u\n", key);
-//	}
-//	return (unsigned long) key;
-//}
-
 unsigned long getKey() {
 	if (key == 0) {
 		key = counter++;
 
+		///XXX
 		printf("# created key: %u \n", key);
 	}
 	return key;
 }
 
 
-void
-//__attribute__((constructor))
-createStackInstance() {
+void createStackInstance() {
 
 	char *instroNumThreadsEnvVariable = getenv("INSTRO_NUM_THREADS");
 	char *ompNumThreadsEnvVariable = getenv("OMP_NUM_THREADS");
@@ -80,12 +69,6 @@ createStackInstance() {
 			fprintf(stderr, "IF YOU CAN READ THIS TEXT, IT IS BAD\n");
 		}
 #endif
-		/* What happens if that is moved here... */
-		if (key == 0) {
-			pthread_key_create(&key, 0);
-			printf("Create Stack Instance:\nIn Shadow stack creating key for thread: %lu with key: %u\n",
-					pthread_self(), key);
-		}
 
 		ssReady = 1;
 		fprintf(stderr, "Ready flag set\n");
@@ -171,11 +154,6 @@ void deallocateStack(struct Stack *stack) {
  */
 void _instroPushIdentifier(unsigned long long functionIdentifier) {
 
-	if (key == 0) {
-		pthread_key_create(&key, 0);
-		printf("In Shadow stack creating key for thread: %lu with key: %u\n", pthread_self(), key);
-	}
-
 	struct StackEvent event;
 	event.thread = key;
 	event.identifier = functionIdentifier;
@@ -200,12 +178,6 @@ void __cyg_profile_func_enter(void *func, void *callsite) {
 #ifdef DEBUG
 	fprintf(stderr, "Entering cyg_profile_func_enter \n");
 #endif
-
-	if (key == 0) {
-		pthread_key_create(&key, 0);
-		///XXX
-		printf("# cyg_profile_enter created: %u\n", key);
-	}
 
 	struct StackEvent event;
 	event.thread = 0;
