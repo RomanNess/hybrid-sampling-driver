@@ -129,48 +129,6 @@ void* pthread_flushBufferToFile(void *data) {
 }
 
 /*
- * The interface for full GNU instrumentation with shadow stack
- */
-void __cyg_profile_func_enter(void *func, void *callsite) {
-#ifdef DEBUG
-	fprintf(stderr, "Entering cyg_profile_func_enter \n");
-#endif
-
-#ifdef SHADOWSTACK_ONLY
-	if(_multithreadStack == 0) {
-		fprintf(stderr, "We would call another createStackInstance()\n");
-		createStackInstance();
-	}
-#endif	// SHADOWSTACK_ONLY
-
-	if (key == 0) {
-		pthread_key_create(&key, 0);
-	}
-
-	struct StackEvent event;
-	event.thread = 0;
-	event.identifier = (unsigned long long) func;		// RN: some smaller identifier for performance reasons?
-
-	pushEvent(_multithreadStack[key - 1], event);
-
-#ifdef DEBUG
-	fprintf(stderr, "Exit cyg_profile_func_enter \n");
-#endif
-}
-
-void __cyg_profile_func_exit(void *func, void *callsite) {
-#ifdef DEBUG
-	fprintf(stderr, "Entering cyg_profile_func_exit \n");
-#endif
-
-	popEvent(_multithreadStack[key -1]);
-
-#ifdef DEBUG
-	fprintf(stderr, "Exit cyg_profile_func_exit \n");
-#endif
-}
-
-/*
  * SAMPLING DRIVER SEGMENT
  */
 
@@ -189,9 +147,9 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 
 	// This is where the work happens
 	if (instroNumThreads > 1) {
-		flushStackToBuffer(getStack(key-1), _flushToDiskBuffer, address);
+		flushStackToBuffer(_multithreadStack[key - 1], _flushToDiskBuffer, address);
 	} else {
-		flushStackToBuffer(getStack(0), _flushToDiskBuffer, address); 	// PAPI not initialized
+		flushStackToBuffer(_multithreadStack[0], _flushToDiskBuffer, address); 	// PAPI threads not initialized
 	}
 }
 
@@ -224,11 +182,9 @@ init_sampling_driver() {
 		errx(retval, "PAPI_library_init failed with %i", retval);
 	}
 
-	if (instroNumThreads > 1) { /* defined in stack.c */
-		fprintf(stderr, "Initializing for multithread support.\n");
-		if ((retval = PAPI_thread_init(getKey)) != PAPI_OK) {
-			errx(retval, "PAPI_thread_init failed with %i", retval);
-		}
+	fprintf(stderr, "Initializing for multithread support.\n");
+	if ((retval = PAPI_thread_init(getKey)) != PAPI_OK) {
+		errx(retval, "PAPI_thread_init failed with %i", retval);
 	}
 
 	if ((retval = PAPI_create_eventset(&EventSet)) != PAPI_OK) {

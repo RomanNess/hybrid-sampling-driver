@@ -81,10 +81,6 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 
 void flushBufferToFile(struct SampleEvent *buffer);
 
-void __cyg_profile_func_enter(void *func, void *callsite);
-
-void __cyg_profile_func_exit(void *func, void *callsite);
-
 void handler(int EventSet, void *address, long_long overflow_vector, void *context);
 
 void init_sampling_driver();

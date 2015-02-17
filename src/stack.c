@@ -16,6 +16,9 @@ unsigned long instro_get_thread_id() {
 unsigned long getKey() {
 	if (key == 0) {
 		pthread_key_create(&key, 0);
+
+		///XXX
+		printf("# getKey() created: %u\n", key);
 	}
 	return (unsigned long) key;
 }
@@ -154,7 +157,7 @@ void deallocateStack(struct Stack *stack) {
 
 /*
  * Pushes an identifier to the stack.
- * This is our public interface for the InstRO Sampling driver.
+ * (Public Interface)
  */
 void _instroPushIdentifier(unsigned long long functionIdentifier) {
 
@@ -168,33 +171,51 @@ void _instroPushIdentifier(unsigned long long functionIdentifier) {
 	event.identifier = functionIdentifier;
 
 #ifdef DEBUG
-	fprintf(stderr, "Push Identifier:\nThreadidentifier: %lu\nstack-base: %p\n",
-			threadIdentifier, _multithreadStack[threadIdentifier]);
+	fprintf(stderr, "Retrieving stack for key %u\n", key-1);
 #endif
-	if (key > instroNumThreads) {
-		fprintf(stderr, "ERROR: Requesting stack for thread ID > %i\n", instroNumThreads);
-		abort();
-	}
-#ifdef DEBUG
-	fprintf(stderr, "Retrieving stack for threadIdentifier %i\n", threadIdentifier -1);
-#endif
+
 	struct Stack *st = _multithreadStack[key - 1];
 	pushEvent(st, event);
 }
 
 /*
  * Removes a stack event from the threadIdentifier corresponding stack.
- * This is our public interface for the InstRO sampling.
+ * (Public Interface)
  */
 void _instroPopIdentifier() {
 	popEvent(_multithreadStack[key - 1]);
 }
 
-struct Stack *getStack(unsigned long threadIdentifier) {
-	if (threadIdentifier < 0 || threadIdentifier > instroNumThreads) {
-		fprintf(stderr, "Requested the stack for an invalid threadIdentifier: %lu\n", threadIdentifier);
-		abort();
+void __cyg_profile_func_enter(void *func, void *callsite) {
+#ifdef DEBUG
+	fprintf(stderr, "Entering cyg_profile_func_enter \n");
+#endif
+
+	if (key == 0) {
+		pthread_key_create(&key, 0);
+		///XXX
+		printf("# cyg_profile_enter created: %u\n", key);
 	}
-	return _multithreadStack[threadIdentifier];
+
+	struct StackEvent event;
+	event.thread = 0;
+	event.identifier = (unsigned long long) func;		// RN: some smaller identifier for performance reasons?
+
+	pushEvent(_multithreadStack[key - 1], event);
+
+#ifdef DEBUG
+	fprintf(stderr, "Exit cyg_profile_func_enter \n");
+#endif
 }
 
+void __cyg_profile_func_exit(void *func, void *callsite) {
+#ifdef DEBUG
+	fprintf(stderr, "Entering cyg_profile_func_exit \n");
+#endif
+
+	popEvent(_multithreadStack[key -1]);
+
+#ifdef DEBUG
+	fprintf(stderr, "Exit cyg_profile_func_exit \n");
+#endif
+}

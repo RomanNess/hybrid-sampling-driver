@@ -6,6 +6,9 @@
 
 #include "pthread.h"
 
+// TODO RN 2015-02: add unique push/pop mechanism for cyg_profile & _instro interfaces
+// TODO RN 2015-02: Consider that the current call stack is missing in newly forked threads
+
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
  * This limits our capabilities sampling programs with very very deep call trees.
@@ -45,7 +48,6 @@ struct Stack {
 /*
  * The number of threads to be used.
  * Filled by env var INSTRO_NUM_THREADS or OMP_NUM_THREADS (in this order)
- * TODO: RN Consider that the current call stack is missing in newly forked threads
  */
 int instroNumThreads;
 /*
@@ -115,11 +117,11 @@ void _instroPushIdentifier(unsigned long long functionIdentifier);
 void _instroPopIdentifier();
 
 /*
- * Used in the PAPI handler function, each time the sample is taken.
- * This has to do with how we handle threads. I believe there is some
- * better solution to all this, but I havent had the idea so far.
+ * The interface for GNU instrumentation with shadow stack
  */
-struct Stack *getStack(unsigned long threadIdentifier);
+void __cyg_profile_func_enter(void *func, void *callsite);
+void __cyg_profile_func_exit(void *func, void *callsite);
+
 
 #endif
 
