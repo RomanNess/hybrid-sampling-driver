@@ -113,12 +113,13 @@ void deallocateStack(struct Stack *stack);
 void _instroPushIdentifier(unsigned long long functionIdentifier);
 void _instroPopIdentifier();
 
-/*
- * The interface for GNU instrumentation with shadow stack
- */
+/* The interface for GNU instrumentation with shadow stack */
 void __cyg_profile_func_enter(void *func, void *callsite);
 void __cyg_profile_func_exit(void *func, void *callsite);
 
+/* common interface */
+inline void pushdIdentifier(unsigned long long functionIdentifier);
+inline void popIdentifier();
 
 #endif
 

@@ -155,17 +155,7 @@ void deallocateStack(struct Stack *stack) {
  * (Public Interface)
  */
 void _instroPushIdentifier(unsigned long long functionIdentifier) {
-
-	struct StackEvent event;
-	event.thread = threadId;
-	event.identifier = functionIdentifier;
-
-#ifdef DEBUG
-	fprintf(stderr, "Retrieving stack for key %u\n", threadId-1);
-#endif
-
-	struct Stack *st = _multithreadStack[threadId];
-	pushEvent(st, event);
+	pushdIdentifier(functionIdentifier);
 }
 
 /*
@@ -173,7 +163,7 @@ void _instroPushIdentifier(unsigned long long functionIdentifier) {
  * (Public Interface)
  */
 void _instroPopIdentifier() {
-	popEvent(_multithreadStack[threadId]);
+	popIdentifier();
 }
 
 void __cyg_profile_func_enter(void *func, void *callsite) {
@@ -181,11 +171,7 @@ void __cyg_profile_func_enter(void *func, void *callsite) {
 	fprintf(stderr, "Entering cyg_profile_func_enter \n");
 #endif
 
-	struct StackEvent event;
-	event.thread = 0;
-	event.identifier = (unsigned long long) func;		// RN: some smaller identifier for performance reasons?
-
-	pushEvent(_multithreadStack[threadId], event);
+	pushdIdentifier( (unsigned long long) func);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_enter \n");
@@ -197,9 +183,23 @@ void __cyg_profile_func_exit(void *func, void *callsite) {
 	fprintf(stderr, "Entering cyg_profile_func_exit \n");
 #endif
 
-	popEvent(_multithreadStack[threadId]);
+	popIdentifier();
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_exit \n");
 #endif
 }
+
+inline void pushdIdentifier(unsigned long long functionIdentifier) {
+
+	struct StackEvent event;
+	event.thread = threadId;
+	event.identifier = (unsigned long long) functionIdentifier;		// RN: some smaller identifier for performance reasons?
+
+	pushEvent(_multithreadStack[threadId], event);
+}
+
+inline void popIdentifier() {
+	popEvent(_multithreadStack[threadId]);
+}
+
