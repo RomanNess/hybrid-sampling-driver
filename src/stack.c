@@ -1,19 +1,25 @@
 #include "stack.h"
 
-__thread pthread_key_t key = 0;
-volatile unsigned int counter = 1;
+int instroNumThreads = 1;
+
+__thread pthread_key_t threadId = NO_THREAD_ID;
+volatile unsigned int currentThreadNum = 0;
 
 volatile int ssReady = 0;
 
 unsigned long getThreadId() {
-	return key;
+	return threadId;
 }
 
 void assingContinuousThreadId() {
-	key = counter++;
+
+	if (currentThreadNum >= instroNumThreads) {
+		errx(1, "Assigned more than %u threads.", instroNumThreads);
+	}
+	threadId = currentThreadNum++;
 
 	///XXX
-	printf("# created key: %u \n", key);
+	printf("# created key: %u \n", threadId);
 }
 
 void createStackInstance() {
@@ -147,14 +153,14 @@ void deallocateStack(struct Stack *stack) {
 void _instroPushIdentifier(unsigned long long functionIdentifier) {
 
 	struct StackEvent event;
-	event.thread = key;
+	event.thread = threadId;
 	event.identifier = functionIdentifier;
 
 #ifdef DEBUG
-	fprintf(stderr, "Retrieving stack for key %u\n", key-1);
+	fprintf(stderr, "Retrieving stack for key %u\n", threadId-1);
 #endif
 
-	struct Stack *st = _multithreadStack[key - 1];
+	struct Stack *st = _multithreadStack[threadId];
 	pushEvent(st, event);
 }
 
@@ -163,7 +169,7 @@ void _instroPushIdentifier(unsigned long long functionIdentifier) {
  * (Public Interface)
  */
 void _instroPopIdentifier() {
-	popEvent(_multithreadStack[key - 1]);
+	popEvent(_multithreadStack[threadId]);
 }
 
 void __cyg_profile_func_enter(void *func, void *callsite) {
@@ -175,7 +181,7 @@ void __cyg_profile_func_enter(void *func, void *callsite) {
 	event.thread = 0;
 	event.identifier = (unsigned long long) func;		// RN: some smaller identifier for performance reasons?
 
-	pushEvent(_multithreadStack[key - 1], event);
+	pushEvent(_multithreadStack[threadId], event);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_enter \n");
@@ -187,7 +193,7 @@ void __cyg_profile_func_exit(void *func, void *callsite) {
 	fprintf(stderr, "Entering cyg_profile_func_exit \n");
 #endif
 
-	popEvent(_multithreadStack[key - 1]);
+	popEvent(_multithreadStack[threadId]);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_exit \n");

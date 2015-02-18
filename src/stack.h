@@ -71,8 +71,8 @@ volatile int ssReady;
 /*
  * selfmade continuous ids
  */
-extern __thread pthread_key_t key;
-extern volatile unsigned int counter;
+extern __thread pthread_key_t threadId;
+extern volatile unsigned int currentThreadNum;
 void assingContinuousThreadId();
 unsigned long getThreadId();
 

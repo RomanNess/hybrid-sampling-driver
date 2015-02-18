@@ -2,12 +2,12 @@
 #include "stdio.h"
 #include "assert.h"
 
-#include "driver.h"
+#include "stack.h"
 
 void runSimpleTests(){
 
   ///XXX
-	printf("key: %u\n", key);
+	printf("key: %u\n", threadId);
 
   struct Stack *stackUnderTest = _multithreadStack[0]; // this is the same as getting the stack corresponding to thread number 0
   assert(stackUnderTest != NULL);

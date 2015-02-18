@@ -35,10 +35,10 @@ libshadowstack-debug:
 
 # Sampling library (no automatic initialization) 
 sampling-as-lib:
-	$(CC) -fopenmp $(PAPI_INCLUDE_FLAGS) -g -DSAMPLING_AS_LIB -I. -fPIC -O0 -shared -o libsampling-debug.so src/stack.c src/driver.c $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) -g -DSAMPLING_AS_LIB -I. -fPIC -O0 -shared -o libsampling-debug.so $(objects) $(LDFLAGS)
 
 testStack: sampling-as-lib
-	$(CC) $(PAPI_INCLUDE_FLAGS) -g -I./src -O0 -o test_stack.exe test.c -L. -lsampling-debug $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) -g -I./src -O0 -o test_stack.exe test.c -L. -lsampling-debug -L$(LIBMONITOR_BASE)/lib -lmonitor $(LDFLAGS)
 
 
 .PHONY : target

@@ -140,11 +140,11 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 	sampleCount++;
 
 	///XXX
-	printf("#handler in key: %u\n", key);
+	printf("#handler in key: %u\n", threadId);
 
 	// This is where the work happens
 	if (instroNumThreads > 1) {
-		flushStackToBuffer(_multithreadStack[key - 1], _flushToDiskBuffer, address);
+		flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
 	} else {
 		flushStackToBuffer(_multithreadStack[0], _flushToDiskBuffer, address); 	// PAPI threads not initialized
 	}
@@ -236,7 +236,7 @@ void finish_sampling_driver() {
 
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
-	counter = 1; // TODO WTF? why is this necessary?
+	currentThreadNum = 0; // TODO WTF? why is this necessary?
 
 	assingContinuousThreadId();
 
