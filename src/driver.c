@@ -1,19 +1,21 @@
 #include "driver.h"
 
-#include <err.h>
-
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {
 		return;
 	}
 
-	_flushToDiskBuffer = (struct SampleEvent *) malloc(WRITE_BUFFER_SIZE * sizeof(struct SampleEvent));
+	size_t allocSize = WRITE_BUFFER_SIZE * 2 * sizeof(struct SampleEvent);
+	_flushToDiskBuffer = (struct SampleEvent *) malloc(allocSize);
+
 	if (_flushToDiskBuffer == 0) {
-		errx(1, "Could not allocate a write-out buffer with size: %i", 2 * WRITE_BUFFER_SIZE);
+		errx(1, "Could not allocate a write-out buffer with size: %lu bytes", allocSize);
 	}
+	printf("Allocated %lu bytes for buffer.\n", allocSize);
+
 }
 
-void deallocateWriteOutBuffer() {
+void finiBuffer() {
 	if (_flushToDiskBuffer != 0) {
 		int i;
 		for (i = 0; i < numberOfBufferElements; i++) {
@@ -57,7 +59,7 @@ void flushStackToFile(struct Stack *stack) {
 void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *icAddress) {
 
 	if (stack == 0 || buffer == 0) {
-		errx(-5, "An error occured, where either stack or buffer was NULL. Exiting.");
+		errx(-5, "Error: stack or buffer was NULL. Exiting.");
 	}
 
 	buffer[numberOfBufferElements].icAddress = (long) icAddress;
@@ -143,11 +145,7 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 	printf("#handler in key: %u\n", threadId);
 
 	// This is where the work happens
-	if (instroNumThreads > 1) {
-		flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
-	} else {
-		flushStackToBuffer(_multithreadStack[0], _flushToDiskBuffer, address); 	// PAPI threads not initialized
-	}
+	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
 }
 
 #ifndef SHADOWSTACK_ONLY
@@ -168,11 +166,10 @@ void registerPAPI() {
 	}
 }
 
-void init_sampling_driver() {
+void initSamplingDriver() {
 
 	/* read environment variable to control the sampling driver */
 	char *instroFreqVariable = getenv("INSTRO_SAMPLE_FREQ");
-	// get the sample frequency
 	if (instroFreqVariable != NULL) {
 		printf("Using sample frequency set with INSTRO_SAMPLE_FREQ = %s\n", instroFreqVariable);
 		overflowCountForSamples = atoi(instroFreqVariable);
@@ -180,81 +177,69 @@ void init_sampling_driver() {
 		printf("INSTRO_SAMPLE_FREQ not set, using a sample each 2600000 cycles\n");
 	}
 
-	printf("With current config we allocate: %li bytes\n", WRITE_BUFFER_SIZE * 2 * sizeof(struct SampleEvent));
 	initBuffer();
 
-	printf("Enabling Sampling Driver\n");
 	int retval;
 	/* start the PAPI Library */
 	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
 		errx(retval, "PAPI_library_init failed with %i", retval);
 	}
-
-	fprintf(stderr, "Initializing for multithread support.\n");
 	if ((retval = PAPI_thread_init(getThreadId)) != PAPI_OK) {
 		errx(retval, "PAPI_thread_init failed with %i", retval);
 	}
 
 	registerPAPI();
 
-	sampling_driver_enabled = 1;
 	printf("Sampling Driver Enabled\n");
 }
 
-void finish_sampling_driver() {
-	printf("Disabling Sampling Driver\n");
-	if (sampling_driver_enabled) {
-		long long instructionCounter;
-		PAPI_stop(EventSet, &instructionCounter);
+void finishSamplingDriver() {
 
-		printf("%li samples taken\n", sampleCount);
-		printf("%u elements in buffer\n", numberOfBufferElements);
+	long long instructionCounter;
+	PAPI_stop(EventSet, &instructionCounter);
+
+	printf("%li samples taken\n", sampleCount);
+	printf("%u elements in buffer\n", numberOfBufferElements);
 
 #ifndef USE_THREAD_WRITE_OUT
-		flushBufferToFile(_flushToDiskBuffer);
-		pthread_exit(NULL);
+	flushBufferToFile(_flushToDiskBuffer);
+	pthread_exit(NULL);
 #else
-//		fprintf(stdout, "Using pthread write out\n");
-//		pthread_t writeThread;
-//		int err = pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
-//		err = pthread_create(&writeThread, 0, pthread_flushBufferToFile, _flushToDiskBuffer);
+//	fprintf(stdout, "Using pthread write out\n");
+//	pthread_t writeThread;
+//	int err = pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
+//	err = pthread_create(&writeThread, 0, pthread_flushBufferToFile, _flushToDiskBuffer);
 #endif
 
-		deallocateWriteOutBuffer();
-
-		printf("Sampling Driver Disabled\n");
-	} else {
-		printf("Sampling was already disabled due to an error\n");
-	}
+	finiBuffer();
+	printf("Sampling Driver Disabled\n");
 
 #ifdef WITH_MAX_SIZE
 	printf("The max stack size reached was: %u\n", stackMaxSize);
 #endif
-
 }
-#endif	// SHADOWSTACK_ONLY
 
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
-	currentThreadNum = 0; // TODO WTF? why is this necessary?
-
 	assingContinuousThreadId();
 
-	init_sampling_driver();
+	initSamplingDriver();
 	createStackInstance();
 
 	return NULL;
 }
 
 void monitor_fini_process(int how, void* data) {
-	finish_sampling_driver();
+	finishSamplingDriver();
 }
 
 void *monitor_init_thread(int tid, void *data) {
 	PAPI_register_thread();
 	assingContinuousThreadId();
 
-	registerPAPI();
+	registerPAPI();	// PAPI is registered per thread
 
 	return NULL;
 }
+
+#endif	// SHADOWSTACK_ONLY

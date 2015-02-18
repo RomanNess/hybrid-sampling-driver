@@ -7,6 +7,10 @@ volatile unsigned int currentThreadNum = 0;
 
 volatile int ssReady = 0;
 
+#ifdef WITH_MAX_SIZE
+unsigned int stackMaxSize = 0;
+#endif
+
 unsigned long getThreadId() {
 	return threadId;
 }

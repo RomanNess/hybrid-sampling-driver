@@ -3,6 +3,7 @@
 #include "stdio.h"
 #include "stdlib.h"
 #include "limits.h"
+#include "err.h"
 
 #include "pthread.h"
 
@@ -17,6 +18,14 @@
  * But we only do one allocation at start up
  */
 #define STACK_SIZE 100000
+
+/*
+ * If the compiler flag is set at compilation time, the shadow stack will tell us which was the maximum
+ * stack depth during the sampling run.
+ */
+#ifdef WITH_MAX_SIZE
+unsigned int stackMaxSize;
+#endif
 
 /*
  * Represents one single event on the stack (a certain thread is in function with identifier)
@@ -76,6 +85,7 @@ extern volatile unsigned int currentThreadNum;
 void assingContinuousThreadId();
 unsigned long getThreadId();
 
+void createStackInstance();
 
 /*
  * "internal" stack interface

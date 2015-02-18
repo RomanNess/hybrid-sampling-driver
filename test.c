@@ -26,6 +26,7 @@ void runSimpleTests(){
 
 int main(int argc, char** argv){
 
+assingContinuousThreadId();
 initBuffer();
 createStackInstance();
 
