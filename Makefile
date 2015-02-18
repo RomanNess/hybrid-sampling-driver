@@ -1,3 +1,6 @@
+# check if variables are defined, as of: http://stackoverflow.com/a/22540516
+check-var-defined = $(if $(strip $($1)),,$(error "$1" is not defined))
+$(call check-var-defined,LIBMONITOR_BASE)
 
 CC=gcc
 
