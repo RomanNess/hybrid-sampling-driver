@@ -191,7 +191,7 @@ void init_sampling_driver() {
 	}
 
 	fprintf(stderr, "Initializing for multithread support.\n");
-	if ((retval = PAPI_thread_init(getKey)) != PAPI_OK) {
+	if ((retval = PAPI_thread_init(getThreadId)) != PAPI_OK) {
 		errx(retval, "PAPI_thread_init failed with %i", retval);
 	}
 
@@ -238,7 +238,7 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 
 	counter = 1; // TODO WTF? why is this necessary?
 
-	getKey();
+	assingContinuousThreadId();
 
 	init_sampling_driver();
 	createStackInstance();
@@ -252,7 +252,7 @@ void monitor_fini_process(int how, void* data) {
 
 void *monitor_init_thread(int tid, void *data) {
 	PAPI_register_thread();
-	getKey();
+	assingContinuousThreadId();
 
 	registerPAPI();
 

@@ -9,6 +9,8 @@
 // TODO RN 2015-02: add unique push/pop mechanism for cyg_profile & _instro interfaces
 // TODO RN 2015-02: Consider that the current call stack is missing in newly forked threads
 
+#define NO_THREAD_ID -1
+
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
  * This limits our capabilities sampling programs with very very deep call trees.
@@ -67,28 +69,13 @@ extern struct Stack **_multithreadStack;
 volatile int ssReady;
 
 /*
- * At the moment this key is used to determine a threads id. Therefore
- * it needs to be declared as extern __thread in the target application.
- * This would be one possibility, but we would need to have a mapping
- * between the pthread IDs and the instro id, if we do it that way.
- * XXX JP: This seems to be the faster way!
+ * selfmade continuous ids
  */
 extern __thread pthread_key_t key;
-unsigned long getKey();
-static unsigned int counter = 1; /* XXX thread ids */
+extern volatile unsigned int counter;
+void assingContinuousThreadId();
+unsigned long getThreadId();
 
-/*
- * Starting here this is another idea: We keep track of threads ourselves
- * and use a lookup function that we provide. That way we would use thread
- * local storage to have a thread id inside each thread. We would provide
- * papi with our own get_thread_id function.
- * We really have to evaluate in terms of performance and maintainability.
- *
- */
-volatile unsigned int maxThreadNr;
-extern __thread unsigned long _instro_thread_id;
-long unsigned int instro_get_thread_id();
-/***/
 
 /*
  * "internal" stack interface
@@ -99,8 +86,7 @@ void pushEvent(struct Stack *stack, struct StackEvent event);
 void popEvent(struct Stack *stack);
 
 /*
- * Initializes the stack.
- * The function calls malloc
+ * Initializes the stack (malloc)
  */
 void initStack(struct Stack *stack, unsigned int maxSize);
 /*

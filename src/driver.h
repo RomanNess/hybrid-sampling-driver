@@ -40,7 +40,6 @@ static struct SampleEvent *_flushToDiskBuffer = 0;
 static unsigned int numberOfBufferElements = 0;
 
 
-
 /*
  * GLOBALS SEGMENT
  */

@@ -1,28 +1,20 @@
 #include "stack.h"
 
 __thread pthread_key_t key = 0;
-__thread unsigned long _instro_thread_id = 0;
+volatile unsigned int counter = 1;
+
 volatile int ssReady = 0;
-volatile unsigned int maxThreadNr = 1;
 
-unsigned long instro_get_thread_id() {
-	if (_instro_thread_id == 0) {
-		_instro_thread_id = maxThreadNr;
-		maxThreadNr++;
-	}
-	return _instro_thread_id;
-}
-
-unsigned long getKey() {
-	if (key == 0) {
-		key = counter++;
-
-		///XXX
-		printf("# created key: %u \n", key);
-	}
+unsigned long getThreadId() {
 	return key;
 }
 
+void assingContinuousThreadId() {
+	key = counter++;
+
+	///XXX
+	printf("# created key: %u \n", key);
+}
 
 void createStackInstance() {
 
