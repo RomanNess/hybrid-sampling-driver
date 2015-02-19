@@ -17,8 +17,7 @@ void initBuffer() {
 
 void finiBuffer() {
 	if (_flushToDiskBuffer != 0) {
-		int i;
-		for (i = 0; i < numberOfBufferElements; i++) {
+		for (int i = 0; i < numberOfBufferElements; i++) {
 			free(_flushToDiskBuffer[i].stackEvents); // Correct?
 		}
 		free(_flushToDiskBuffer);
@@ -35,9 +34,8 @@ void flushStackToFile(struct Stack *stack) {
 	FILE *fp = fopen("myOutStack.txt", "a+");
 
 	if (fp) {
-		unsigned int cur;
 		fprintf(fp, "Sample %li\n", sampleCount);
-		for (cur = 0; cur < stack->_size; cur++) {
+		for (int cur = 0; cur < stack->_size; cur++) {
 			fprintf(fp, "Thread %llu with identifier: %llu \n",
 					stack->_start[cur].thread, stack->_start[cur].identifier);
 		}
@@ -75,12 +73,10 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 		errx(-7, "Error creating buffer[bufferElements].stackEvents buffer");
 	}
 
-	int i;
-	for (i = 0; i < stack->_size; i++) {
+	for (int i = 0; i < stack->_size; i++) {
 		buffer[numberOfBufferElements].stackEvents[i] = stack->_start[i];
 	}
-	buffer[numberOfBufferElements].numStackEvents = i;
-//	fprintf(stderr, "Wrote %i stack elements\n", i);
+	buffer[numberOfBufferElements].numStackEvents = stack->_size;
 
 	numberOfBufferElements++;
 }
@@ -109,13 +105,12 @@ void* pthread_flushBufferToFile(void *data) {
 	FILE *fp = fopen("pthread_myOutStack.txt", "a+");
 
 	if (fp) {
-		int i = 0;
 		// write all buffered elements to a file
-		for (; i < numberOfBufferElements; i++) {
+		for (int i = 0; i < numberOfBufferElements; i++) {
 			const struct StackEvent *stackEvents = buffer[i].stackEvents;
 			fprintf(fp, "Sample: %lu\nAddress: %lu\n", buffer[i].sampleNumber, buffer[i].icAddress);
-			int j = 0;
-			for (; j < buffer[i].numStackEvents; j++) {
+
+			for (int j = 0; j < buffer[i].numStackEvents; j++) {
 				fprintf(fp, "Thread: %llu in Function: %llu\n", stackEvents[j].thread, stackEvents[j].identifier);
 			}
 			free((struct StackEvent *) stackEvents);

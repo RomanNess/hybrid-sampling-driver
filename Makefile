@@ -14,7 +14,7 @@ INSTRO_FLAGS=-DWITH_MAX_SIZE
 
 
 sampling-tool: $(objects)
-	$(CC) $(PAPI_INCLUDE_FLAGS) $(INSTRO_FLAGS) -g -O3 $(CFLAGS) -o sampling-tool.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) $(INSTRO_FLAGS) -g -O3 $(CFLAGS) -o sampling-tool.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS) -std=gnu99
 
 # Shadow stack ONLY as a library to link against GCC instrumented binaries
 libshadowstack-fast:
@@ -30,10 +30,10 @@ testStack: libshadowstack-fast
 	$(CC) $(PAPI_INCLUDE_FLAGS) -g -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack-fast -L$(LIBMONITOR_BASE)/lib -lmonitor $(LDFLAGS)
 
 target: libshadowstack-fast
-	$(CC) -fopenmp -finstrument-functions -g target.c libshadowstack-fast.so -o target.exe -std=c99
+	$(CC) -fopenmp -finstrument-functions -g target.c libshadowstack-fast.so -o target.exe -std=gnu99
 
 sampling: sampling-tool
-	$(CC) -fopenmp -finstrument-functions -g target.c -o target.exe -std=c99
+	$(CC) -fopenmp -finstrument-functions -g target.c -o target.exe -std=gnu99
 	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
 .PHONY : clean
