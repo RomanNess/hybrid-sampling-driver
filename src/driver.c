@@ -124,9 +124,6 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 
 /* PAPI Sampling handler */
 void handler(int EventSet, void *address, long long overflow_vector, void *context) {
-	if (ssReady == 0) {
-		return;
-	}
 	sampleCount++;
 
 	///XXX
@@ -203,11 +200,11 @@ void finishSamplingDriver() {
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
 	assingContinuousThreadId();
+	createStackInstance();
 
 #ifndef SHADOWSTACK_ONLY
 	initSamplingDriver();
 #endif
-	createStackInstance();
 
 	return NULL;
 }
@@ -219,11 +216,14 @@ void monitor_fini_process(int how, void* data) {
 }
 
 void *monitor_init_thread(int tid, void *data) {
+
 	PAPI_register_thread();
 	assingContinuousThreadId();
+
 #ifndef SHADOWSTACK_ONLY
 	registerPAPI();	// PAPI is registered per thread
 #endif
+
 	return NULL;
 }
 

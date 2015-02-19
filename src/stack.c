@@ -5,8 +5,6 @@ int instroNumThreads = 1;
 __thread pthread_key_t threadId = NO_THREAD_ID;
 volatile unsigned int currentThreadNum = 0;
 
-volatile int ssReady = 0;
-
 #ifdef WITH_MAX_SIZE
 unsigned int stackMaxSize = 0;
 #endif
@@ -72,7 +70,6 @@ void createStackInstance() {
 		}
 #endif
 
-		ssReady = 1;
 		fprintf(stderr, "Ready flag set\n");
 	}
 #ifdef DEBUG
