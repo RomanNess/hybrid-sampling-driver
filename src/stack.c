@@ -190,16 +190,4 @@ void __cyg_profile_func_exit(void *func, void *callsite) {
 #endif
 }
 
-inline void pushdIdentifier(unsigned long long functionIdentifier) {
-
-	struct StackEvent event;
-	event.thread = threadId;
-	event.identifier = (unsigned long long) functionIdentifier;		// RN: some smaller identifier for performance reasons?
-
-	pushEvent(_multithreadStack[threadId], event);
-}
-
-inline void popIdentifier() {
-	popEvent(_multithreadStack[threadId]);
-}
 
