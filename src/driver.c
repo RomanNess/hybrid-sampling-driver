@@ -81,27 +81,18 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 	numberOfBufferElements++;
 }
 
-/* Forward the flush to the pthread method */
-void flushBufferToFile(struct SampleEvent *buffer) {
-	pthread_attr_init(&detachAttr);
-	pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
-	pthread_create(&writeThread, &detachAttr, pthread_flushBufferToFile, _flushToDiskBuffer);
-}
-
 /*
- * Flushes the SampleEvents to a file called "myOutStack.txt"
+ * Flushes the SampleEvents to a file
  * XXX: ATTENTION this produces LOTS OF DATA
- * We need to provide functionality to e.g. specify where the output has to go.
- * For example we could use /scratch to output lots of GB...
+ * For example we could use /scratch to output lots of GB ...
  * Dataformat:
  * [Sample ID] [icAddress] [stackelems]
  *
  * XXX 2014-05-12 JP: Move the whole file operation thing to a different file?
  * XXX 2014-05-12 JP: Use the cube file writer lib to output cubex files?
  */
-void* pthread_flushBufferToFile(void *data) {
+void flushBufferToFile(struct SampleEvent *buffer) {
 	fprintf(stdout, "Starting to write out\n");
-	struct SampleEvent *buffer = (struct SampleEvent *) data;
 	FILE *fp = fopen("pthread_myOutStack.txt", "a+");
 
 	if (fp) {
@@ -122,8 +113,10 @@ void* pthread_flushBufferToFile(void *data) {
 	} else {
 		fprintf(stderr, "Could not open file for writing.\n");
 	}
-	return NULL;
 }
+
+
+#ifndef SHADOWSTACK_ONLY
 
 /*
  * SAMPLING DRIVER SEGMENT
@@ -143,7 +136,6 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
 }
 
-#ifndef SHADOWSTACK_ONLY
 
 void registerPAPI() {
 	int retval;
@@ -214,27 +206,32 @@ void finishSamplingDriver() {
 #endif
 }
 
+#endif	// SHADOWSTACK_ONLY
+
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
 	assingContinuousThreadId();
 
+#ifndef SHADOWSTACK_ONLY
 	initSamplingDriver();
+#endif
 	createStackInstance();
 
 	return NULL;
 }
 
 void monitor_fini_process(int how, void* data) {
+#ifndef SHADOWSTACK_ONLY
 	finishSamplingDriver();
+#endif
 }
 
 void *monitor_init_thread(int tid, void *data) {
 	PAPI_register_thread();
 	assingContinuousThreadId();
-
+#ifndef SHADOWSTACK_ONLY
 	registerPAPI();	// PAPI is registered per thread
-
+#endif
 	return NULL;
 }
 
-#endif	// SHADOWSTACK_ONLY
