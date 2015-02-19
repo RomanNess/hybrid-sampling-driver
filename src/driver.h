@@ -61,10 +61,4 @@ void initSamplingDriver();
 void registerPAPI();
 void finishSamplingDriver();
 
-/* This is needed for the new asynchronous write-out functionality */
-pthread_t writeThread;
-pthread_attr_t detachAttr;
-void* pthread_flushBufferToFile(void *data);
-
-
 #endif	// DRIVER_H
