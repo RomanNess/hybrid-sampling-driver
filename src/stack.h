@@ -34,10 +34,7 @@ unsigned int stackMaxSize;
  *
  */
 struct StackEvent {
-
-	unsigned long long thread;
 	unsigned long long identifier;
-
 };
 
 /*
@@ -121,7 +118,6 @@ void __cyg_profile_func_exit(void *func, void *callsite);
 inline void pushdIdentifier(unsigned long long functionIdentifier) {
 
 	struct StackEvent event;
-	event.thread = threadId;
 	event.identifier = (unsigned long long) functionIdentifier;		// RN: some smaller identifier for performance reasons?
 
 	pushEvent(_multithreadStack[threadId], event);

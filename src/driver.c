@@ -36,8 +36,8 @@ void flushStackToFile(struct Stack *stack) {
 	if (fp) {
 		fprintf(fp, "Sample %li\n", sampleCount);
 		for (int cur = 0; cur < stack->_size; cur++) {
-			fprintf(fp, "Thread %llu with identifier: %llu \n",
-					stack->_start[cur].thread, stack->_start[cur].identifier);
+			fprintf(fp, "Thread %u with identifier: %llu \n",
+					threadId, stack->_start[cur].identifier);
 		}
 	}
 
@@ -102,7 +102,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 			fprintf(fp, "Sample: %lu\nAddress: %lu\n", buffer[i].sampleNumber, buffer[i].icAddress);
 
 			for (int j = 0; j < buffer[i].numStackEvents; j++) {
-				fprintf(fp, "Thread: %llu in Function: %llu\n", stackEvents[j].thread, stackEvents[j].identifier);
+				fprintf(fp, "Thread: %u in Function: %llu\n", threadId, stackEvents[j].identifier);
 			}
 			free((struct StackEvent *) stackEvents);
 		}
@@ -188,15 +188,7 @@ void finishSamplingDriver() {
 	printf("%li samples taken\n", sampleCount);
 	printf("%u elements in buffer\n", numberOfBufferElements);
 
-#ifndef USE_THREAD_WRITE_OUT
 	flushBufferToFile(_flushToDiskBuffer);
-	pthread_exit(NULL);
-#else
-//	fprintf(stdout, "Using pthread write out\n");
-//	pthread_t writeThread;
-//	int err = pthread_attr_setdetachstate(&detachAttr, PTHREAD_CREATE_DETACHED);
-//	err = pthread_create(&writeThread, 0, pthread_flushBufferToFile, _flushToDiskBuffer);
-#endif
 
 	finiBuffer();
 	printf("Sampling Driver Disabled\n");

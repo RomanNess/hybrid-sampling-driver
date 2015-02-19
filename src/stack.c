@@ -114,7 +114,6 @@ void pushEvent(struct Stack *stack, struct StackEvent event) {
 		fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
 	}
 
-	stack->_start[stack->_size].thread = event.thread;
 	stack->_start[stack->_size].identifier = event.identifier;
 	stack->_size += 1;
 
