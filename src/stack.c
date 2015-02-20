@@ -55,8 +55,7 @@ void createStackInstance() {
 			fprintf(stderr, "ThreadStack: %p \n", _multithreadStack);
 		}
 #endif
-		int i = 0;
-		for (; i < instroNumThreads; i++) {
+		for (int i = 0; i < instroNumThreads; i++) {
 			_multithreadStack[i] = (struct Stack *) malloc(sizeof(struct Stack));
 			if (_multithreadStack[i] == NULL) {
 				fprintf(stderr, "Could not allocate memory for multithread stack\n");
@@ -78,21 +77,17 @@ void createStackInstance() {
 }
 
 void initStack(struct Stack *stack, unsigned int maxSize) {
-	if (stack->_initialized == 1) {
-		return;
-	}
 
 	// initialize stack
-	stack->_start = (struct StackEvent *) malloc(maxSize * sizeof(struct StackEvent));
-	if (stack->_start == NULL) {
+	stack->_elements = (struct StackEvent *) malloc(maxSize * sizeof(struct StackEvent));
+	if (stack->_elements == NULL) {
 		fprintf(stderr, "Could not allocate shadowstack with max size: %u\n", maxSize);
 		exit(-1);
 	}
 	stack->_maxSize = maxSize;
 	stack->_size = 0;
-	stack->_initialized = 1;
 #ifdef DEBUG
-	fprintf(stderr, "Init Stack:\nStack base: %p\nstack->start at: %p\n", stack, stack->_start);
+	fprintf(stderr, "Init Stack:\nStack base: %p\nstack->start at: %p\n", stack, stack->_elements);
 #endif
 }
 
@@ -102,18 +97,18 @@ void initStack(struct Stack *stack, unsigned int maxSize) {
  */
 void pushEvent(struct Stack *stack, struct StackEvent event) {
 #ifdef DEBUG
-	fprintf(stderr, "Enter Function: push event:\nstack-base: %p\nstack-size:%i\nadding at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_start[stack->_size]), stack->_start);
+	fprintf(stderr, "Enter Function: push event:\nstack-base: %p\nstack-size:%i\nadding at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_elements[stack->_size]), stack->_elements);
 #endif
 
 	if (stack->_size == stack->_maxSize) {
 		fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
 	}
 
-	stack->_start[stack->_size].identifier = event.identifier;
+	stack->_elements[stack->_size].identifier = event.identifier;
 	stack->_size += 1;
 
 #ifdef DEBUG
-	fprintf(stderr, "Leave Function: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_start[stack->_size-1]), stack->_start);
+	fprintf(stderr, "Leave Function: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_elements[stack->_size-1]), stack->_elements);
 #endif
 
 #ifdef WITH_MAX_SIZE
@@ -140,8 +135,7 @@ void deallocateStack(struct Stack *stack) {
 #ifdef STACK_IS_UNDER_TEST
 	flushStackToFile(stack);
 #endif
-	free(stack->_start);
-	stack->_initialized = 0;
+	free(stack->_elements);
 }
 
 /*

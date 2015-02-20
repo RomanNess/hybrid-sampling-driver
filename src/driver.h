@@ -26,6 +26,7 @@
  * TODO 2014-05-12 JP: Implement functionality to write the output to a user defined location
  * TODO 2014-05-12 JP: What data is needed per sample event?
  * TODO 2015-02 RN: move libmonitor stuff to other file
+ * TODO 2015-02 RN: Consider that the current call stack is missing in new threads (e.g. in parallel regions)
  */
 
 #include "stack.h"

@@ -1,7 +1,8 @@
 /*
  * To speed up, we buffer stack events to memory and hope, that we only need to write once!
  * A sample event at the moment includes the following:
- *      sampleNumber    - a simple number identifying the sample
+ *      thread			- a continuous thread identifier
+ *      sampleNumber    - a continuous number identifying the sample
  *      icAddress       - the PAPI instruction counter Address where the sample occured
  *      stackEvents     - this is a copy of our shadow stack at the point in time where the sample occured
  *      numStackEvents  - how many stack elements have been copied.

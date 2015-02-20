@@ -8,7 +8,6 @@ void runSimpleTests(){
 
   struct Stack *stackUnderTest = _multithreadStack[0]; // this is the same as getting the stack corresponding to thread number 0
   assert(stackUnderTest != NULL);
-  assert(stackUnderTest->_initialized == 1);
   assert(stackUnderTest->_size == 0);
 
   _instroPushIdentifier(42);

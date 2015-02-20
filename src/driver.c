@@ -37,7 +37,7 @@ void flushStackToFile(struct Stack *stack) {
 		fprintf(fp, "Sample %li\n", sampleCount);
 		for (int cur = 0; cur < stack->_size; cur++) {
 			fprintf(fp, "Thread %u with identifier: %llu \n",
-					threadId, stack->_start[cur].identifier);
+					threadId, stack->_elements[cur].identifier);
 		}
 	}
 
@@ -75,7 +75,7 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 	}
 
 	for (int i = 0; i < stack->_size; i++) {
-		buffer[numberOfBufferElements].stackEvents[i] = stack->_start[i];
+		buffer[numberOfBufferElements].stackEvents[i] = stack->_elements[i];
 	}
 	buffer[numberOfBufferElements].numStackEvents = stack->_size;
 

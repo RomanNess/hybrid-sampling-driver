@@ -7,9 +7,6 @@
 
 #include "pthread.h"
 
-// TODO RN 2015-02: add unique push/pop mechanism for cyg_profile & _instro interfaces
-// TODO RN 2015-02: Consider that the current call stack is missing in newly forked threads
-
 #define NO_THREAD_ID -1
 
 /*
@@ -36,14 +33,11 @@ struct StackEvent {
  * This datastructure models our stack.
  * _size is the number of elements
  * _maxSize is the maximum number of elements the Stack can hold
- * _initialized was used to indicate between driver and stack whether the stack was initialized
- *              or not. XXX Maybe this can be removed, too.
  */
 struct Stack {
 
-	struct StackEvent *_start;
+	struct StackEvent *_elements;
 	unsigned int _size, _maxSize;
-	short _initialized;
 
 };
 
