@@ -23,9 +23,7 @@ void runSimpleTests(){
 
 int main(int argc, char** argv){
 
-assingContinuousThreadId();
-initBuffer();
-createStackInstance();
+// initialization is done by libmonitor
 
 runSimpleTests();
 

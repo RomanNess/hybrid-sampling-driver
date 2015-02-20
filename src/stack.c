@@ -89,8 +89,6 @@ void initStack(struct Stack *stack, unsigned int maxSize) {
 		exit(-1);
 	}
 	stack->_maxSize = maxSize;
-	stack->_end = stack->_start[maxSize - 1];
-	stack->_cur = stack->_start[0]; // XXX I think we can delete the _cur field.
 	stack->_size = 0;
 	stack->_initialized = 1;
 #ifdef DEBUG
@@ -151,7 +149,7 @@ void deallocateStack(struct Stack *stack) {
  * (Public Interface)
  */
 void _instroPushIdentifier(unsigned long long functionIdentifier) {
-	pushdIdentifier(functionIdentifier);
+	pushIdentifier(functionIdentifier);
 }
 
 /*
@@ -167,7 +165,7 @@ void __cyg_profile_func_enter(void *func, void *callsite) {
 	fprintf(stderr, "Entering cyg_profile_func_enter \n");
 #endif
 
-	pushdIdentifier( (unsigned long long) func);
+	pushIdentifier( (unsigned long long) func);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_enter \n");

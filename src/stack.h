@@ -27,19 +27,13 @@
 unsigned int stackMaxSize;
 #endif
 
-/*
- * Represents one single event on the stack (a certain thread is in function with identifier)
- * XXX JP: Since we have multiple stacks, may be we can omit the thread identifier per
- * StackEvent, so we would further decrease memory footprint.
- *
- */
+/* Represents one single event (function) on the stack */
 struct StackEvent {
 	unsigned long long identifier;
 };
 
 /*
  * This datastructure models our stack.
- * XXX _cur is not really in use at the moment. I dont know if it is any useful..
  * _size is the number of elements
  * _maxSize is the maximum number of elements the Stack can hold
  * _initialized was used to indicate between driver and stack whether the stack was initialized
@@ -47,7 +41,7 @@ struct StackEvent {
  */
 struct Stack {
 
-	struct StackEvent *_start, _end, _cur;
+	struct StackEvent *_start;
 	unsigned int _size, _maxSize;
 	short _initialized;
 
@@ -58,21 +52,12 @@ struct Stack {
  * Filled by env var INSTRO_NUM_THREADS or OMP_NUM_THREADS (in this order)
  */
 int instroNumThreads;
+
 /*
  * This is the array of shadow stacks.
- *
  * XXX rename this variable!
  */
 extern struct Stack **_multithreadStack;
-
-/*
- * We need some flag to indicate, whether we can start to sample events.
- * If that is a good way.. I doubt it, especially since it seems that the
- * shadow stack constructor is run _before_ the sampling initializer.
- * XXX I think if we really need this we should think about atomic_bool
- * or similar things.
- */
-volatile int ssReady;
 
 /*
  * selfmade continuous ids
@@ -115,7 +100,7 @@ void __cyg_profile_func_enter(void *func, void *callsite);
 void __cyg_profile_func_exit(void *func, void *callsite);
 
 /* common interface */
-inline void pushdIdentifier(unsigned long long functionIdentifier) {
+inline void pushIdentifier(unsigned long long functionIdentifier) {
 
 	struct StackEvent event;
 	event.identifier = (unsigned long long) functionIdentifier;		// RN: some smaller identifier for performance reasons?
