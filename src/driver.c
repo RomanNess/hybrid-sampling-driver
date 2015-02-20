@@ -60,6 +60,7 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 		errx(-5, "Error: stack or buffer was NULL. Exiting.");
 	}
 
+	buffer[numberOfBufferElements].thread = threadId;
 	buffer[numberOfBufferElements].icAddress = (long) icAddress;
 	buffer[numberOfBufferElements].sampleNumber = sampleCount;
 	if (stack->_size == 0) {
@@ -102,7 +103,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 			fprintf(fp, "Sample: %lu\nAddress: %lu\n", buffer[i].sampleNumber, buffer[i].icAddress);
 
 			for (int j = 0; j < buffer[i].numStackEvents; j++) {
-				fprintf(fp, "Thread: %u in Function: %llu\n", threadId, stackEvents[j].identifier);
+				fprintf(fp, "Thread: %u in Function: %llu\n", buffer[i].thread, stackEvents[j].identifier);
 			}
 			free((struct StackEvent *) stackEvents);
 		}
