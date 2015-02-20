@@ -17,6 +17,7 @@
 #include "err.h"	// for errx
 
 #include "monitor.h"
+#include "unwinding.h"
 
 /*
  * TODO 2014-05-12 JP: Implement functionality to write the output to a user defined location

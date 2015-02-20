@@ -107,6 +107,8 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 	///XXX
 //	printf("#handler in key: %u\n", threadId);
 
+	doUnwind(10);
+
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
 }
