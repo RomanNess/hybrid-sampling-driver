@@ -61,7 +61,13 @@ extern volatile unsigned int currentThreadNum;
 void assingContinuousThreadId();
 unsigned long getThreadId();
 
-void createStackInstance();
+void readEnv();
+void initShadowStack();
+
+
+/* Manage a single shadow stack */
+void initSingleStack(struct Stack *stack, unsigned int maxSize);
+void finiSingleStack(struct Stack *stack);
 
 /*
  * "internal" stack interface
@@ -70,17 +76,6 @@ void createStackInstance();
  */
 void pushEvent(struct Stack *stack, struct StackEvent event);
 void popEvent(struct Stack *stack);
-
-/*
- * Initializes the stack (malloc)
- */
-void initStack(struct Stack *stack, unsigned int maxSize);
-/*
- * Deallocates the stack.
- * XXX This function needs some attention!
- * This function actually calls free.
- */
-void deallocateStack(struct Stack *stack);
 
 /*
  * This is the public interface.

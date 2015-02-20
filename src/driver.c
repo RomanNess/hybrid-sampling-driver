@@ -25,29 +25,6 @@ void finiBuffer() {
 }
 
 /*
- * This flushes the actual state of the stack to file.
- * I guess that this function at the moment is our bottleneck, since we flush buffers all the time.
- *
- * XXX JP: This function is useless I guess.
- */
-void flushStackToFile(struct Stack *stack) {
-	FILE *fp = fopen("myOutStack.txt", "a+");
-
-	if (fp) {
-		fprintf(fp, "Sample %li\n", sampleCount);
-		for (int cur = 0; cur < stack->_size; cur++) {
-			fprintf(fp, "Thread %u with identifier: %llu \n",
-					threadId, stack->_elements[cur].identifier);
-		}
-	}
-
-	int fclose_return = fclose(fp);
-	if (fclose_return) {
-		fprintf(stderr, "Closing the output file returned an error\n");
-	}
-}
-
-/*
  * XXX JP: The function needs some attention.
  *
  * This is the function to be called when PAPI interrupts and a sample is taken by our handler.
@@ -128,14 +105,14 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 	sampleCount++;
 
 	///XXX
-	printf("#handler in key: %u\n", threadId);
+//	printf("#handler in key: %u\n", threadId);
 
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
 }
 
 
-void registerPAPI() {
+void registerThreadForPAPI() {
 	int retval;
 	if ((retval = PAPI_create_eventset(&EventSet)) != PAPI_OK) {
 		errx(retval, "PAPI_create_eventset failed with %i", retval);
@@ -173,7 +150,7 @@ void initSamplingDriver() {
 		errx(retval, "PAPI_thread_init failed with %i", retval);
 	}
 
-	registerPAPI();
+	registerThreadForPAPI();
 
 	printf("Sampling Driver Enabled\n");
 }
@@ -200,8 +177,9 @@ void finishSamplingDriver() {
 
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
+	readEnv();
 	assingContinuousThreadId();
-	createStackInstance();
+	initShadowStack();
 
 #ifndef SHADOWSTACK_ONLY
 	initSamplingDriver();
@@ -222,9 +200,13 @@ void *monitor_init_thread(int tid, void *data) {
 	assingContinuousThreadId();
 
 #ifndef SHADOWSTACK_ONLY
-	registerPAPI();	// PAPI is registered per thread
+	registerThreadForPAPI();	// PAPI is registered per thread
 #endif
 
 	return NULL;
+}
+
+void monitor_fini_thread(void* data) {
+	finiSingleStack(_multithreadStack[threadId]);	// RN: or just reset the stack?
 }
 

@@ -1,6 +1,6 @@
 #include "stack.h"
 
-int instroNumThreads = 1;
+int instroNumThreads;
 
 __thread pthread_key_t threadId = NO_THREAD_ID;
 volatile unsigned int currentThreadNum = 0;
@@ -24,8 +24,7 @@ void assingContinuousThreadId() {
 	printf("# created key: %u \n", threadId);
 }
 
-void createStackInstance() {
-
+void readEnv() {
 	char *instroNumThreadsEnvVariable = getenv("INSTRO_NUM_THREADS");
 	char *ompNumThreadsEnvVariable = getenv("OMP_NUM_THREADS");
 
@@ -38,6 +37,9 @@ void createStackInstance() {
 		instroNumThreads = 1;
 	}
 	printf("Running with %i threads.\n", instroNumThreads);
+}
+
+void initShadowStack() {
 
 	// XXX Is this check necessary?
 	if (_multithreadStack == NULL) {
@@ -61,7 +63,7 @@ void createStackInstance() {
 				fprintf(stderr, "Could not allocate memory for multithread stack\n");
 			}
 
-			initStack(_multithreadStack[i], STACK_SIZE);
+			initSingleStack(_multithreadStack[i], STACK_SIZE);
 		}
 #ifdef DEBUG
 		if(_multithreadStack[0] == 0) {
@@ -76,7 +78,7 @@ void createStackInstance() {
 #endif
 }
 
-void initStack(struct Stack *stack, unsigned int maxSize) {
+void initSingleStack(struct Stack *stack, unsigned int maxSize) {
 
 	// initialize stack
 	stack->_elements = (struct StackEvent *) malloc(maxSize * sizeof(struct StackEvent));
@@ -89,6 +91,13 @@ void initStack(struct Stack *stack, unsigned int maxSize) {
 #ifdef DEBUG
 	fprintf(stderr, "Init Stack:\nStack base: %p\nstack->start at: %p\n", stack, stack->_elements);
 #endif
+}
+
+/*
+ * Deallocates the stack and frees the memory
+ */
+void finiSingleStack(struct Stack *stack) {
+	free(stack->_elements);
 }
 
 /*
@@ -126,16 +135,6 @@ void pushEvent(struct Stack *stack, struct StackEvent event) {
  */
 void popEvent(struct Stack *stack) {
 	stack->_size -= 1;
-}
-
-/*
- * Deallocates the stack and frees the memory
- */
-void deallocateStack(struct Stack *stack) {
-#ifdef STACK_IS_UNDER_TEST
-	flushStackToFile(stack);
-#endif
-	free(stack->_elements);
 }
 
 /*

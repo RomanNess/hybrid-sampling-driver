@@ -18,10 +18,6 @@
 
 #include "monitor.h"
 
-#ifndef STACK_IS_UNDER_TEST
-#include "math.h"
-#endif
-
 /*
  * TODO 2014-05-12 JP: Implement functionality to write the output to a user defined location
  * TODO 2014-05-12 JP: What data is needed per sample event?
@@ -59,7 +55,7 @@ void flushBufferToFile(struct SampleEvent *buffer);
 void handler(int EventSet, void *address, long_long overflow_vector, void *context);
 
 void initSamplingDriver();
-void registerPAPI();
+void registerThreadForPAPI();
 void finishSamplingDriver();
 
 #endif	// DRIVER_H
