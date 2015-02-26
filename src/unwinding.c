@@ -1,6 +1,8 @@
 #include "unwinding.h"
 
 // TODO use unwindSteps
+// TODO how to distinguish methods of our library and actual target code during unwind ???
+// TODO where to parse function identifiers for the runtime?
 void doUnwind(int unwindSteps) {
 	unw_cursor_t cursor;
 	unw_context_t uc;

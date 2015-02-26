@@ -39,6 +39,9 @@ sampling: sampling-tool
 	$(CC) -fopenmp -finstrument-functions -g  -std=gnu99 target.c -o target.exe
 	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
+sampling-lib:
+	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so target.c -o target.exe
+	
 .PHONY : clean
 clean:
 	rm -f *.so
