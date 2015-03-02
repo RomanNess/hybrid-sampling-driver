@@ -6,3 +6,6 @@
 # src
 *.so
 *.exe
+
+# crap
+.*.swp
