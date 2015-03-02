@@ -21,8 +21,6 @@ void doUnwind(int unwindSteps) {
 		*bufferTop = cursor;
 		bufferTop++;
 
-		status = unw_step(&cursor);
-
 		unw_get_reg(&cursor, UNW_REG_IP, &ip);
 		unw_get_reg(&cursor, UNW_REG_SP, &sp);
 
@@ -31,6 +29,8 @@ void doUnwind(int unwindSteps) {
 		char buf[512];
 		unw_get_proc_name(&cursor, buf, sizeof (buf), &offp);
 		printf ("status: %i, ip = %x, sp = %x, %s\n", status, (unsigned int) ip, (unsigned int) sp, buf);
+
+		status = unw_step(&cursor);
 	}
 
 	///XXX

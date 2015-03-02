@@ -1,5 +1,9 @@
 #include "driver.h"
 
+#ifdef USE_CPP_LIB
+#include "cpp/hash.h"
+#endif
+
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {
 		return;
@@ -180,6 +184,12 @@ void finishSamplingDriver() {
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
 	readEnv();
+
+#ifdef USE_CPP_LIB
+	parse("nm_file");
+	dump();
+#endif
+
 	assingContinuousThreadId();
 	initShadowStack();
 
