@@ -16,8 +16,11 @@ const char* getName(key_type key);
 void parse(char* filename);
 void dump();
 
+void parseRegions(char* filename, unsigned int* start, unsigned int* end);
+
 #ifdef __cplusplus
 }
 #endif
+
 
 #endif /* SRC_CPP_HASH_H_ */

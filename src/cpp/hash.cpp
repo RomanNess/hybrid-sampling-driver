@@ -6,6 +6,7 @@
 #include <string>
 #include <err.h>
 #include <stdlib.h> // strtol
+#include <vector>
 
 #include "hash.h"
 
@@ -45,7 +46,6 @@ extern "C" {
 
 		while (std::getline(inFile, line)) {
 			int key = (int) strtol(line.c_str(), NULL, 16);
-
 			char delimiter = ' ';
 			size_t secondColStart = line.find(delimiter) + 1;
 			size_t secondDelimiter = line.find(delimiter, secondColStart);
@@ -67,4 +67,13 @@ extern "C" {
 			printf("%x -> %s \n", elem.first, elem.second.c_str());
 		}
 	}
+
+	void parseRegions(char* filename, unsigned int* start, unsigned int* end) {
+		std::ifstream inFile(filename);
+
+		inFile >> std::hex >> *start;
+		inFile >> std::hex >> *end;
+	}
+
 }
+

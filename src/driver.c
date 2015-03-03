@@ -109,7 +109,7 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 	sampleCount++;
 
 	///XXX
-//	printf("#handler in key: %u\n", threadId);
+	printf("#handler in: %x\n", address);
 
 	doUnwind(10);
 
@@ -187,6 +187,7 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 
 #ifdef USE_CPP_LIB
 	parse("nm_file");
+	parseRegions("regions_file", &regionStart, &regionEnd);
 	dump();
 #endif
 

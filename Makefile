@@ -34,17 +34,14 @@ libhash:
 testStack: libshadowstack-fast
 	$(CC) $(PAPI_INCLUDE_FLAGS) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack -L$(LIBMONITOR_BASE)/lib -lmonitor $(LDFLAGS)
 
-target: libshadowstack-fast
-	$(CC) -fopenmp -finstrument-functions -g  -std=gnu99 target.c libshadowstack.so -o target.exe
-	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
-
 sampling: libhash sampling-tool
 	$(CC) -fopenmp -finstrument-functions -g  -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
 	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
-sampling-lib: libhash
+sampling-lib: libhash sampling-tool
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so target.c -o target.exe
+	python3 py/gen.py target.exe sampling-tool.so
 	
 .PHONY : clean
 clean:
