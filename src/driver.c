@@ -111,7 +111,7 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 	///XXX
 	printf("#handler in: %x\n", address);
 
-	doUnwind(10);
+	doUnwind(10, context);
 
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);

@@ -3,12 +3,11 @@
 // TODO use unwindSteps
 // TODO how to distinguish methods of our library and actual target code during unwind ???
 // TODO where to parse function identifiers for the runtime?
-void doUnwind(int unwindSteps) {
+void doUnwind(int unwindSteps, void* context) {
 	unw_cursor_t cursor;
-	unw_context_t uc;
-
-	unw_getcontext(&uc);
-	unw_init_local(&cursor, &uc);
+	/* RN: I have no idea why exactly this works with papi overflow contexts but it does! */
+	unw_context_t* uc = (unw_context_t*) context;
+	unw_init_local(&cursor, uc);
 
 	unw_cursor_t unwindBuffer[MAX_UNWIND_FACTOR];
 	unw_cursor_t* bufferTop = unwindBuffer;

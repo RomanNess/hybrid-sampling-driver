@@ -15,6 +15,6 @@
 
 unsigned int regionStart, regionEnd;
 
-void doUnwind(int unwindSteps);
+void doUnwind(int unwindSteps, void* context);
 
 #endif /* SRC_UNWINDING_H_ */
