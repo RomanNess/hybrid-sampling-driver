@@ -85,7 +85,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 			fprintf(fp, "Sample: %lu\nAddress: %lu\n", buffer[i].sampleNumber, buffer[i].icAddress);
 
 			for (int j = 0; j < buffer[i].numStackEvents; j++) {
-				fprintf(fp, "Thread: %u in Function: %lx\n", buffer[i].thread, stackEvents[j].identifier);
+				fprintf(fp, "Thread: %i in Function: %lx\n", buffer[i].thread, stackEvents[j].identifier);
 			}
 			free((struct StackEvent *) stackEvents);
 		}

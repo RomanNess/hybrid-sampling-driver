@@ -2,15 +2,15 @@
 
 int instroNumThreads;
 
-__thread pthread_key_t threadId = NO_THREAD_ID;
-volatile unsigned int currentThreadNum = 0;
+__thread int threadId;
+volatile int currentThreadNum = 0;
 
 #ifdef WITH_MAX_SIZE
 unsigned int stackMaxSize = 0;
 #endif
 
 unsigned long getThreadId() {
-	return threadId;
+	return (unsigned long) threadId;
 }
 
 void assingContinuousThreadId() {
@@ -21,7 +21,7 @@ void assingContinuousThreadId() {
 	threadId = currentThreadNum++;
 
 	///XXX
-	printf("# created key: %u \n", threadId);
+	printf("# created key: %i \n", threadId);
 }
 
 void readEnv() {

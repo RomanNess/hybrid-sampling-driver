@@ -7,8 +7,6 @@
 
 #include "pthread.h"
 
-#define NO_THREAD_ID -1
-
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
  * This limits our capabilities sampling programs with very very deep call trees.
@@ -56,10 +54,10 @@ extern struct Stack **_multithreadStack;
 /*
  * selfmade continuous ids
  */
-extern __thread pthread_key_t threadId;
-extern volatile unsigned int currentThreadNum;
+extern __thread int threadId;
+extern volatile int currentThreadNum;
 void assingContinuousThreadId();
-unsigned long getThreadId();
+unsigned long getThreadId();	// for PAPI_init()
 
 void readEnv();
 void initShadowStack();

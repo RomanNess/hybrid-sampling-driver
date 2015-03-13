@@ -11,7 +11,7 @@
  */
 struct SampleEvent {
 
-	unsigned int thread;
+	int thread;
 	long int sampleNumber;
 	long int icAddress;
 	// this is the shadow stack at the point the sample driver interrupted
