@@ -26,7 +26,7 @@ extern "C" {
 		FuncMap.names[key] = std::string(name);
 	}
 
-	unsigned int getFunctionStart(key_type address) {
+	key_type getFunctionStart(key_type address) {
 
 		if (address < FuncMap.regionStart || address > FuncMap.regionEnd) {
 			return 0;	// not in interesting region
@@ -67,8 +67,6 @@ extern "C" {
 
 			int amount = (int) strtol(line.substr(secondDelimiter).c_str(), NULL, 10);
 
-//			printf("%x|%s|%i\n", key, name.c_str(), amount);
-
 			FuncMap.names[key] = name.c_str();
 			FuncMap.unwindSteps[key] = amount;
 		}
@@ -78,7 +76,7 @@ extern "C" {
 
 	void dump() {
 		for (auto elem : FuncMap.names) {
-			printf("%x -> %s \n", elem.first, elem.second.c_str());
+			printf("%lx -> %s \n", elem.first, elem.second.c_str());
 		}
 	}
 

@@ -79,7 +79,7 @@ void popEvent(struct Stack *stack);
  * This is the public interface.
  * Calls to these functions should be inserted to target source.
  */
-void _instroPushIdentifier(unsigned long long functionIdentifier);
+void _instroPushIdentifier(unsigned long functionIdentifier);
 void _instroPopIdentifier();
 
 /* The interface for GNU instrumentation with shadow stack */
@@ -87,10 +87,10 @@ void __cyg_profile_func_enter(void *func, void *callsite);
 void __cyg_profile_func_exit(void *func, void *callsite);
 
 /* common interface */
-inline void pushIdentifier(unsigned long long functionIdentifier) {
+inline void pushIdentifier(unsigned long functionIdentifier) {
 
 	struct StackEvent event;
-	event.identifier = (unsigned long long) functionIdentifier;		// RN: some smaller identifier for performance reasons?
+	event.identifier = functionIdentifier;		// RN: some smaller identifier for performance reasons?
 
 	pushEvent(_multithreadStack[threadId], event);
 }

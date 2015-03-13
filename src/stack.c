@@ -141,7 +141,7 @@ void popEvent(struct Stack *stack) {
  * Pushes an identifier to the stack.
  * (Public Interface)
  */
-void _instroPushIdentifier(unsigned long long functionIdentifier) {
+void _instroPushIdentifier(unsigned long functionIdentifier) {
 	pushIdentifier(functionIdentifier);
 }
 
@@ -158,7 +158,7 @@ void __cyg_profile_func_enter(void *func, void *callsite) {
 	fprintf(stderr, "Entering cyg_profile_func_enter \n");
 #endif
 
-	pushIdentifier( (unsigned long long) func);
+	pushIdentifier( (unsigned long) func);
 
 #ifdef DEBUG
 	fprintf(stderr, "Exit cyg_profile_func_enter \n");

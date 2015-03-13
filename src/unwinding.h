@@ -11,7 +11,6 @@
 
 /**
  * RN 2015-02
- * TODO: unwind only n steps
  * TODO: note that the order of the unwind call stack is the other way around compared to the shadow stack
  */
 
