@@ -34,7 +34,7 @@ for line in nmProc.stdout:
 		continue
 
 	# write to file
-	file.write(cols[0] + " " + cols[2] + " 1\n")
+	file.write(cols[0] + " " + cols[2] + " 3\n")
 
 file.close()	# close output file
 nmProc.kill()	# close subprocess

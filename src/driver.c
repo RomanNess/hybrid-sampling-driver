@@ -4,6 +4,7 @@
 #include "cpp/hash.h"
 #endif
 
+
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {
 		return;
@@ -105,16 +106,14 @@ void flushBufferToFile(struct SampleEvent *buffer) {
  */
 
 /* PAPI Sampling handler */
-void handler(int EventSet, void *address, long long overflow_vector, void *context) {
+void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
 
-	///XXX
-	printf("#handler in: %x\n", address);
-
-	doUnwind(10, context);
+	doUnwind(address, context);
 
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
+
 }
 
 
@@ -182,6 +181,8 @@ void finishSamplingDriver() {
 #endif	// SHADOWSTACK_ONLY
 
 void *monitor_init_process(int *argc, char **argv, void *data) {
+
+	printf("#### init sampling driver #### \n");
 
 	readEnv();
 

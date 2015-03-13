@@ -15,12 +15,26 @@ struct FuncMap {
 	std::map<key_type, int> unwindSteps;
 	std::map<key_type, std::string> names;
 
+	unsigned int regionStart;
+	unsigned int regionEnd;
+
 } FuncMap;
 
 extern "C" {
 	void put(key_type key, int unwindStep, char* name) {
 		FuncMap.unwindSteps[key] = unwindStep;
 		FuncMap.names[key] = std::string(name);
+	}
+
+	unsigned int getFunctionStart(key_type address) {
+
+		if (address < FuncMap.regionStart || address > FuncMap.regionEnd) {
+			return 0;	// not in interesting region
+		}
+
+		auto it = FuncMap.unwindSteps.lower_bound(address);
+		--it;
+		return (*it).first;
 	}
 
 	int getUnwindSteps(key_type key) {
@@ -73,6 +87,10 @@ extern "C" {
 
 		inFile >> std::hex >> *start;
 		inFile >> std::hex >> *end;
+
+		FuncMap.regionStart = *start;
+		FuncMap.regionEnd = *end;
+
 	}
 
 }

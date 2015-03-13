@@ -12,6 +12,11 @@ LDFLAGS=-lc $(PAPI_LD_FLAGS) -lpapi -lpthread
 LIBMONITOR_FLAGS=-I$(LIBMONITOR_BASE)/include -L$(LIBMONITOR_BASE)/lib -lmonitor -pthread
 LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86_64 -lunwind
 
+HPC_FLAGS=-I/home/us93buza/hpctoolkit/hpctoolkit/src/tool/hpcrun -I/home/us93buza/hpctoolkit/hpctoolkit/src/tool \
+-I/home/us93buza/hpctoolkit/hpctoolkit/src/include -I/home/us93buza/hpctoolkit/hpctoolkit/src \
+-I/home/us93buza/hpctoolkit/hpctoolkit/build/src -I/home/us93buza/hpctoolkit/hpctoolkit/src/tool/hpcrun/fnbounds \
+-L$(HPC_BASE)/lib/hpctoolkit -lhpcrun
+
 INSTRO_FLAGS=-DWITH_MAX_SIZE
 
 
@@ -34,14 +39,18 @@ libhash:
 testStack: libshadowstack-fast
 	$(CC) $(PAPI_INCLUDE_FLAGS) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack -L$(LIBMONITOR_BASE)/lib -lmonitor $(LDFLAGS)
 
+# mapfiles test
+LINK=-Wl,-Map=mapfile
+
 sampling: libhash sampling-tool
-	$(CC) -fopenmp -finstrument-functions -g  -std=gnu99 target.c -o target.exe
+	$(CC) -fopenmp -finstrument-functions -g $(LINK) -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
+
 	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
 sampling-lib: libhash sampling-tool
-	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so target.c -o target.exe
-	python3 py/gen.py target.exe sampling-tool.so
+	$(CC) -fopenmp -finstrument-functions -g  $(LINK) -std=gnu99 sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so target.c -o target.exe
+	python3 py/gen.py target.exe
 	
 .PHONY : clean
 clean:

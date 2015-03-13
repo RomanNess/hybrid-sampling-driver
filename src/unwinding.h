@@ -5,6 +5,8 @@
 #include <libunwind.h>
 #include <monitor.h>
 
+#include "cpp/hash.h"
+
 #define MAX_UNWIND_FACTOR 20	/* max unwind factor */
 
 /**
@@ -15,6 +17,6 @@
 
 unsigned int regionStart, regionEnd;
 
-void doUnwind(int unwindSteps, void* context);
+void doUnwind(int address, void* context);
 
 #endif /* SRC_UNWINDING_H_ */
