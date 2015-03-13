@@ -17,7 +17,7 @@ const char* getName(key_type key);
 void parse(char* filename);
 void dump();
 
-void parseRegions(char* filename, unsigned int* start, unsigned int* end);
+void parseRegions(char* filename, unsigned long* start, unsigned long* end);
 
 #ifdef __cplusplus
 }

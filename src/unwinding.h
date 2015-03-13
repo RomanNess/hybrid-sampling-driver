@@ -15,8 +15,8 @@
  * TODO: note that the order of the unwind call stack is the other way around compared to the shadow stack
  */
 
-unsigned int regionStart, regionEnd;
+unsigned long regionStart, regionEnd;
 
-void doUnwind(int address, void* context);
+void doUnwind(unsigned long address, void* context);
 
 #endif /* SRC_UNWINDING_H_ */

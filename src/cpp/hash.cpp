@@ -15,8 +15,8 @@ struct FuncMap {
 	std::map<key_type, int> unwindSteps;
 	std::map<key_type, std::string> names;
 
-	unsigned int regionStart;
-	unsigned int regionEnd;
+	unsigned long regionStart;
+	unsigned long regionEnd;
 
 } FuncMap;
 
@@ -82,7 +82,7 @@ extern "C" {
 		}
 	}
 
-	void parseRegions(char* filename, unsigned int* start, unsigned int* end) {
+	void parseRegions(char* filename, unsigned long* start, unsigned long* end) {
 		std::ifstream inFile(filename);
 
 		inFile >> std::hex >> *start;

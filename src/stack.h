@@ -26,7 +26,7 @@ unsigned int stackMaxSize;
 
 /* Represents one single event (function) on the stack */
 struct StackEvent {
-	unsigned long long identifier;
+	unsigned long identifier;
 };
 
 /*
