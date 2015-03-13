@@ -9,15 +9,15 @@
  */
 #ifndef DRIVER_H
 #define DRIVER_H
-#include "stdio.h"
-#include "stdlib.h"
+
 #include "papi.h"
-#include "pthread.h"
-#include "string.h" // for memset
 #include "err.h"	// for errx
 
 #include "monitor.h"
+
+#ifndef SHADOWSTACK_ONLY
 #include "unwinding.h"
+#endif
 
 /*
  * TODO 2014-05-12 JP: Implement functionality to write the output to a user defined location

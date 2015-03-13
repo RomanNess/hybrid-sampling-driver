@@ -2,10 +2,7 @@
 #define H_STACK__
 #include "stdio.h"
 #include "stdlib.h"
-#include "limits.h"
-#include "err.h"
-
-#include "pthread.h"
+#include "err.h"	// for errx
 
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size

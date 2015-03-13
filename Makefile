@@ -12,11 +12,6 @@ LDFLAGS=-lc $(PAPI_LD_FLAGS) -lpapi -lpthread
 LIBMONITOR_FLAGS=-I$(LIBMONITOR_BASE)/include -L$(LIBMONITOR_BASE)/lib -lmonitor -pthread
 LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86_64 -lunwind
 
-HPC_FLAGS=-I/home/us93buza/hpctoolkit/hpctoolkit/src/tool/hpcrun -I/home/us93buza/hpctoolkit/hpctoolkit/src/tool \
--I/home/us93buza/hpctoolkit/hpctoolkit/src/include -I/home/us93buza/hpctoolkit/hpctoolkit/src \
--I/home/us93buza/hpctoolkit/hpctoolkit/build/src -I/home/us93buza/hpctoolkit/hpctoolkit/src/tool/hpcrun/fnbounds \
--L$(HPC_BASE)/lib/hpctoolkit -lhpcrun
-
 INSTRO_FLAGS=-DWITH_MAX_SIZE
 
 
@@ -36,7 +31,8 @@ libhash:
 	g++ -fPIC -shared -std=c++0x src/cpp/hash.cpp -o libhash.so
 
 ### Targets & Tests
-testStack: libshadowstack-fast
+testStack: SRC=src/stack.c src/driver.c
+testStack:	libshadowstack-fast
 	$(CC) $(PAPI_INCLUDE_FLAGS) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack -L$(LIBMONITOR_BASE)/lib -lmonitor $(LDFLAGS)
 
 # mapfiles test

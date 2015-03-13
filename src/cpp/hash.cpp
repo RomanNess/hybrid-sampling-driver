@@ -52,7 +52,7 @@ extern "C" {
 	}
 
 	/* probably the ugliest possible way to implement this */
-	void parse(char* filename) {
+	void parseFunctions(char* filename) {
 		// TODO error handling
 
 		std::ifstream inFile(filename);
