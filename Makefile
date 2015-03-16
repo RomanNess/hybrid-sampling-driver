@@ -8,7 +8,7 @@ CC=gcc
 SRC=src/stack.c src/driver.c src/unwinding.c
 
 CFLAGS=-fPIC -shared -Wall -std=gnu99
-LDFLAGS=-lc $(PAPI_LD_FLAGS) -lpapi -lpthread
+LDFLAGS=-lc $(PAPI_LD_FLAGS) -lpapi -pthread
 LIBMONITOR_FLAGS=-I$(LIBMONITOR_BASE)/include -L$(LIBMONITOR_BASE)/lib -lmonitor -pthread
 LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86_64 -lunwind
 
@@ -33,7 +33,7 @@ libhash:
 ### Targets & Tests
 testStack: SRC=src/stack.c src/driver.c
 testStack:	libshadowstack-fast
-	$(CC) $(PAPI_INCLUDE_FLAGS) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack -L$(LIBMONITOR_BASE)/lib -lmonitor $(LDFLAGS)
+	$(CC) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack $(LIBMONITOR_FLAGS)
 
 # mapfiles test
 LINK=-Wl,-Map=mapfile
@@ -41,7 +41,6 @@ LINK=-Wl,-Map=mapfile
 sampling: libhash sampling-tool
 	$(CC) -fopenmp -finstrument-functions -g $(LINK) -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
-
 	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
 sampling-lib: libhash sampling-tool

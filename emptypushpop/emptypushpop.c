@@ -8,12 +8,10 @@ void printBenchmarkResult() {
 }
 
 void _instroPushIdentifier(unsigned long funcIdentifier) {
-	// Nothings happens here.
 	return;
 }
 
 void _instroPopIdentifier() {
-	// honthing happens here.
 	return;
 }
 

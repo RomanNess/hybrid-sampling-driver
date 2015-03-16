@@ -16,14 +16,14 @@ void doUnwind(unsigned long address, void* context) {
 	unsigned long unwindBuffer[MAX_UNWIND_FACTOR];
 	unsigned long* bufferTop = unwindBuffer;
 
+#if  PRINT_FUNCTIONS
 	// for debug output
 	unw_word_t offp;
 	char buf[512];
-
+#endif
 	// unwind till first interesting function
 	unsigned long functionStart = getFunctionStart((unsigned long) address);
 	while (functionStart == 0 || functionStart < regionStart || functionStart > regionEnd) {
-
 #if PRINT_FUNCTIONS
 		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
 		printf("ip = %lx \t| %s (ignored)\n", (unsigned long) functionStart, buf);
@@ -60,11 +60,11 @@ void doUnwind(unsigned long address, void* context) {
 		}
 
 		status = unw_step(&cursor);
-
 	}
 
+#if  PRINT_FUNCTIONS
 	///XXX
 	printf("stack bottom: %lx\n", (unsigned long) bot);
 	printf("\n");
-
+#endif
 }
