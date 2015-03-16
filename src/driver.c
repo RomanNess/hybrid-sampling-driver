@@ -60,8 +60,6 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
 		buffer[numberOfBufferElements].stackEvents[i] = stack->_elements[i];
 	}
 	buffer[numberOfBufferElements].numStackEvents = stack->_size;
-
-	numberOfBufferElements++;
 }
 
 /*
@@ -126,6 +124,8 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
 
 	doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements]);
+
+	numberOfBufferElements++;
 }
 
 

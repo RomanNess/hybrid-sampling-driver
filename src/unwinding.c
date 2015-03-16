@@ -25,6 +25,7 @@ void doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 		printf("ip = %lx \t| %s (SKIP)\n", (unsigned long) functionStart, buf);
 #endif
 		if (unw_step(&cursor) < 0) {
+			buffer->numUnwindEvents = 0;
 			printf("### skipped unwind method.\n\n");
 			return;
 		}

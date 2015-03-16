@@ -15,7 +15,7 @@ LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86
 INSTRO_FLAGS=-DWITH_MAX_SIZE
 
 
-sampling-tool: $(objects)
+sampling-tool: libhash $(objects)
 	$(CC) $(PAPI_INCLUDE_FLAGS) -DUSE_CPP_LIB -I. $(INSTRO_FLAGS) -g -O3 $(CFLAGS) -o sampling-tool.so $(SRC) -L. -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 # Shadow stack ONLY as a library to link against GCC instrumented binaries
@@ -38,7 +38,7 @@ testStack:	libshadowstack-fast
 # mapfiles test
 LINK=-Wl,-Map=mapfile
 
-sampling: libhash sampling-tool
+sampling: sampling-tool
 	$(CC) -fopenmp -finstrument-functions -g $(LINK) -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
 	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
