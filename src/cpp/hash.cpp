@@ -32,6 +32,10 @@ extern "C" {
 			return 0;	// not in interesting region
 		}
 
+		if (FuncMap.unwindSteps.find(address) != FuncMap.unwindSteps.end()) {
+			return address;
+		}
+
 		auto it = FuncMap.unwindSteps.lower_bound(address);
 		--it;
 		return (*it).first;

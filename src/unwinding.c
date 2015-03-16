@@ -2,19 +2,14 @@
 
 #define PRINT_FUNCTIONS 1
 
-// TODO use unwindSteps
 // TODO how to distinguish methods of our library and actual target code during unwind ???
-// TODO where to parse function identifiers for the runtime?
 /* context - the papi handler context */
-void doUnwind(unsigned long address, void* context) {
+void doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) {
 
 	unw_cursor_t cursor;
 	/* RN: I have no idea why exactly this works with papi overflow contexts but it does! */
 	unw_context_t* uc = (unw_context_t*) context;
 	unw_init_local(&cursor, uc);
-
-	unsigned long unwindBuffer[MAX_UNWIND_FACTOR];
-	unsigned long* bufferTop = unwindBuffer;
 
 #if  PRINT_FUNCTIONS
 	// for debug output
@@ -33,6 +28,8 @@ void doUnwind(unsigned long address, void* context) {
 	}
 
 	int unwindSteps = getUnwindSteps(getFunctionStart(functionStart));
+	buffer->numUnwindEvents = unwindSteps;
+	buffer->unwindEvents = (struct StackEvent *) malloc(unwindSteps * sizeof(struct StackEvent));
 
 	unsigned long ip, sp;
 	int status = 1;
@@ -44,9 +41,9 @@ void doUnwind(unsigned long address, void* context) {
 
 		if (regionStart < ip && ip < regionEnd) {
 
-			*bufferTop = ip;
-			bufferTop++;
 			unwindSteps--;	// interesting frame
+
+			buffer->unwindEvents[unwindSteps].identifier = ip;
 
 #if  PRINT_FUNCTIONS
 			unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);

@@ -82,11 +82,21 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 		// write all buffered elements to a file
 		for (int i = 0; i < numberOfBufferElements; i++) {
 			const struct StackEvent *stackEvents = buffer[i].stackEvents;
-			fprintf(fp, "Sample: %lu\nAddress: %lu\n", buffer[i].sampleNumber, buffer[i].icAddress);
+			fprintf(fp, "Sample: %lu\nAddress: %lx\n", buffer[i].sampleNumber, buffer[i].icAddress);
+			fprintf(fp, "ShadowStack size: %i, Unwind size: %i\n", buffer[i].numStackEvents, buffer[i].numUnwindEvents);
 
 			for (int j = 0; j < buffer[i].numStackEvents; j++) {
 				fprintf(fp, "Thread: %i in Function: %lx\n", buffer[i].thread, stackEvents[j].identifier);
 			}
+
+			const struct StackEvent* unwindEvents = buffer[i].unwindEvents;
+			for (int j = 0; j < buffer[i].numUnwindEvents; j++) {
+
+
+				fprintf(fp, "Unwind: %lx\n", unwindEvents[j].identifier);
+			}
+
+			fprintf(fp, "\n");
 			free((struct StackEvent *) stackEvents);
 		}
 		numberOfBufferElements = 0;
@@ -109,11 +119,13 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
 
-	doUnwind((unsigned long) address, context);
+	///XXX
+	printf("Sample: %li\n", sampleCount);
 
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
 
+	doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements]);
 }
 
 

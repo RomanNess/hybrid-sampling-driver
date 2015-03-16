@@ -4,6 +4,9 @@
 #include "stdlib.h"
 #include "err.h"	// for errx
 
+
+#include "event.h"
+
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
  * This limits our capabilities sampling programs with very very deep call trees.
@@ -18,23 +21,6 @@
 #ifdef WITH_MAX_SIZE
 unsigned int stackMaxSize;
 #endif
-
-/* Represents one single event (function) on the stack */
-struct StackEvent {
-	unsigned long identifier;
-};
-
-/*
- * This datastructure models our stack.
- * _size is the number of elements
- * _maxSize is the maximum number of elements the Stack can hold
- */
-struct Stack {
-
-	struct StackEvent *_elements;
-	unsigned int _size, _maxSize;
-
-};
 
 /*
  * The number of threads to be used.
