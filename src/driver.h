@@ -10,10 +10,15 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
-#include "papi.h"
-#include "err.h"	// for errx
+#include <papi.h>
+#include <err.h>	// for errx
+#include <unistd.h>	// for getpid
 
 #include "monitor.h"
+
+#ifdef USE_CPP_LIB
+#include "cpp/hash.h"
+#endif
 
 #ifndef SHADOWSTACK_ONLY
 #include "unwinding.h"

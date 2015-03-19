@@ -29,7 +29,7 @@ extern "C" {
 	key_type getFunctionStart(key_type address) {
 
 		if (address < FuncMap.regionStart || address > FuncMap.regionEnd) {
-			return 0;	// not in interesting region
+			return address;	// XXX not in interesting region
 		}
 
 		if (FuncMap.unwindSteps.find(address) != FuncMap.unwindSteps.end()) {

@@ -1,9 +1,9 @@
 #ifndef H_STACK__
 #define H_STACK__
-#include "stdio.h"
-#include "stdlib.h"
-#include "err.h"	// for errx
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <err.h>	// for errx
 
 #include "event.h"
 

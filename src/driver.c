@@ -1,9 +1,5 @@
 #include "driver.h"
 
-#ifdef USE_CPP_LIB
-#include "cpp/hash.h"
-#endif
-
 
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {
@@ -194,7 +190,7 @@ void finishSamplingDriver() {
 
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
-	printf("#### init sampling driver #### \n");
+	printf("#### init sampling driver - Pid is %i #### \n", getpid());
 
 	readEnv();
 
@@ -218,6 +214,10 @@ void monitor_fini_process(int how, void* data) {
 #ifndef SHADOWSTACK_ONLY
 	finishSamplingDriver();
 #endif
+
+	// halt until user interaction
+	printf("### press enter to exit. Pid: %i\n", getpid());
+	getc(stdin);
 }
 
 void *monitor_init_thread(int tid, void *data) {
