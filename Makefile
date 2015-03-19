@@ -35,16 +35,14 @@ testStack: SRC=src/stack.c src/driver.c
 testStack:	libshadowstack-fast
 	$(CC) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack $(LIBMONITOR_FLAGS)
 
-# mapfiles test
-LINK=-Wl,-Map=mapfile
 
 sampling: sampling-tool
-	$(CC) -fopenmp -finstrument-functions -g $(LINK) -std=gnu99 target.c -o target.exe
+	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
 	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
 sampling-lib: libhash sampling-tool
-	$(CC) -fopenmp -finstrument-functions -g  $(LINK) -std=gnu99 sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so target.c -o target.exe
+	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so target.c -o target.exe
 	python3 py/gen.py target.exe
 	
 .PHONY : clean

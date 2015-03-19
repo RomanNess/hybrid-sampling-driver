@@ -3,10 +3,15 @@
 #include <stdio.h>
 
 #include <fstream>
+#include <sstream>
+
 #include <string>
 #include <err.h>
+#include <unistd.h>	// for getpid
 #include <stdlib.h> // strtol
 #include <vector>
+
+#include <iostream> // XXX remove
 
 #include "hash.h"
 
@@ -95,5 +100,24 @@ extern "C" {
 
 	}
 
+	/* note that executing "cp" in the shell would create a new process
+	 * and trigger libmonitors callbacks */
+	void dumpMemoryMapping() {
+		int pid = getpid();
+		std::string srcFile = "/proc/" + std::to_string(pid) +  "/maps";
+		std::string destFile = "map_file";
+
+		std::ifstream src(srcFile);
+		std::ofstream dest(destFile);
+
+		if (src.fail()) {
+			std::cout << "!!!! ifstream FAILED!" << std::endl;
+		}
+
+		dest << src.rdbuf();
+
+		src.close();
+		dest.close();
+	}
 }
 

@@ -203,6 +203,8 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	assingContinuousThreadId();
 	initShadowStack();
 
+	dumpMemoryMapping();
+
 #ifndef SHADOWSTACK_ONLY
 	initSamplingDriver();
 #endif
@@ -214,10 +216,6 @@ void monitor_fini_process(int how, void* data) {
 #ifndef SHADOWSTACK_ONLY
 	finishSamplingDriver();
 #endif
-
-	// halt until user interaction
-	printf("### press enter to exit. Pid: %i\n", getpid());
-	getc(stdin);
 }
 
 void *monitor_init_thread(int tid, void *data) {
