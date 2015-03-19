@@ -71,7 +71,6 @@ void initShadowStack() {
 		}
 #endif
 
-		fprintf(stderr, "Ready flag set\n");
 	}
 #ifdef DEBUG
 	fprintf(stderr, "end of createStackInstance()\n");

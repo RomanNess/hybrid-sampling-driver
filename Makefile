@@ -15,8 +15,11 @@ LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86
 INSTRO_FLAGS=-DWITH_MAX_SIZE
 
 
-sampling-tool: libhash $(objects)
-	$(CC) $(PAPI_INCLUDE_FLAGS) -DUSE_CPP_LIB -I. $(INSTRO_FLAGS) -g -O3 $(CFLAGS) -o sampling-tool.so $(SRC) -L. -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+libsampling: libhash
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DUSE_CPP_LIB -I. $(INSTRO_FLAGS) -g -O3 $(CFLAGS) -o libsampling.so $(SRC) -L. -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+
+libhash:
+	g++ -fPIC -shared -std=c++0x src/cpp/hash.cpp -o libhash.so
 
 # Shadow stack ONLY as a library to link against GCC instrumented binaries
 libshadowstack-fast:
@@ -27,23 +30,16 @@ libshadowstack-debug:
 libemptypushpop:
 	$(CC) -O2 -fPIC -shared -o libemptypushpop.so emptypushpop/emptypushpop.c
 	
-libhash:
-	g++ -fPIC -shared -std=c++0x src/cpp/hash.cpp -o libhash.so
 
 ### Targets & Tests
 testStack: SRC=src/stack.c src/driver.c
 testStack:	libshadowstack-fast
 	$(CC) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack $(LIBMONITOR_FLAGS)
 
-
-sampling: sampling-tool
+sampling: libsampling
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
-	LD_PRELOAD="sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
-	
-sampling-lib: libhash sampling-tool
-	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 sampling-tool.so $(LIBMONITOR_BASE)/lib/libmonitor.so target.c -o target.exe
-	python3 py/gen.py target.exe
+	LD_PRELOAD="libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
 .PHONY : clean
 clean:

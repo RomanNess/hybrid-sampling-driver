@@ -193,17 +193,15 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	printf("#### init sampling driver - Pid is %i #### \n", getpid());
 
 	readEnv();
+	assingContinuousThreadId();
+	initShadowStack();
 
 #ifdef USE_CPP_LIB
 	parseFunctions("nm_file");
 	parseRegions("regions_file", &regionStart, &regionEnd);
 	dump();
-#endif
-
-	assingContinuousThreadId();
-	initShadowStack();
-
 	dumpMemoryMapping();
+#endif
 
 #ifndef SHADOWSTACK_ONLY
 	initSamplingDriver();
