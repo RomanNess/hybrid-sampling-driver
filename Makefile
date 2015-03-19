@@ -16,33 +16,33 @@ INSTRO_FLAGS=-DWITH_MAX_SIZE
 
 
 libsampling: libhash
-	$(CC) $(PAPI_INCLUDE_FLAGS) -DUSE_CPP_LIB -I. $(INSTRO_FLAGS) -g -O3 $(CFLAGS) -o libsampling.so $(SRC) -L. -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DUSE_CPP_LIB -I./src $(INSTRO_FLAGS) -g -O3 $(CFLAGS) -o lib/libsampling.so $(SRC) -L./lib -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libhash:
-	g++ -fPIC -shared -std=c++0x src/cpp/hash.cpp -o libhash.so
+	g++ -fPIC -shared -std=c++0x src/cpp/hash.cpp -o lib/libhash.so
 
 # Shadow stack ONLY as a library to link against GCC instrumented binaries
 libshadowstack-fast:
-	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -O3 $(CFLAGS) -o libshadowstack.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -O3 $(CFLAGS) 			-o lib/libshadowstack.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 libshadowstack-debug:
-	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -DDEBUG -g -O0 $(CFLAGS) -o libshadowstack.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -DDEBUG -g -O0 $(CFLAGS) -o lib/libshadowstack.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libemptypushpop:
-	$(CC) -O2 -fPIC -shared -o libemptypushpop.so emptypushpop/emptypushpop.c
+	$(CC) -O2 -fPIC -shared -o lib/libemptypushpop.so emptypushpop/emptypushpop.c
 	
 
 ### Targets & Tests
 testStack: SRC=src/stack.c src/driver.c
 testStack:	libshadowstack-fast
-	$(CC) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L. -lshadowstack $(LIBMONITOR_FLAGS)
+	$(CC) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L./lib -lshadowstack $(LIBMONITOR_FLAGS)
 
 sampling: libsampling
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
-	LD_PRELOAD="libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+	LD_PRELOAD="./lib/libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
 .PHONY : clean
 clean:
-	rm -f *.so
-	rm -f *.o
+	rm -f lib/*.so
 	rm -f *.exe
+	rm -f nm_file regions_file map_file stack_file

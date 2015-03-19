@@ -70,7 +70,7 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *i
  */
 void flushBufferToFile(struct SampleEvent *buffer) {
 	fprintf(stdout, "Starting to write out\n");
-	FILE *fp = fopen("pthread_myOutStack.txt", "a+");
+	FILE *fp = fopen("stack_file", "a+");
 
 	if (fp) {
 		// write all buffered elements to a file
@@ -112,6 +112,8 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 /* PAPI Sampling handler */
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
+
+	// TODO unwind address till first interesting call stack frame
 
 	///XXX
 	printf("Sample: %li\n", sampleCount);
