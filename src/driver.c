@@ -30,7 +30,7 @@ void finiBuffer() {
  *
  * This is the function to be called when PAPI interrupts and a sample is taken by our handler.
  * It saves the state of the shadow stack and the PAPI instruction counter address to a
- * SampleEvent object and puts it on our buffer.
+ * SampleEvent object and puts it in the buffer.
  */
 void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 
@@ -111,9 +111,6 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 /* PAPI Sampling handler */
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
-
-	///XXX
-	printf("Sample: %li\n", sampleCount);
 
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);

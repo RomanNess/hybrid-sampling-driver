@@ -31,14 +31,14 @@ extern "C" {
 		FuncMap.names[key] = std::string(name);
 	}
 
-	key_type getFunctionStart(key_type address) {
+	key_type getFunctionStartAddress(key_type address) {
 
 		if (address < FuncMap.regionStart || address > FuncMap.regionEnd) {
 			return address;	// XXX not in interesting region
 		}
 
 		if (FuncMap.unwindSteps.find(address) != FuncMap.unwindSteps.end()) {
-			return address;
+			return address;	// no exact function address yet
 		}
 
 		auto it = FuncMap.unwindSteps.lower_bound(address);
@@ -60,13 +60,10 @@ extern "C" {
 		return (const char*) "n/a";
 	}
 
-	/* probably the ugliest possible way to implement this */
 	void parseFunctions(char* filename) {
-		// TODO error handling
 
 		std::ifstream inFile(filename);
 		std::string line;
-
 		while (std::getline(inFile, line)) {
 			int key = (int) strtol(line.c_str(), NULL, 16);
 			char delimiter = ' ';
@@ -111,7 +108,7 @@ extern "C" {
 		std::ofstream dest(destFile);
 
 		if (src.fail()) {
-			std::cout << "!!!! ifstream FAILED!" << std::endl;
+			std::cout << "Error: Could not read map from " << srcFile << std::endl;
 		}
 
 		dest << src.rdbuf();

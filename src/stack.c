@@ -21,7 +21,7 @@ void assingContinuousThreadId() {
 	threadId = currentThreadNum++;
 
 	///XXX
-	printf("# created key: %i \n", threadId);
+	printf("# Created thread key: %i \n", threadId);
 }
 
 void readEnv() {
@@ -36,7 +36,7 @@ void readEnv() {
 	} else {
 		instroNumThreads = 1;
 	}
-	printf("Running with %i threads.\n", instroNumThreads);
+	printf("Running with %i thread(s).\n", instroNumThreads);
 }
 
 void initShadowStack() {
