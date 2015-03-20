@@ -55,7 +55,7 @@ void initBuffer();
 void finiBuffer();
 
 void flushStackToFile(struct Stack *stack);
-void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *icAddress);
+void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer);
 void flushBufferToFile(struct SampleEvent *buffer);
 
 void handler(int EventSet, void *address, long long overflow_vector, void *context);

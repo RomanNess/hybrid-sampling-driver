@@ -18,6 +18,6 @@
 
 unsigned long regionStart, regionEnd;
 
-void doUnwind(unsigned long address, void* context, struct SampleEvent *buffer);
+long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer);
 
 #endif /* SRC_UNWINDING_H_ */

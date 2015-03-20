@@ -32,14 +32,13 @@ void finiBuffer() {
  * It saves the state of the shadow stack and the PAPI instruction counter address to a
  * SampleEvent object and puts it on our buffer.
  */
-void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer, void *icAddress) {
+void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 
 	if (stack == 0 || buffer == 0) {
 		errx(-5, "Error: stack or buffer was NULL. Exiting.");
 	}
 
 	buffer[numberOfBufferElements].thread = threadId;
-	buffer[numberOfBufferElements].icAddress = (long) icAddress;
 	buffer[numberOfBufferElements].sampleNumber = sampleCount;
 	if (stack->_size == 0) {
 		fprintf(stderr, "FlushStackToBuffer: %li with stack size == 0\n", sampleCount);
@@ -113,15 +112,15 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
 
-	// TODO unwind address till first interesting call stack frame
-
 	///XXX
 	printf("Sample: %li\n", sampleCount);
 
 	// This is where the work happens
-	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer, address);
+	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
 
-	doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements]);
+	long startAddress = doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements]);
+
+	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
 
 	numberOfBufferElements++;
 }

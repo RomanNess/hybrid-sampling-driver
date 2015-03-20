@@ -5,13 +5,14 @@
 
 // TODO how to distinguish methods of our library and actual target code during unwind ???
 /* context - the papi handler context
+ * Returns the address of the first "interesting" function (-1 if no interesting function found).
  *
  * Note: unw_step returns
  * 		>0 for successful unwinds
  * 		=0 if the end was reached
  * 		<0 error
  */
-void doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) {
+long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) {
 
 	unw_cursor_t cursor;
 #if IGNORE_PAPI_CONTEXT
@@ -40,7 +41,7 @@ void doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 		if (unw_step(&cursor) < 0) {
 			buffer->numUnwindEvents = 0;
 			printf("### skipped unwind method.\n\n");
-			return;
+			return -1;
 		}
 		unw_get_reg(&cursor, UNW_REG_IP, &functionStart);
 	}
@@ -87,4 +88,6 @@ void doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 	printf("stack bottom: %lx\n", (unsigned long) bot);
 	printf("\n");
 #endif
+
+	return (long int) functionStart;
 }
