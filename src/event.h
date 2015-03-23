@@ -1,7 +1,6 @@
 #ifndef SRC_EVENT_H
 #define SRC_EVENT_H
 
-
 /* Represents one single event (function) on the stack */
 struct StackEvent {
 	unsigned long identifier;
@@ -13,7 +12,6 @@ struct StackEvent {
  * _maxSize is the maximum number of elements the Stack can hold
  */
 struct Stack {
-
 	struct StackEvent *_elements;
 	unsigned int _size, _maxSize;
 
@@ -25,11 +23,14 @@ struct Stack {
  * A sample event at the moment includes the following:
  *      thread			- a continuous thread identifier
  *      sampleNumber    - a continuous number identifying the sample
- *      icAddress       - the PAPI instruction counter Address where the sample occured
+ *      icAddress       - the identifier (address) of the function where the sample was triggered
  *      stackEvents     - this is a copy of our shadow stack at the point in time where the sample occured
  *      numStackEvents  - how many stack elements have been copied.
  *
- * TODO JP: I think that this basic interface should be changed at some point in time.
+ *      unwindEvents	- the unwound functions
+ *      numUnwindEvents	- the number of unwound functions
+ *
+ * TODO this basic interface should be changed at some point in time.
  */
 struct SampleEvent {
 

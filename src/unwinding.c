@@ -27,7 +27,6 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 #endif
 
 #if  PRINT_FUNCTIONS
-	printf("Sample: %li\n", sampleCount);
 	unw_word_t offp;
 	char buf[512];
 #endif
