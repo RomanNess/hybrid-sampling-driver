@@ -2,6 +2,7 @@
 # eclipse
 .cproject
 .project
+.settings/
 
 # src
 *.so
