@@ -27,6 +27,9 @@ libshadowstack-fast:
 libshadowstack-debug:
 	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -DDEBUG -g -O0 $(CFLAGS) -o lib/libshadowstack.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
+measure:
+	$(CC) -std=c99 -O0 overhead/overhead-driver.c $(LDFLAGS) -o overhead.exe
+
 libemptypushpop:
 	$(CC) -O2 -fPIC -shared -o lib/libemptypushpop.so emptypushpop/emptypushpop.c
 	
