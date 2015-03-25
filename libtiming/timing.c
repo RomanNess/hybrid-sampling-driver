@@ -12,7 +12,7 @@ double getResult() {
 	char resultString[32];
 	struct timespec result;
 	timespec_subtract(&result, &start, &end);
-	sprintf(resultString, "%ld.%ld", result.tv_sec, result.tv_nsec);
+	sprintf(resultString, "%ld.%09ld", result.tv_sec, result.tv_nsec);
 
 	char* stringEnd;
 	return strtod(resultString, &stringEnd);
@@ -21,7 +21,7 @@ double getResult() {
 void printResults() {
 	struct timespec result;
 	timespec_subtract(&result, &start, &end);
-	fprintf(stderr, "Run took: %ld.%ld seconds.\n", result.tv_sec, result.tv_nsec);
+	fprintf(stderr, "Run took: %ld.%09ld seconds.\n", result.tv_sec, result.tv_nsec);
 	start.tv_sec = 0;
 	start.tv_nsec = 0;
 	end.tv_sec = 0;
