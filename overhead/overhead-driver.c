@@ -40,9 +40,25 @@ void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vec
 	unw_getcontext(&uc);
 	unw_init_local(&cursor, &uc);
 
-	for (int i=0; i<6; i++) {
+#if VERBOSE_PRINT
+	unw_word_t offp;
+	char buf[512];
+	unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
+	printf("\t%s\n", buf);
+#endif
+	// XXX RN: if libmonitor is active one more unwind (5) is necessary
+	for (int i = 0; i < 4; i++) {
 		unw_step(&cursor);
+
+#if VERBOSE_PRINT
+		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
+		printf("\t%s\n", buf);
+#endif
 	}
+#if VERBOSE_PRINT
+	printf("\n");
+#endif
+
 }
 
 void initPAPI(PAPI_overflow_handler_t handler) {
@@ -72,7 +88,7 @@ void finiPAPI() {
 	long long instructionCounter;
 	PAPI_stop(EventSet, &instructionCounter);
 
-	printf("%li samples taken\n", sampleCount);
+	printf("%li samples taken == ", sampleCount);
 	sampleCount = 0;
 }
 
@@ -87,7 +103,7 @@ void kernel() {
 
 void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 
-	printf("\n%s ==\n", name);
+	printf("%17s == ", name);
 
 	if (handler != NULL) {
 		initPAPI(handler);
@@ -104,12 +120,24 @@ void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 int main() {
 
 	makeRun(NULL, "Reference");
-	makeRun(emptyHandler, "Empty");
-	makeRun(unwindNewContext, "UnwindNewContext");
-	makeRun(unwindPAPIContext, "UnwindPAPIContext");
-	makeRun(unwindPAPIContextManual, "UnwindPAPIContextManual");
-
 	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
+
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+
+	makeRun(unwindNewContext, "UnwindNewContext");
+	makeRun(unwindNewContext, "UnwindNewContext");
+	makeRun(unwindNewContext, "UnwindNewContext");
+
+	makeRun(unwindPAPIContext, "UnwindPAPIContext");
+	makeRun(unwindPAPIContext, "UnwindPAPIContext");
+	makeRun(unwindPAPIContext, "UnwindPAPIContext");
+
+	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
+	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
+	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
 
 	return 0;
 }

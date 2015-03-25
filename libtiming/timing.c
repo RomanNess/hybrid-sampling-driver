@@ -21,7 +21,7 @@ double getResult() {
 void printResults() {
 	struct timespec result;
 	timespec_subtract(&result, &start, &end);
-	fprintf(stderr, "Run took: %ld.%09ld seconds.\n", result.tv_sec, result.tv_nsec);
+	fprintf(stdout, "Run took: %ld.%09ld seconds.\n", result.tv_sec, result.tv_nsec);
 	start.tv_sec = 0;
 	start.tv_nsec = 0;
 	end.tv_sec = 0;

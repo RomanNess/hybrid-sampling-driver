@@ -3,7 +3,7 @@
 #define PRINT_FUNCTIONS 1
 #define IGNORE_PAPI_CONTEXT 0
 
-// XXX RN: this only ategorizes functions of the target binary (not linked libs) as interesting
+// XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used
 // XXX RN: monitor_get_addr_main() can obtain the address of main() for error handling
 /* context - the papi handler context
