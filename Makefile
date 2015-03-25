@@ -27,11 +27,11 @@ libshadowstack-fast:
 libshadowstack-debug:
 	$(CC) $(PAPI_INCLUDE_FLAGS) -DSHADOWSTACK_ONLY -DDEBUG -g -O0 $(CFLAGS) -o lib/libshadowstack.so $(SRC) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
-measure:
-	$(CC) -std=gnu99 -O3 -I. overhead/overhead-driver.c -ltiming -L./lib $(LDFLAGS) -o overhead.exe
+measure: timing
+	$(CC) -std=gnu99 -O3 -I. overhead/overhead-driver.c -ltiming -L./lib $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
 
 timing:
-	$(CC) -O3 $(CFLAGS) -o lib/libtiming.so libtiming/timing.c -lrt
+	$(CC) -std=gnu99 -O3 $(CFLAGS) -o lib/libtiming.so libtiming/timing.c -lrt
 
 libemptypushpop:
 	$(CC) -O3 -fPIC -shared -o lib/libemptypushpop.so emptypushpop/emptypushpop.c

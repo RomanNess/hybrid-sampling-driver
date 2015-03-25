@@ -9,7 +9,7 @@ void stopMeasurement() {
 }
 
 double getResult() {
-	char* resultString;
+	char resultString[32];
 	struct timespec result;
 	timespec_subtract(&result, &start, &end);
 	sprintf(resultString, "%ld.%ld", result.tv_sec, result.tv_nsec);

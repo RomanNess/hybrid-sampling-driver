@@ -1,9 +1,11 @@
 #include <libtiming/timing.h>
 
-#include <papi.h>
-
 #include <stdio.h>
 #include <err.h>
+
+#include <papi.h>
+
+#include <libunwind.h>
 
 long overflowCountForSamples = 2600000;
 long sampleCount = 0;
@@ -13,8 +15,39 @@ void emptyHandler(int EventSet, void* address, long long overflow_vector, void* 
 	sampleCount++;
 }
 
+void unwindNewContext(int EventSet, void* address, long long overflow_vector, void* context) {
+	sampleCount++;
+
+	unw_cursor_t cursor;
+	unw_context_t uc;
+	unw_getcontext(&uc);
+	unw_init_local(&cursor, &uc);
+}
+
+void unwindPAPIContext(int EventSet, void* address, long long overflow_vector, void* context) {
+	sampleCount++;
+
+	unw_cursor_t cursor;
+	unw_context_t* uc = (unw_context_t*) context;
+	unw_init_local(&cursor, uc);
+}
+
+void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vector, void* context) {
+	sampleCount++;
+
+	unw_cursor_t cursor;
+	unw_context_t uc;
+	unw_getcontext(&uc);
+	unw_init_local(&cursor, &uc);
+
+	for (int i=0; i<6; i++) {
+		unw_step(&cursor);
+	}
+}
+
 void initPAPI(PAPI_overflow_handler_t handler) {
 
+	EventSet = PAPI_NULL;
 	int retval;
 	/* start the PAPI Library */
 	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
@@ -56,23 +89,27 @@ void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 
 	printf("\n%s ==\n", name);
 
-	initPAPI(handler);
+	if (handler != NULL) {
+		initPAPI(handler);
+	}
 	startMeasurement();
 	kernel();
 	stopMeasurement();
-	finiPAPI();
+	if (handler != NULL) {
+		finiPAPI();
+	}
 	printResults();
 }
 
 int main() {
 
-	printf("Reference ==\n");
-	startMeasurement();
-	kernel();
-	stopMeasurement();
-	printResults();
-
+	makeRun(NULL, "Reference");
 	makeRun(emptyHandler, "Empty");
+	makeRun(unwindNewContext, "UnwindNewContext");
+	makeRun(unwindPAPIContext, "UnwindPAPIContext");
+	makeRun(unwindPAPIContextManual, "UnwindPAPIContextManual");
+
+	makeRun(NULL, "Reference");
 
 	return 0;
 }

@@ -3,6 +3,7 @@
 
 #include <time.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 int timespec_subtract(struct timespec* result, struct timespec* start, struct timespec* end);
 
