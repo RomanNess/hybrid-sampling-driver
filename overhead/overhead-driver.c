@@ -1,4 +1,4 @@
-#include <libtiming/timing.h>
+#include <../libtiming/timing.h>
 
 #include <stdio.h>
 #include <err.h>
@@ -6,6 +6,9 @@
 #include <papi.h>
 
 #include <libunwind.h>
+
+#define NUM_ITERATIONS 1000000000
+//#define NUM_ITERATIONS 10000000
 
 long overflowCountForSamples = 2600000;
 long sampleCount = 0;
@@ -58,7 +61,14 @@ void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vec
 #if VERBOSE_PRINT
 	printf("\n");
 #endif
+}
 
+#include "cpp/hash.h"
+
+void unwind(int EventSet, void* address, long long overflow_vector, void* context) {
+	sampleCount++;
+
+	getFunctionStartAddress((unsigned long) address);
 }
 
 void initPAPI(PAPI_overflow_handler_t handler) {
@@ -95,7 +105,7 @@ void finiPAPI() {
 void kernel() __attribute__ ((noinline));
 void kernel() {
 	double f = 0.f;
-	for (int i = 1; i < 1000000000; i++) {
+	for (int i = 1; i < NUM_ITERATIONS; i++) {
 		f = f + 1 / (double) i;
 	}
 	printf("", f);

@@ -10,7 +10,6 @@
 #include <unistd.h>	// for getpid
 #include <stdlib.h> // strtol
 #include <vector>
-
 #include <iostream> // XXX remove
 
 #include "hash.h"
@@ -63,6 +62,10 @@ extern "C" {
 	void parseFunctions(char* filename) {
 
 		std::ifstream inFile(filename);
+		if (inFile == NULL) {
+			errx(1, "Error: File \"%s\" not found.", filename);
+		}
+
 		std::string line;
 		while (std::getline(inFile, line)) {
 			int key = (int) strtol(line.c_str(), NULL, 16);
@@ -88,6 +91,9 @@ extern "C" {
 
 	void parseRegions(char* filename, unsigned long* start, unsigned long* end) {
 		std::ifstream inFile(filename);
+		if (inFile == NULL) {
+			errx(1, "Error: File \"%s\" not found.", filename);
+		}
 
 		inFile >> std::hex >> *start;
 		inFile >> std::hex >> *end;

@@ -102,7 +102,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 }
 
 
-#ifndef SHADOWSTACK_ONLY
+#ifndef NO_PAPI_DRIVER
 
 /*
  * SAMPLING DRIVER SEGMENT
@@ -184,7 +184,7 @@ void finishSamplingDriver() {
 #endif
 }
 
-#endif	// SHADOWSTACK_ONLY
+#endif	// NO_PAPI_DRIVER
 
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
@@ -201,7 +201,7 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	dumpMemoryMapping();
 #endif
 
-#ifndef SHADOWSTACK_ONLY
+#ifndef NO_PAPI_DRIVER
 	initSamplingDriver();
 #endif
 
@@ -209,7 +209,7 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 }
 
 void monitor_fini_process(int how, void* data) {
-#ifndef SHADOWSTACK_ONLY
+#ifndef NO_PAPI_DRIVER
 	finishSamplingDriver();
 #endif
 }
@@ -219,7 +219,7 @@ void *monitor_init_thread(int tid, void *data) {
 	PAPI_register_thread();
 	assingContinuousThreadId();
 
-#ifndef SHADOWSTACK_ONLY
+#ifndef NO_PAPI_DRIVER
 	registerThreadForPAPI();	// PAPI is registered per thread
 #endif
 
