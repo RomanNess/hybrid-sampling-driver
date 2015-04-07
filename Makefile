@@ -33,8 +33,10 @@ libshadowstack-fast: libsampling
 libshadowstack-debug: OPT_FLAGS=-g -O0
 libshadowstack-debug: libshadowstack-fast
 
+#measure: PP_FLAGS+=-DPRINT_FUNCTIONS
+measure: PP_FLAGS+=-DMICROBENCH
 measure: timing libhash libshadowstack-fast
-	$(CC) -std=gnu99 -O3 -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
+	$(CC) -std=gnu99 -DMICROBENCH -O3 -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
 
 timing:

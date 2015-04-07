@@ -36,8 +36,15 @@
 struct Stack **_multithreadStack = 0;
 
 /* write buffer */
-static struct SampleEvent *_flushToDiskBuffer = 0;
-static unsigned int numberOfBufferElements = 0;
+#ifndef MICROBENCH
+static
+#endif
+struct SampleEvent *_flushToDiskBuffer = 0;
+
+#ifndef MICROBENCH
+static
+#endif
+unsigned int numberOfBufferElements = 0;
 
 long int sampleCount = 0; /* total samples taken */
 long overflowCountForSamples = 2600000; /* CPU-cycles per sample (set by INSTRO_SAMPLE_FREQ) */

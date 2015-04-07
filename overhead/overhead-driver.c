@@ -65,8 +65,6 @@ void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vec
 #endif
 }
 
-#include "cpp/hash.h"
-
 void functionStartAddress(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
 
@@ -77,6 +75,12 @@ void unwindSteps(int EventSet, void* address, long long overflow_vector, void* c
 	sampleCount++;
 
 	getUnwindSteps(getFunctionStartAddress((unsigned long) address));
+}
+
+void unwind(int EventSet, void* address, long long overflow_vector, void* context) {
+	sampleCount++;
+
+	doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements++]);
 }
 
 
@@ -167,6 +171,10 @@ int main() {
 	makeRun(unwindSteps, "UnwindSteps");
 	makeRun(unwindSteps, "UnwindSteps");
 	makeRun(unwindSteps, "UnwindSteps");
+
+	makeRun(unwind, "Unwind");
+	makeRun(unwind, "Unwind");
+	makeRun(unwind, "Unwind");
 
 	makeRun(handler, "libsampling");
 	makeRun(handler, "libsampling");
