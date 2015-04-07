@@ -1,0 +1,31 @@
+#!/bin/sh
+
+#BSUB -u idleknecht@gmail.com
+#BSUB -B -N
+#BSUB -x
+
+#BSUB -M 30000		# Hauptspeicher in MByte für alle Threads
+
+#BSUB -W 10
+#BSUB -J microbench
+
+#BSUB -q testq
+
+#BSUB -eo /home/us93buza/test/libsampling/lsf/OUT.out
+#BSUB -oo /home/us93buza/test/libsampling/lsf/OUT.out
+
+
+# RUN
+#export KMP_AFFINITY=scatter
+
+cd /home/us93buza/test/libsampling/
+
+#echo -e "\n== Without libmonitor"
+#./overhead.exe
+
+#echo -e "\n== With libmonitor"
+#LD_PRELOAD="/home/us93buza/hpctoolkit/install-externals/libmonitor/lib/libmonitor.so" ./overhead.exe
+
+echo -e "\n== With libsampling"
+python3 /home/us93buza/test/libsampling/py/gen.py overhead.exe
+LD_PRELOAD="/home/us93buza/test/libsampling/lib/libshadowstack.so /home/us93buza/hpctoolkit/install-externals/libmonitor/lib/libmonitor.so" ./overhead.exe
