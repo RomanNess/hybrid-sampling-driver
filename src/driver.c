@@ -197,7 +197,7 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 #ifdef USE_CPP_LIB
 	parseFunctions("nm_file");
 	parseRegions("regions_file", &regionStart, &regionEnd);
-	dump();
+//	dump();
 	dumpMemoryMapping();
 #endif
 

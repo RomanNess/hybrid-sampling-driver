@@ -50,7 +50,7 @@ void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vec
 	printf("\t%s\n", buf);
 #endif
 	// XXX RN: if libmonitor is active one more unwind (5) is necessary
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 5; i++) {
 		unw_step(&cursor);
 
 #if VERBOSE_PRINT
@@ -65,10 +65,16 @@ void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vec
 
 #include "cpp/hash.h"
 
-void unwind(int EventSet, void* address, long long overflow_vector, void* context) {
+void functionStartAddress(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
 
 	getFunctionStartAddress((unsigned long) address);
+}
+
+void unwindSteps(int EventSet, void* address, long long overflow_vector, void* context) {
+	sampleCount++;
+
+	getUnwindSteps(getFunctionStartAddress((unsigned long) address));
 }
 
 void initPAPI(PAPI_overflow_handler_t handler) {
@@ -148,6 +154,14 @@ int main() {
 	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
 	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
 	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
+
+	makeRun(functionStartAddress, "FunctionStartAddr");
+	makeRun(functionStartAddress, "FunctionStartAddr");
+	makeRun(functionStartAddress, "FunctionStartAddr");
+
+	makeRun(unwindSteps, "UnwindSteps");
+	makeRun(unwindSteps, "UnwindSteps");
+	makeRun(unwindSteps, "UnwindSteps");
 
 	return 0;
 }

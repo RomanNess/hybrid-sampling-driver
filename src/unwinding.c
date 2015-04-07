@@ -1,6 +1,5 @@
 #include "unwinding.h"
 
-#define PRINT_FUNCTIONS 1
 #define IGNORE_PAPI_CONTEXT 0
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting

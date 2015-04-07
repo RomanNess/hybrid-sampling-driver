@@ -17,11 +17,14 @@ LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86
 INSTRO_FLAGS=-DWITH_MAX_SIZE
 PP_FLAGS=-DUSE_CPP_LIB
 
+libsampling-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
+libsampling-debug: libsampling
+
 libsampling: libhash
 	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/$(LIBNAME).so $(SRC) -L./lib -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libhash:
-	g++ -fPIC -shared -std=c++0x src/cpp/hash.cpp -o lib/libhash.so
+	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x src/cpp/hash.cpp -o lib/libhash.so
 
 libshadowstack-fast: PP_FLAGS+=-DNO_PAPI_DRIVER
 libshadowstack-fast: LIBNAME=libshadowstack
@@ -46,7 +49,7 @@ testStack:	libshadowstack-fast
 	touch nm_file regions_file
 	$(CC) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L./lib -lshadowstack $(LIBMONITOR_FLAGS)
 
-sampling: libsampling
+sampling: libsampling-debug
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
 	LD_PRELOAD="./lib/libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
