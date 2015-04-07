@@ -41,7 +41,9 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 	buffer[numberOfBufferElements].thread = threadId;
 	buffer[numberOfBufferElements].sampleNumber = sampleCount;
 	if (stack->_size == 0) {
+#if DEBBUG
 		fprintf(stderr, "FlushStackToBuffer: %li with stack size == 0\n", sampleCount);
+#endif
 		numberOfBufferElements++;
 		return;
 	}
@@ -101,13 +103,6 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 	}
 }
 
-
-#ifndef NO_PAPI_DRIVER
-
-/*
- * SAMPLING DRIVER SEGMENT
- */
-
 /* PAPI Sampling handler */
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
@@ -122,6 +117,11 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 	numberOfBufferElements++;
 }
 
+#ifndef NO_PAPI_DRIVER
+
+/*
+ * REGISTER SAMPLING DRIVER SEGMENT
+ */
 
 void registerThreadForPAPI() {
 	int retval;

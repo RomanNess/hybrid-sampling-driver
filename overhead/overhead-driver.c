@@ -7,12 +7,14 @@
 
 #include <libunwind.h>
 
+#include "driver.h"
+
 #define NUM_ITERATIONS 1000000000
 //#define NUM_ITERATIONS 10000000
 
-long overflowCountForSamples = 2600000;
-long sampleCount = 0;
-int EventSet = PAPI_NULL;
+//long overflowCountForSamples = 2600000;
+//long sampleCount = 0;
+//int EventSet = PAPI_NULL;
 
 void emptyHandler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
@@ -77,6 +79,7 @@ void unwindSteps(int EventSet, void* address, long long overflow_vector, void* c
 	getUnwindSteps(getFunctionStartAddress((unsigned long) address));
 }
 
+
 void initPAPI(PAPI_overflow_handler_t handler) {
 
 	EventSet = PAPI_NULL;
@@ -135,6 +138,8 @@ void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 
 int main() {
 
+	initBuffer();
+
 	makeRun(NULL, "Reference");
 	makeRun(NULL, "Reference");
 	makeRun(NULL, "Reference");
@@ -162,6 +167,10 @@ int main() {
 	makeRun(unwindSteps, "UnwindSteps");
 	makeRun(unwindSteps, "UnwindSteps");
 	makeRun(unwindSteps, "UnwindSteps");
+
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
 
 	return 0;
 }

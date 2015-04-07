@@ -33,8 +33,9 @@ libshadowstack-fast: libsampling
 libshadowstack-debug: OPT_FLAGS=-g -O0
 libshadowstack-debug: libshadowstack-fast
 
-measure: timing libhash
-	$(CC) -std=gnu99 -O3 -I./src overhead/overhead-driver.c -L./lib -ltiming -lhash $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
+measure: timing libhash libshadowstack-fast
+	$(CC) -std=gnu99 -O3 -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
+	python3 py/gen.py overhead.exe
 
 timing:
 	$(CC) -std=gnu99 -O3 $(CFLAGS) -o lib/libtiming.so libtiming/timing.c -lrt
