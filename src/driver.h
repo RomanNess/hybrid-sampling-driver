@@ -33,25 +33,19 @@
 #include "event.h"
 
 /* the actual shadow stack (for multithreading) */
-struct Stack **_multithreadStack = 0;
+extern struct Stack **_multithreadStack;
 
 /* write buffer */
-#ifndef MICROBENCH
-static
-#endif
-struct SampleEvent *_flushToDiskBuffer = 0;
-
-#ifndef MICROBENCH
-static
-#endif
-unsigned int numberOfBufferElements = 0;
-
-long int sampleCount = 0; /* total samples taken */
-long overflowCountForSamples = 2600000; /* CPU-cycles per sample (set by INSTRO_SAMPLE_FREQ) */
-
 #define WRITE_BUFFER_SIZE 50000	/* number of sampling events in the buffer */
-__thread int EventSet = PAPI_NULL; /* PAPI related thing */
+extern struct SampleEvent *_flushToDiskBuffer;
+extern unsigned int numberOfBufferElements;
 
+extern long int sampleCount; /* total samples taken */
+extern long overflowCountForSamples; /* CPU-cycles per sample (set by INSTRO_SAMPLE_FREQ) */
+
+#ifndef NO_PAPI_DRIVER
+extern __thread int EventSet; /* PAPI related thing */
+#endif
 
 /*
  * FUNCTIONS 

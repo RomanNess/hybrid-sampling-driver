@@ -1,6 +1,6 @@
 #include "unwinding.h"
 
-#define IGNORE_PAPI_CONTEXT 0
+//#define IGNORE_PAPI_CONTEXT 0
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used

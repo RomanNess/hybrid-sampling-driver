@@ -5,7 +5,7 @@ $(call check-var-defined,LIBUNWIND_BASE)
 
 CC=gcc
 CFLAGS=-fPIC -shared -Wall -std=gnu99
-OPT_FLAGS=-g -O3
+OPT_FLAGS=-g -O3 -Wall
 
 SRC=src/stack.c src/driver.c src/unwinding.c
 LIBNAME=libsampling
@@ -24,7 +24,7 @@ libsampling: libhash
 	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/$(LIBNAME).so $(SRC) -L./lib -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libhash:
-	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x src/cpp/hash.cpp -o lib/libhash.so
+	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
 
 libshadowstack-fast: PP_FLAGS+=-DNO_PAPI_DRIVER
 libshadowstack-fast: LIBNAME=libshadowstack
@@ -34,11 +34,22 @@ libshadowstack-debug: OPT_FLAGS=-g -O0
 libshadowstack-debug: libshadowstack-fast
 
 #measure: PP_FLAGS+=-DPRINT_FUNCTIONS
-measure: PP_FLAGS+=-DMICROBENCH
 measure: timing libhash libshadowstack-fast
-	$(CC) -std=gnu99 -DMICROBENCH -O3 -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
+	$(CC) -std=gnu99 -O3 -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
 
+measure-papi: PP_FLAGS+=-DIGNORE_PAPI_CONTEXT
+measure-papi: libshadowstack-fast
+	$(CC) -std=gnu99 $(PP_FLAGS) $(OPT_FLAGS) -I./src overhead/overhead-driver-no-papi.c -L./lib -ltiming_papi -lshadowstack $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) -o overhead.papi.exe
+	python3 py/gen.py overhead.papi.exe
+
+measure-papi-link: PP_FLAGS+=-DNO_PAPI_DRIVER
+measure-papi-link: PP_FLAGS+=-DIGNORE_PAPI_CONTEXT
+measure-papi-link: LDFLAGS+=-ltiming_papi
+measure-papi-link: libhash
+	$(CC) -std=gnu99 $(PP_FLAGS) $(OPT_FLAGS) -I./src -I./overhead  overhead/overhead-driver-no-papi.c $(SRC) -L./lib -ltiming_papi -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) -o overhead.papi.exe
+	python3 py/gen.py overhead.papi.exe
+	
 timing:
 	$(CC) -std=gnu99 -O3 $(CFLAGS) -o lib/libtiming.so libtiming/timing.c -lrt
 

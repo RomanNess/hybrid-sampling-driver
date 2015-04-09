@@ -9,8 +9,8 @@
 
 #include "driver.h"
 
-#define NUM_ITERATIONS 1000000000
-//#define NUM_ITERATIONS 10000000
+//#define NUM_ITERATIONS 1000000000
+#define NUM_ITERATIONS 10000000
 
 //long overflowCountForSamples = 2600000;
 //long sampleCount = 0;

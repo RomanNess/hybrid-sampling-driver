@@ -1,10 +1,13 @@
 all: libtiming.so
 
-libtiming.so: timing.c Makefile
-	$(CC) -fpic -O2 -shared -o libtiming.so timing.c -lrt -lpapi
+libtiming: timing.c Makefile
+	$(CC) -fpic -O2 -shared -o ../lib/libtiming_papi.so timing.c -lrt -lpapi
 
-test.exe: timing.c main.cpp Makefile
-	$(CXX) main.cpp timing.c -o $@ -lrt -lpapi -O0
+test.link: libtiming
+	$(CC) -std=gnu99 -O0 main.c -L../lib/ -ltiming_papi -lrt -lpapi -o test.link
 
+test.exe: timing.c main.c Makefile
+	$(CC) -std=gnu99 -O0 main.c timing.c -o $@ -lrt -lpapi
+	
 clean:
-	rm -f libtiming.so test.exe
+	rm -f l*.so test.exe

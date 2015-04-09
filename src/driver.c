@@ -1,5 +1,14 @@
 #include "driver.h"
 
+struct Stack **_multithreadStack = 0;
+struct SampleEvent *_flushToDiskBuffer = 0;
+long int sampleCount = 0;
+unsigned int numberOfBufferElements = 0;
+long overflowCountForSamples = 2600000;
+
+#ifndef NO_PAPI_DRIVER
+__thread int EventSet = PAPI_NULL;
+#endif
 
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {

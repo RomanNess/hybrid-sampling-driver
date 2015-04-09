@@ -123,7 +123,7 @@ void initMeasurement()
 		fprintf(stderr, "Error adding set PAPI_BR_INS\n");
 		exit(1);
 	}
-	// XXX RN: it seems like PAPI_FP_INS is derived on hla and does not fit in the eventset
+	// XXX RN: it seems like this does not fit in the eventset on hla login nodes
 //	if ((PAPI_add_event(EventSet, PAPI_FP_INS) != PAPI_OK))
 //	{
 //		fprintf(stderr, "Error adding set PAPI_FP_INS\n");
