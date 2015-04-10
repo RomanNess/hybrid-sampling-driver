@@ -1,8 +1,10 @@
-
-void bar() {}
+void bar() {
+}
 
 void foo() {
-	bar();
+	for (int i = 0; i < 10; i++) {
+		bar();
+	}
 }
 
 int main() {

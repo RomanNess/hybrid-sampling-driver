@@ -39,14 +39,12 @@ measure: timing libhash libshadowstack-fast
 	python3 py/gen.py overhead.exe
 #	LD_PRELOAD="./lib/libshadowstack.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./overhead.exe
 	
-measure-cyg: PP_FLAGS+=-DNO_PAPI_DRIVER
-measure-cyg: PP_FLAGS+=-DNO_CYG_PROF
-measure-cyg: PP_FLAGS+=-DNO_MONITOR
-measure-cyg: PP_FLAGS+=-DIGNORE_PAPI_CONTEXT
-measure-cyg: target timing_papi libhash
-	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/$(LIBNAME).so $(SRC) overhead/overhead-cyg_profile.c -L./lib -lhash -ltiming_papi $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
-	python3 py/gen.py target.exe
-	LD_PRELOAD="./lib/$(LIBNAME).so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+measure-cyg: PP_FLAGS:=$(PP_FLAGS) -DNO_PAPI_DRIVER -DNO_CYG_PROF -DNO_MONITOR -DIGNORE_PAPI_CONTEXT
+measure-cyg: LDFLAGS:=-L./lib -lhash -ltiming_papi $(LD_FLAGS)
+measure-cyg: SRC+= overhead/overhead-cyg_profile.c
+measure-cyg: LIBNAME=liboverhead
+measure-cyg: target timing_papi libhash libsampling
+	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 
 measure-papi: PP_FLAGS+=-DIGNORE_PAPI_CONTEXT
 measure-papi: libshadowstack-fast
@@ -61,13 +59,13 @@ measure-papi-link: libhash
 	python3 py/gen.py overhead.papi.exe
 	
 timing:
-	$(CC) -std=gnu99 -O3 $(CFLAGS) -o lib/libtiming.so libtiming/timing.c -lrt
+	$(CC) -O3 $(CFLAGS) libtiming/timing.c -o lib/libtiming.so -lrt
 	
 timing_papi:
-	$(CC) -fpic -O2 -shared -o lib/libtiming_papi.so libtiming_papi/timing.c -lrt -lpapi
+	$(CC) -O2 $(CFLAGS) libtiming_papi/timing.c -o lib/libtiming_papi.so -lrt -lpapi
 
 libemptypushpop:
-	$(CC) -O3 -fPIC -shared -o lib/libemptypushpop.so emptypushpop/emptypushpop.c
+	$(CC) -O3 $(CFLAGS) emptypushpop/emptypushpop.c -o lib/libemptypushpop.so
 	
 
 ### Targets & Tests
@@ -81,8 +79,9 @@ sampling: libsampling-debug
 	python3 py/gen.py target.exe
 	LD_PRELOAD="./lib/libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
+#target: EXCLUDE=-finstrument-functions-exclude-function-list=main,foo
 target:
-	$(CC) -g -O0 -std=gnu99 -finstrument-functions overhead/target.c -o target.exe
+	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
 	
 .PHONY : clean
 clean:
