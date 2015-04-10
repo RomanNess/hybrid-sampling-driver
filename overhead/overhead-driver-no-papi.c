@@ -19,32 +19,31 @@ int main() {
 
 	/* start exemplar measurements */
 
-//	startMeasurement();
-//	stopMeasurement();
-//	printResults(0);
-//
-//	startMeasurement();
-//	stopMeasurement();
-//	printResults(0);
+	startMeasurement();
+	stopMeasurement();
+	printResults("empty");
+	startMeasurement();
+	stopMeasurement();
+	printResults("empty");
 
 	startMeasurement();
 	doUnwind(0x400500, NULL/*context*/, &_flushToDiskBuffer[numberOfBufferElements]);
 	stopMeasurement();
-	printResults(0);
+	printResults("doUnwind");
 
 	numberOfBufferElements++;
 
 	startMeasurement();
 	doUnwind(0x400500, NULL/*context*/, &_flushToDiskBuffer[numberOfBufferElements]);
 	stopMeasurement();
-	printResults(0);
+	printResults("doUnwind");
 
 	numberOfBufferElements++;
 
 	startMeasurement();
 	doUnwind(0x400500, NULL/*context*/, &_flushToDiskBuffer[numberOfBufferElements]);
 	stopMeasurement();
-	printResults(0);
+	printResults("doUnwind");
 
 	return 0;
 }

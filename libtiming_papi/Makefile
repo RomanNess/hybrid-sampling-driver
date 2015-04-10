@@ -1,4 +1,4 @@
-all: libtiming.so
+all: libtiming
 
 libtiming: timing.c Makefile
 	$(CC) -fpic -O2 -shared -o ../lib/libtiming_papi.so timing.c -lrt -lpapi

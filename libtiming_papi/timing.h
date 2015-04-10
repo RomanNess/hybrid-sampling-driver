@@ -13,7 +13,7 @@ void startMeasurement();
 void stopMeasurement();
 
 void printResultsHeader();
-void printResults(int iterations);
+void printResults(const char* name);
 
 #ifdef __cplusplus
 }

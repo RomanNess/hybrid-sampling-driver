@@ -152,6 +152,8 @@ void _instroPopIdentifier() {
 	popIdentifier();
 }
 
+#ifndef NO_CYG_PROF
+
 void __cyg_profile_func_enter(void *func, void *callsite) {
 #ifdef DEBUG
 	fprintf(stderr, "Entering cyg_profile_func_enter \n");
@@ -176,4 +178,4 @@ void __cyg_profile_func_exit(void *func, void *callsite) {
 #endif
 }
 
-
+#endif	// NO_CYG_PROF

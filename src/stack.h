@@ -65,9 +65,11 @@ void popEvent(struct Stack *stack);
 void _instroPushIdentifier(unsigned long functionIdentifier);
 void _instroPopIdentifier();
 
+#ifndef NO_CYG_PROF
 /* The interface for GNU instrumentation with shadow stack */
 void __cyg_profile_func_enter(void *func, void *callsite);
 void __cyg_profile_func_exit(void *func, void *callsite);
+#endif
 
 /* common interface */
 inline void pushIdentifier(unsigned long functionIdentifier) {

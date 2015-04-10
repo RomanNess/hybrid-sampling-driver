@@ -162,29 +162,19 @@ void finalizeMeasurement() {
 
 void printResultsHeader()
 {
-#ifdef AVERAGING
-	fprintf(stderr,"Runtime(s)\tRuntime/Iteration(ns)\tPAPI_TOT_INS\tPAPI_TOT_INS/Iteration\tPAPI_TOT_CYC\tPAPI_TOT_CYC/Iteration\tPAPI_REF_CYC\tPAPI_REF_CYC/Iteration\tPAPI_BR_UCN\tPAPI_BR_UCN/Iteration\tPAPI_BR_INS\tPAPI_BR_INS/Iteration\tPAPI_FP_INS\tPAPI_FP_INS/iteration\n");
-#else
 	fprintf(stderr,
-			";\tIterations ;\t Runtime in s ;\tPAPI_TOT_INS ;\tPAPI_TOT_CYC ;\tPAPI_REF_CYC ;\tPAPI_BR_UCN ;\tPAPI_BR_INS ;\tPAPI_FP_INS ;\n");
-#endif
+			"\tName ;\t Runtime in s;\tPAPI_TOT_INS ;\tPAPI_TOT_CYC ;\tPAPI_REF_CYC ;\tPAPI_BR_UCN ;\tPAPI_BR_INS ;\tPAPI_FP_INS\n");
 }
-void printResults(int iteration) {
-	double iterations = iteration;
+
+void printResults(const char* name) {
 //	fprintf(stderr,"PAPI_TOT_INS = %lli (%lli / iterationr)\n",values[0],values[0]/iterations);
 //	fprintf(stderr,"PAPI_TOT_CYC = %lli (%lli / iterationr)\n",values[1],values[1]/iterations);
 //	fprintf(stderr,"PAPI_REF_CYC = %lli (%lli / iterationr)\n",values[2],values[2]/iterations);
 //	fprintf(stderr,"PAPI_BR_UCN  = %lli (%lli / iterationr)\n",values[3],values[3]/iterations);
 //	fprintf(stderr,"PAPI_BR_INS  = %lli (%lli / iterationr)\n",values[4],values[4]/iterations);
 //	fprintf(stderr,"PAPI_FP_INS  = %lli (%lli / iterationr)\n",values[5],values[5]/iterations);
-#ifdef AVERAGING
-	if (iteration==0) terations=iteration=1;
-	fprintf(stderr, ";\t%lld.%.9lld s;\t %lf ns;\t%8lli;\t%4lf;\t%8lli;\t%4lf;\t%8lli;\t%4lf;\t%8lli;\t%4lf;\t%8lli;\t%4lf;\t%8lli;\t%4lf;.\n", result.tv_sec, result.tv_nsec,nanoseconds/iterations,values[0],values[0]/iterations,values[1],values[1]/iterations,values[2],values[2]/iterations,values[3],values[3]/iterations,values[4],values[4]/iterations,values[5],values[5]/iterations);
-#else
-	fprintf(stderr, ";\t%10li ;\t%10.9lf s;\t%12lli ;\t%12lli ;\t%12lli ;\t%11lli ;\t%11lli ;\t%11lli ;\n", iteration,
+	fprintf(stderr, "%12s ;\t%10.9lf s;\t%12lli ;\t%12lli ;\t%12lli ;\t%11lli ;\t%11lli ;\t%11lli\n", name,
 			stopInS - startInS, values[0], values[1], values[2], values[3], values[4], values[5]);
-#endif
-//	fprintf(stderr,"%.9lf\n",stopInS-startInS);
 }
 
 #ifdef __cplusplus

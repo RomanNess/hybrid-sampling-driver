@@ -35,8 +35,18 @@ libshadowstack-debug: libshadowstack-fast
 
 #measure: PP_FLAGS+=-DPRINT_FUNCTIONS
 measure: timing libhash libshadowstack-fast
-	$(CC) -std=gnu99 -O3 -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LDFLAGS) $(LIBUNWIND_FLAGS) -o overhead.exe
+	$(CC) -std=gnu99 $(OPT_FLAGS) -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
+#	LD_PRELOAD="./lib/libshadowstack.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./overhead.exe
+	
+measure-cyg: PP_FLAGS+=-DNO_PAPI_DRIVER
+measure-cyg: PP_FLAGS+=-DNO_CYG_PROF
+measure-cyg: PP_FLAGS+=-DNO_MONITOR
+measure-cyg: PP_FLAGS+=-DIGNORE_PAPI_CONTEXT
+measure-cyg: target timing_papi libhash
+	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/$(LIBNAME).so $(SRC) overhead/overhead-cyg_profile.c -L./lib -lhash -ltiming_papi $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	python3 py/gen.py target.exe
+	LD_PRELOAD="./lib/$(LIBNAME).so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 
 measure-papi: PP_FLAGS+=-DIGNORE_PAPI_CONTEXT
 measure-papi: libshadowstack-fast
@@ -52,6 +62,9 @@ measure-papi-link: libhash
 	
 timing:
 	$(CC) -std=gnu99 -O3 $(CFLAGS) -o lib/libtiming.so libtiming/timing.c -lrt
+	
+timing_papi:
+	$(CC) -fpic -O2 -shared -o lib/libtiming_papi.so libtiming_papi/timing.c -lrt -lpapi
 
 libemptypushpop:
 	$(CC) -O3 -fPIC -shared -o lib/libemptypushpop.so emptypushpop/emptypushpop.c
@@ -67,6 +80,9 @@ sampling: libsampling-debug
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 target.c -o target.exe
 	python3 py/gen.py target.exe
 	LD_PRELOAD="./lib/libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+	
+target:
+	$(CC) -g -O0 -std=gnu99 -finstrument-functions overhead/target.c -o target.exe
 	
 .PHONY : clean
 clean:

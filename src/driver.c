@@ -6,9 +6,9 @@ long int sampleCount = 0;
 unsigned int numberOfBufferElements = 0;
 long overflowCountForSamples = 2600000;
 
-#ifndef NO_PAPI_DRIVER
+//#ifndef NO_PAPI_DRIVER
 __thread int EventSet = PAPI_NULL;
-#endif
+//#endif
 
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {
@@ -195,6 +195,8 @@ void finishSamplingDriver() {
 
 #endif	// NO_PAPI_DRIVER
 
+#ifndef NO_MONITOR
+
 void *monitor_init_process(int *argc, char **argv, void *data) {
 
 	printf("#### init sampling driver - Pid is %i #### \n", getpid());
@@ -239,3 +241,4 @@ void monitor_fini_thread(void* data) {
 	finiSingleStack(_multithreadStack[threadId]);	// RN: or just reset the stack?
 }
 
+#endif	// NO_MONITOR
