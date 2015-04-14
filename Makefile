@@ -58,6 +58,10 @@ measure-papi-link: libhash
 	$(CC) -std=gnu99 $(PP_FLAGS) $(OPT_FLAGS) -I./src -I./overhead  overhead/overhead-driver-no-papi.c $(SRC) -L./lib -ltiming_papi -lhash $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) -o overhead.papi.exe
 	python3 py/gen.py overhead.papi.exe
 	
+count-calls: target
+	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
+	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+	
 timing:
 	$(CC) -O3 $(CFLAGS) libtiming/timing.c -o lib/libtiming.so -lrt
 	
