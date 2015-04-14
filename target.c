@@ -1,11 +1,11 @@
 
-void bar(int i) {
+void rec2(int i) {
 	i = i * 2;
 }
 
-void foo() {
+void rec1() {
 	for (int i=0; i<1000000; i++) {
-		bar(i);
+		rec2(i);
 	}
 }
 
@@ -13,7 +13,7 @@ int main() {
 
 	#pragma omp parallel
 	{
-		foo();
+		rec1();
 	}
 
 	return 0;

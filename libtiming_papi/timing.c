@@ -132,8 +132,8 @@ void initMeasurement()
 }
 double startInS, stopInS;
 void startMeasurement() {
-
 	PAPI_start(EventSet);
+
 	uint32_t low = 0;
 	uint32_t high = 0;
 	asm volatile ("rdtscp" : "=a" (low), "=d" (high));
@@ -149,6 +149,7 @@ void stopMeasurement() {
 	uint64_t clock_value;
 	clock_value = ((uint64_t) high << 32) + low;
 	stopInS = (double) (clock_value) / (double) elg_cycles_per_sec;
+
 	if (PAPI_stop(EventSet, values) != PAPI_OK) {
 		fprintf(stderr, "Error reading counters\n");
 		exit(1);
@@ -163,7 +164,7 @@ void finalizeMeasurement() {
 void printResultsHeader()
 {
 	fprintf(stderr,
-			"\tName ;\t Runtime in s;\tPAPI_TOT_INS ;\tPAPI_TOT_CYC ;\tPAPI_REF_CYC ;\tPAPI_BR_UCN ;\tPAPI_BR_INS ;\tPAPI_FP_INS\n");
+			"\tName |\t Runtime in s|\tPAPI_TOT_INS |\tPAPI_TOT_CYC |\tPAPI_REF_CYC |\tPAPI_BR_UCN |\tPAPI_BR_INS |\tPAPI_FP_INS\n");
 }
 
 void printResults(const char* name) {
@@ -173,7 +174,7 @@ void printResults(const char* name) {
 //	fprintf(stderr,"PAPI_BR_UCN  = %lli (%lli / iterationr)\n",values[3],values[3]/iterations);
 //	fprintf(stderr,"PAPI_BR_INS  = %lli (%lli / iterationr)\n",values[4],values[4]/iterations);
 //	fprintf(stderr,"PAPI_FP_INS  = %lli (%lli / iterationr)\n",values[5],values[5]/iterations);
-	fprintf(stderr, "%12s ;\t%10.9lf s;\t%12lli ;\t%12lli ;\t%12lli ;\t%11lli ;\t%11lli ;\t%11lli\n", name,
+	fprintf(stderr, "%12s |\t%10.9lf s|\t%12lli |\t%12lli |\t%12lli |\t%11lli |\t%11lli |\t%11lli\n", name,
 			stopInS - startInS, values[0], values[1], values[2], values[3], values[4], values[5]);
 }
 
