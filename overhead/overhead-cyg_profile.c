@@ -10,6 +10,7 @@
 #include <stdlib.h>
 
 //#define NO_UNWIND
+//#define UNW_INIT_ONLY
 #define PRINT_FUNCTIONS 0
 
 int calldepth = -1;
@@ -25,6 +26,8 @@ void __cyg_profile_func_enter(void *func_ptr, void *call_site) {
 	unw_context_t uc;
 	unw_getcontext(&uc);
 	unw_init_local(&cursor, &uc);
+
+#ifndef UNW_INIT_ONLY
 
 	int unwindSteps = calldepth;
 
@@ -50,6 +53,8 @@ void __cyg_profile_func_enter(void *func_ptr, void *call_site) {
 		printf(" %s\n", buf);
 #endif
 
+#endif	// UNW_INIT_ONLY
+
 #endif	// NO_UNWIND
 
 	stopMeasurement();
@@ -61,13 +66,14 @@ void __cyg_profile_func_enter(void *func_ptr, void *call_site) {
 
 void __cyg_profile_func_exit(void* func_ptr, void* call_site) {
 	calldepth--;
-
 	return;
 }
 
 void *monitor_init_process(int* argc, char** argv, void* data) {
 
 //	initBuffer();
+
+	unw_set_caching_policy(unw_local_addr_space, UNW_CACHE_NONE);
 
 	initMeasurement();
 	printResultsHeader();
