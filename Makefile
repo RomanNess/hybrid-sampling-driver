@@ -44,7 +44,7 @@ measure-cyg: LDFLAGS:=-L./lib -lhash -ltiming_papi $(LD_FLAGS)
 measure-cyg: SRC+= overhead/overhead-cyg_profile.c
 measure-cyg: LIBNAME=liboverhead
 measure-cyg: target timing_papi libhash libsampling
-	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+#	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe &> out
 
 measure-papi: PP_FLAGS+=-DIGNORE_PAPI_CONTEXT
 measure-papi: libshadowstack-fast

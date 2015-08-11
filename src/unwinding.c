@@ -58,12 +58,13 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 	buffer->numUnwindEvents = unwindSteps;
 	buffer->unwindEvents = (struct StackEvent *) malloc(unwindSteps * sizeof(struct StackEvent));
 
-	unsigned long ip, sp;
+	unsigned long ip;
+//	unsigned long sp;
 	int status = 1;
 	while (status > 0 && unwindSteps != 0) {
 
 		unw_get_reg(&cursor, UNW_REG_IP, &ip);
-		unw_get_reg(&cursor, UNW_REG_SP, &sp);
+//		unw_get_reg(&cursor, UNW_REG_SP, &sp);
 
 		if (regionStart < ip && ip < regionEnd) {
 

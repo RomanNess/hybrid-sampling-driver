@@ -17,7 +17,6 @@
 
 
 # RUN
-#export KMP_AFFINITY=scatter
 
 cd $LIBSAMPLING_BASE
 
