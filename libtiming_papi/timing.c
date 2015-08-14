@@ -92,7 +92,7 @@ void initMeasurement()
 		fprintf(stderr, "PAPI library version mismatch!\en");
 		exit(1);
 	}
-//PAPI_BR_UCN PAPI_BR_INS PAPI_TOT_CYC PAPI_REF_CYC
+//PAPI_L1_DCM PAPI_L2_DCM PAPI_TOT_CYC PAPI_REF_CYC
 	if ((PAPI_create_eventset(&EventSet) != PAPI_OK))
 	{
 		fprintf(stderr, "Error initializing the event set!!\en");
@@ -113,23 +113,24 @@ void initMeasurement()
 		fprintf(stderr, "Error adding set PAPI_REF_CYC\n");
 		exit(1);
 	}
-	if ((PAPI_add_event(EventSet, PAPI_BR_UCN) != PAPI_OK))
+	if ((PAPI_add_event(EventSet, PAPI_L1_DCM) != PAPI_OK))
 	{
-		fprintf(stderr, "Error adding set PAPI_BR_UCN\n");
+		fprintf(stderr, "Error adding set PAPI_L1_DCM\n");
 		exit(1);
 	}
-	if ((PAPI_add_event(EventSet, PAPI_BR_INS) != PAPI_OK))
+	if ((PAPI_add_event(EventSet, PAPI_L2_DCM) != PAPI_OK))
 	{
-		fprintf(stderr, "Error adding set PAPI_BR_INS\n");
+		fprintf(stderr, "Error adding set PAPI_L2_DCM\n");
 		exit(1);
 	}
 	// XXX RN: it seems like this does not fit in the eventset on hla login nodes
-//	if ((PAPI_add_event(EventSet, PAPI_FP_INS) != PAPI_OK))
-//	{
-//		fprintf(stderr, "Error adding set PAPI_FP_INS\n");
-//		exit(1);
-//	}
+	if ((PAPI_add_event(EventSet, PAPI_BR_MSP) != PAPI_OK))
+	{
+		fprintf(stderr, "Error adding set PAPI_BR_MSP\n");
+		exit(1);
+	}
 }
+
 double startInS, stopInS;
 void startMeasurement() {
 	PAPI_start(EventSet);
@@ -164,16 +165,11 @@ void finalizeMeasurement() {
 void printResultsHeader()
 {
 	fprintf(stderr,
-			"\tName |\t Runtime in s|\tPAPI_TOT_INS |\tPAPI_TOT_CYC |\tPAPI_REF_CYC |\tPAPI_BR_UCN |\tPAPI_BR_INS |\tPAPI_FP_INS\n");
+			"cycles_per_sec= %lu \n" \
+			"\tName |\t Runtime in s|\tPAPI_TOT_INS |\tPAPI_TOT_CYC |\tPAPI_REF_CYC |\tPAPI_L1_DCM |\tPAPI_L2_DCM |\tPAPI_BR_MSP\n", elg_cycles_per_sec);
 }
 
 void printResults(const char* name) {
-//	fprintf(stderr,"PAPI_TOT_INS = %lli (%lli / iterationr)\n",values[0],values[0]/iterations);
-//	fprintf(stderr,"PAPI_TOT_CYC = %lli (%lli / iterationr)\n",values[1],values[1]/iterations);
-//	fprintf(stderr,"PAPI_REF_CYC = %lli (%lli / iterationr)\n",values[2],values[2]/iterations);
-//	fprintf(stderr,"PAPI_BR_UCN  = %lli (%lli / iterationr)\n",values[3],values[3]/iterations);
-//	fprintf(stderr,"PAPI_BR_INS  = %lli (%lli / iterationr)\n",values[4],values[4]/iterations);
-//	fprintf(stderr,"PAPI_FP_INS  = %lli (%lli / iterationr)\n",values[5],values[5]/iterations);
 	fprintf(stderr, "%12s |\t%10.9lf s|\t%12lli |\t%12lli |\t%12lli |\t%11lli |\t%11lli |\t%11lli\n", name,
 			stopInS - startInS, values[0], values[1], values[2], values[3], values[4], values[5]);
 }

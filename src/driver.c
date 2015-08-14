@@ -205,7 +205,7 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	assingContinuousThreadId();
 	initShadowStack();
 
-#ifdef USE_CPP_LIB
+#ifndef NO_CPP_LIB
 	parseFunctions("nm_file");
 	parseRegions("regions_file", &regionStart, &regionEnd);
 //	dump();
@@ -227,7 +227,10 @@ void monitor_fini_process(int how, void* data) {
 
 void *monitor_init_thread(int tid, void *data) {
 
+#ifndef NO_PAPI_DRIVER
 	PAPI_register_thread();
+#endif
+
 	assingContinuousThreadId();
 
 #ifndef NO_PAPI_DRIVER

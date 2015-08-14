@@ -73,7 +73,9 @@ void *monitor_init_process(int* argc, char** argv, void* data) {
 
 //	initBuffer();
 
+#ifdef NO_UNW_CACHE
 	unw_set_caching_policy(unw_local_addr_space, UNW_CACHE_NONE);
+#endif
 
 	initMeasurement();
 	printResultsHeader();

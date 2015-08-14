@@ -16,7 +16,7 @@
 
 #include "monitor.h"
 
-#ifdef USE_CPP_LIB
+#ifndef NO_CPP_LIB
 #include "cpp/hash.h"
 #endif
 
