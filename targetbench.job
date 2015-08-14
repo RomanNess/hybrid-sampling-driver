@@ -1,0 +1,50 @@
+#!/bin/bash
+
+#BSUB -u idleknecht@gmail.com
+#BSUB -B -N
+#BSUB -x
+
+#BSUB -M 30000		# Hauptspeicher in MByte für alle Threads
+
+#BSUB -W 10
+#BSUB -J microbench
+
+#BSUB -q special3
+#BSUB -m hab0005	# host
+
+#BSUB -eo /home/us93buza/test/libsampling/lsf/OUT.out
+#BSUB -oo /home/us93buza/test/libsampling/lsf/OUT.out
+
+
+
+cd $LIBSAMPLING_BASE
+WORKDIR=$LIBSAMPLING_BASE/out
+
+
+# RUN
+# liboverhead.so (measures and prints the overhead of inidividual samples)
+
+hostname
+
+make measure-cyg
+
+taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/target-core0.out
+taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/target-core5.out
+./doIt.sh ./target.exe &> $WORKDIR/target.out
+
+taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/target-bigframe-core0.out
+taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/target-bigframe-core5.out
+./doIt.sh ./target.exe &> $WORKDIR/target-bigframe.out
+
+make measure-cyg-nocache
+
+taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core0.out
+taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core5.out
+./doIt.sh ./target.exe &> $WORKDIR/nocache-target.out
+
+taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-bigframe-core0.out
+taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-bigframe-core5.out
+./doIt.sh ./target.exe &> $WORKDIR/nocache-target-bigframe.out
+
+
+#LD_PRELOAD="$LIBSAMPLING_BASE/lib/liboverhead.so $LIBMONITOR_BASE/lib/libmonitor.so" ./target.exe &> $WORKDIR/synth-nocache.out
