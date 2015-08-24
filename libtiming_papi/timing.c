@@ -92,7 +92,6 @@ void initMeasurement()
 		fprintf(stderr, "PAPI library version mismatch!\en");
 		exit(1);
 	}
-//PAPI_L1_DCM PAPI_L2_DCM PAPI_TOT_CYC PAPI_REF_CYC
 	if ((PAPI_create_eventset(&EventSet) != PAPI_OK))
 	{
 		fprintf(stderr, "Error initializing the event set!!\en");
@@ -118,38 +117,48 @@ void initMeasurement()
 		fprintf(stderr, "Error adding set PAPI_L1_DCM\n");
 		exit(1);
 	}
-	if ((PAPI_add_event(EventSet, PAPI_L2_DCM) != PAPI_OK))
+	if ((PAPI_add_event(EventSet, PAPI_L2_TCM) != PAPI_OK))
 	{
-		fprintf(stderr, "Error adding set PAPI_L2_DCM\n");
+		fprintf(stderr, "Error adding set PAPI_L2_TCM\n");
 		exit(1);
 	}
 	// XXX RN: it seems like this does not fit in the eventset on hla login nodes
-	if ((PAPI_add_event(EventSet, PAPI_BR_MSP) != PAPI_OK))
-	{
-		fprintf(stderr, "Error adding set PAPI_BR_MSP\n");
-		exit(1);
-	}
+//	if ((PAPI_add_event(EventSet, PAPI_BR_MSP) != PAPI_OK))
+//	{
+//		fprintf(stderr, "Error adding set PAPI_BR_MSP\n");
+//		exit(1);
+//	}
 }
 
-double startInS, stopInS;
+uint64_t startInS, stopInS;
 void startMeasurement() {
 	PAPI_start(EventSet);
 
 	uint32_t low = 0;
 	uint32_t high = 0;
 	asm volatile ("rdtscp" : "=a" (low), "=d" (high));
-	uint64_t clock_value;
-	clock_value = ((uint64_t) high << 32) + low;
-	startInS = (double) (clock_value) / (double) elg_cycles_per_sec;
+
+//	asm volatile ("CPUID\n\t"
+//	"RDTSC\n\t"
+//	"mov %%edx, %0\n\t"
+//	"mov %%eax, %1\n\t": "=r" (high), "=r" (low)::
+//	"%rax", "%rbx", "%rcx", "%rdx");
+
+	startInS = ((uint64_t) high << 32) + low;
 }
 
 void stopMeasurement() {
 	uint32_t low = 0;
 	uint32_t high = 0;
 	asm volatile ("rdtscp" : "=a" (low), "=d" (high));
-	uint64_t clock_value;
-	clock_value = ((uint64_t) high << 32) + low;
-	stopInS = (double) (clock_value) / (double) elg_cycles_per_sec;
+
+//	asm volatile("RDTSCP\n\t"
+//	"mov %%edx,  %0\n\t"
+//	"mov %%eax,  %1\n\t"
+//	"CPUID\n\t": "=r" (high), "=r" (low)::
+//	"%rax", "%rbx", "%rcx", "%rdx");
+
+	stopInS = ((uint64_t) high << 32) + low;
 
 	if (PAPI_stop(EventSet, values) != PAPI_OK) {
 		fprintf(stderr, "Error reading counters\n");
@@ -166,12 +175,15 @@ void printResultsHeader()
 {
 	fprintf(stderr,
 			"cycles_per_sec= %lu \n" \
-			"\tName |\t Runtime in s|\tPAPI_TOT_INS |\tPAPI_TOT_CYC |\tPAPI_REF_CYC |\tPAPI_L1_DCM |\tPAPI_L2_DCM |\tPAPI_BR_MSP\n", elg_cycles_per_sec);
+			"        Name |  Runtime in s| PAPI_TOT_INS | PAPI_TOT_CYC | PAPI_REF_CYC | PAPI_L1_DCM | PAPI_L2_TCM | PAPI_BR_MSP |  Raw Cycles\n", elg_cycles_per_sec);
 }
 
 void printResults(const char* name) {
-	fprintf(stderr, "%12s |\t%10.9lf s|\t%12lli |\t%12lli |\t%12lli |\t%11lli |\t%11lli |\t%11lli\n", name,
-			stopInS - startInS, values[0], values[1], values[2], values[3], values[4], values[5]);
+	uint64_t diff = stopInS - startInS;
+	double timeDiff = (double) (diff) / (double) elg_cycles_per_sec;
+
+	fprintf(stderr, "%12s | %10.9lf s| %12lli | %12lli | %12lli | %11lli | %11lli | %11lli | %11lu | %11li \n", name,
+			timeDiff, values[0], values[1], values[2], values[3], values[4], values[5], diff, (long)diff-(long)values[1]);
 }
 
 #ifdef __cplusplus

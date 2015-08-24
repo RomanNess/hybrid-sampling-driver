@@ -10,7 +10,7 @@
 #BSUB -J microbench
 
 #BSUB -q special3
-#BSUB -m hab0005	# host
+###BSUB -m hab0005	# host
 
 #BSUB -eo /home/us93buza/test/libsampling/lsf/OUT.out
 #BSUB -oo /home/us93buza/test/libsampling/lsf/OUT.out
@@ -26,14 +26,15 @@ WORKDIR=$LIBSAMPLING_BASE/out
 
 hostname
 
+
 make measure-cyg
 
 taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/target-core0.out
 taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/target-core5.out
 ./doIt.sh ./target.exe &> $WORKDIR/target.out
 
-taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/target-bigframe-core0.out
-taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/target-bigframe-core5.out
+taskset -c 0 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core0.out
+taskset -c 5 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core5.out
 ./doIt.sh ./target.exe &> $WORKDIR/target-bigframe.out
 
 make measure-cyg-nocache
@@ -42,8 +43,8 @@ taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core0.out
 taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core5.out
 ./doIt.sh ./target.exe &> $WORKDIR/nocache-target.out
 
-taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-bigframe-core0.out
-taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-bigframe-core5.out
+taskset -c 0 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core0.out
+taskset -c 5 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core5.out
 ./doIt.sh ./target.exe &> $WORKDIR/nocache-target-bigframe.out
 
 

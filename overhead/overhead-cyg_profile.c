@@ -83,9 +83,12 @@ void *monitor_init_process(int* argc, char** argv, void* data) {
 	startMeasurement();
 	stopMeasurement();
 	printResults("warmup");
-	startMeasurement();
-	stopMeasurement();
-	printResults("ref");
+
+	for(int i=0; i<5; i++) {
+		startMeasurement();
+		stopMeasurement();
+		printResults("ref");
+	}
 
 	return NULL;
 }
