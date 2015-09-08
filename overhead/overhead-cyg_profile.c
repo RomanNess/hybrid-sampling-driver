@@ -55,6 +55,12 @@ void __cyg_profile_func_enter(void *func_ptr, void *call_site) {
 
 #endif	// UNW_INIT_ONLY
 
+#else		// NO_UNWIND
+	double f = 0.f;
+	for (int i = 1; i < 10000; i++) {
+		f = f + 1 / (double) i;
+	}
+	printf("", f);
 #endif	// NO_UNWIND
 
 	stopMeasurement();
