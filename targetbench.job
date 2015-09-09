@@ -27,7 +27,7 @@ WORKDIR=$LIBSAMPLING_BASE/out
 hostname
 
 
-make measure-cyg
+make measure-unw
 
 taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/target-core0.out
 taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/target-core5.out
@@ -37,7 +37,7 @@ taskset -c 0 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core
 taskset -c 5 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core5.out
 ./doIt.sh ./target.exe &> $WORKDIR/target-bigframe.out
 
-make measure-cyg-nocache
+make measure-unw-nocache
 
 taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core0.out
 taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core5.out
