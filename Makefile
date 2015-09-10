@@ -45,14 +45,20 @@ measure-unw: LIBNAME=liboverhead
 measure-unw: target timing_papi libsampling
 #	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe &> out
 
+measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
+measure-cyg: LDFLAGS+=-ltiming_papi
 measure-cyg: target timing_papi libhash libshadowstack
-#	$(CC) -std=gnu99 $(PP_FLAGS) $(OPT_FLAGS) -I./src overhead/overhead-driver-no-papi.c -L./lib $(LDFLAGS) -ltiming_papi -lshadowstack $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) -o overhead.papi.exe
 	python3 py/gen.py target.exe
+	preload.libshadowstack.sh ./target.libtiming_papi.exe
+	preload.libshadowstack.sh ./target.noinstr.libtiming_papi.exe
+	preload.libshadowstack.sh ./target-simple.libtiming_papi.exe
+	preload.libshadowstack.sh ./target-simple.noinstr.libtiming_papi.exe
 
 	
 count-calls: target
 	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
 	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target-simple.exe
 	
 timing:
 	$(CC) -O3 $(CFLAGS) libtiming/timing.c -o lib/libtiming.so -lrt
@@ -79,7 +85,14 @@ sampling: libhash libsampling-debug
 #target: EXCLUDE=-finstrument-functions-exclude-function-list=main,foo
 target:
 	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
+	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
+	
+	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target.c -o target.libtiming_papi.exe -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
+	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.libtiming_papi.exe -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
 	$(CC) -g -O0 -std=gnu99 overhead/target.c -o target.noinstr.exe
+	$(CC) -g -O0 -std=gnu99 overhead/target.c -o target.noinstr.libtiming_papi.exe  -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
+	$(CC) -g -O0 -std=gnu99 overhead/target-simple.c -o target-simple.noinstr.libtiming_papi.exe  -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
+	
 	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target-bigframe.c -o target-bigframe.exe
 	
 .PHONY : clean

@@ -175,7 +175,7 @@ void printResultsHeader()
 {
 	fprintf(stderr,
 			"cycles_per_sec= %lu \n" \
-			"        Name |  Runtime in s| PAPI_TOT_INS | PAPI_TOT_CYC | PAPI_REF_CYC | PAPI_L1_DCM | PAPI_L2_TCM | PAPI_BR_MSP |  Raw Cycles\n", elg_cycles_per_sec);
+			"        Name |  Runtime in s| PAPI_TOT_INS | PAPI_TOT_CYC | PAPI_REF_CYC | PAPI_L1_DCM | PAPI_L2_TCM | PAPI_BR_MSP |  Raw Cycles | +Raw\n", elg_cycles_per_sec);
 }
 
 void printResults(const char* name) {

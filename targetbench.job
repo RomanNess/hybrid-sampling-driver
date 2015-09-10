@@ -18,7 +18,7 @@
 
 
 cd $LIBSAMPLING_BASE
-WORKDIR=$LIBSAMPLING_BASE/out
+WORKDIR=$LIBSAMPLING_BASE/out-tmp
 
 
 # RUN
@@ -29,23 +29,23 @@ hostname
 
 make measure-unw
 
-taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/target-core0.out
-taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/target-core5.out
-./doIt.sh ./target.exe &> $WORKDIR/target.out
+taskset -c 0 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/target-core0.out
+taskset -c 5 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/target-core5.out
+./preload.liboverhead.sh ./target.exe &> $WORKDIR/target.out
 
-taskset -c 0 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core0.out
-taskset -c 5 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core5.out
-./doIt.sh ./target.exe &> $WORKDIR/target-bigframe.out
+taskset -c 0 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core0.out
+taskset -c 5 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core5.out
+./preload.liboverhead.sh ./target.exe &> $WORKDIR/target-bigframe.out
 
 make measure-unw-nocache
 
-taskset -c 0 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core0.out
-taskset -c 5 bash doIt.sh ./target.exe &> $WORKDIR/nocache-target-core5.out
-./doIt.sh ./target.exe &> $WORKDIR/nocache-target.out
+taskset -c 0 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target-core0.out
+taskset -c 5 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target-core5.out
+./preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target.out
 
-taskset -c 0 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core0.out
-taskset -c 5 bash doIt.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core5.out
-./doIt.sh ./target.exe &> $WORKDIR/nocache-target-bigframe.out
+taskset -c 0 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core0.out
+taskset -c 5 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core5.out
+./preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target-bigframe.out
 
 
 #LD_PRELOAD="$LIBSAMPLING_BASE/lib/liboverhead.so $LIBMONITOR_BASE/lib/libmonitor.so" ./target.exe &> $WORKDIR/synth-nocache.out

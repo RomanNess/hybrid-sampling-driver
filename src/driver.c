@@ -216,12 +216,35 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	initSamplingDriver();
 #endif
 
+#ifdef META_BENCHMARK
+	initMeasurement();
+	printResultsHeader();
+	// warmup
+	startMeasurement();
+	stopMeasurement();
+	printResults("warmup");
+	startMeasurement();
+	stopMeasurement();
+	printResults("warmup");
+	startMeasurement();
+	stopMeasurement();
+	printResults("warmup");
+
+	startMeasurement();
+
+#endif
+
 	return NULL;
 }
 
 void monitor_fini_process(int how, void* data) {
 #ifndef NO_PAPI_DRIVER
 	finishSamplingDriver();
+#endif
+
+#ifdef META_BENCHMARK
+	stopMeasurement();
+	printResults("fini");
 #endif
 }
 
