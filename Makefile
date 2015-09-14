@@ -14,7 +14,8 @@ LDFLAGS=-lc $(PAPI_LD_FLAGS) -lpapi -pthread
 LIBMONITOR_FLAGS=-I$(LIBMONITOR_BASE)/include -L$(LIBMONITOR_BASE)/lib -lmonitor -pthread
 LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86_64 -lunwind
 
-INSTRO_FLAGS=-DWITH_MAX_SIZE
+INSTRO_FLAGS=-DMAX_SPEED
+TARGET_FLAGS=-g -O0 -std=gnu99
 
 libsampling-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
 libsampling-debug: libsampling
@@ -46,13 +47,17 @@ measure-unw: target timing_papi libsampling
 #	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe &> out
 
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
+#measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DSERIAL_OPT
 measure-cyg: LDFLAGS+=-ltiming_papi
-measure-cyg: target timing_papi libhash libshadowstack
+measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
+measure-cyg: target timing_papi libempty libhash libshadowstack
 	python3 py/gen.py target.exe
-	preload.libshadowstack.sh ./target.libtiming_papi.exe
-	preload.libshadowstack.sh ./target.noinstr.libtiming_papi.exe
-	preload.libshadowstack.sh ./target-simple.libtiming_papi.exe
-	preload.libshadowstack.sh ./target-simple.noinstr.libtiming_papi.exe
+	taskset -c 5 preload.libshadowstack.sh ./target.exe
+	taskset -c 5 preload.libshadowstack.sh ./target.noinstr.exe
+	taskset -c 5 preload.libshadowstack.sh ./target-simple.exe
+	taskset -c 5 preload.libshadowstack.sh ./target-simple.noinstr.exe
+	taskset -c 5 preload.libempty.sh	./target.exe
+	taskset -c 5 preload.libempty.sh	./target-simple.exe
 
 	
 count-calls: target
@@ -66,8 +71,9 @@ timing:
 timing_papi:
 	$(CC) -O2 $(CFLAGS) libtiming_papi/timing.c -o lib/libtiming_papi.so -lrt -lpapi
 
-libemptypushpop:
-	$(CC) -O3 $(CFLAGS) emptypushpop/emptypushpop.c -o lib/libemptypushpop.so
+libempty:	timing_papi
+	$(CC) -O3 $(CFLAGS) -DNO_MONITOR emptypushpop/emptypushpop.c -o lib/libempty.so
+	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -L./lib -ltiming_papi $(LIBMONITOR_FLAGS)
 	
 
 ### Targets & Tests
@@ -78,22 +84,20 @@ testStack:	libshadowstack
 	./test_stack.exe
 
 sampling: libhash libsampling-debug
-	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 target.c -o target.exe
+	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 overhead/target.c -o target.exe
 	python3 py/gen.py target.exe
 	LD_PRELOAD="./lib/libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
 	
+
 #target: EXCLUDE=-finstrument-functions-exclude-function-list=main,foo
 target:
-	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
-	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
+	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
+	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
 	
-	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target.c -o target.libtiming_papi.exe -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
-	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.libtiming_papi.exe -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
-	$(CC) -g -O0 -std=gnu99 overhead/target.c -o target.noinstr.exe
-	$(CC) -g -O0 -std=gnu99 overhead/target.c -o target.noinstr.libtiming_papi.exe  -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
-	$(CC) -g -O0 -std=gnu99 overhead/target-simple.c -o target-simple.noinstr.libtiming_papi.exe  -DMETA_BENCHMARK -I. -L./lib -ltiming_papi
+	$(CC) $(TARGET_FLAGS) overhead/target.c -o target.noinstr.exe
+	$(CC) $(TARGET_FLAGS) overhead/target-simple.c -o target-simple.noinstr.exe
 	
-	$(CC) -g -O0 -std=gnu99 -finstrument-functions $(EXCLUDE) overhead/target-bigframe.c -o target-bigframe.exe
+	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target-bigframe.c -o target-bigframe.exe
 	
 .PHONY : clean
 clean:

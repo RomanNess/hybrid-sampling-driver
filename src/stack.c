@@ -99,42 +99,7 @@ void finiSingleStack(struct Stack *stack) {
 	free(stack->_elements);
 }
 
-/*
- * Pushes a stack event to the stack
- * (internal interface)
- */
-void pushEvent(struct Stack *stack, struct StackEvent event) {
-#ifdef DEBUG
-	fprintf(stderr, "Enter Function: push event:\nstack-base: %p\nstack-size:%i\nadding at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_elements[stack->_size]), stack->_elements);
-#endif
 
-	if (stack->_size == stack->_maxSize) {
-		fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
-	}
-
-	stack->_elements[stack->_size].identifier = event.identifier;
-	stack->_size += 1;
-
-#ifdef DEBUG
-	fprintf(stderr, "Leave Function: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_elements[stack->_size-1]), stack->_elements);
-#endif
-
-#ifdef WITH_MAX_SIZE
-	if(stack->_size > stackMaxSize) {
-		stackMaxSize = stack->_size;
-	}
-#endif
-
-}
-
-/*
- * Pops an event from the stack.
- * Effectively decreases the size of the stack not freeing any memory.
- * (internal interface)
- */
-void popEvent(struct Stack *stack) {
-	stack->_size -= 1;
-}
 
 /*
  * Pushes an identifier to the stack.

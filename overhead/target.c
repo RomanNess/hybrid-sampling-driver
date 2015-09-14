@@ -1,10 +1,8 @@
-
 #ifdef META_BENCHMARK
-#include "libtiming_papi/timing.h"
+	#define TARGET_ITERATIONS 1000*1000*10
+#else
+	#define TARGET_ITERATIONS 1000
 #endif
-
-#define TARGET_ITERATIONS 1000*10000
-
 
 void rec10() {}
 
@@ -45,22 +43,8 @@ void rec1() {
 }
 
 int main() {
-
-#ifdef META_BENCHMARK
-	stopMeasurement();
-	printResults("init");
-	startMeasurement();
-#endif
-
 	for (int i = 0; i < TARGET_ITERATIONS; i++) {
 		rec1();
 	}
-
-#ifdef META_BENCHMARK
-	stopMeasurement();
-	printResults("main");
-	startMeasurement();
-#endif
-
 	return 0;
 }

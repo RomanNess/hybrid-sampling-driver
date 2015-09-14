@@ -55,8 +55,46 @@ void finiSingleStack(struct Stack *stack);
  * pushEvent adds one element (event) to stack (stack)
  * popEvent removes one element from stack (stack)
  */
-void pushEvent(struct Stack *stack, struct StackEvent event);
-void popEvent(struct Stack *stack);
+//void pushEvent(struct Stack *stack, struct StackEvent event);
+//void popEvent(struct Stack *stack);
+/*
+ * Pushes a stack event to the stack
+ * (internal interface)
+ */
+inline void pushEvent(struct Stack *stack, struct StackEvent event) {
+#ifdef DEBUG
+	fprintf(stderr, "Enter Function: push event:\nstack-base: %p\nstack-size:%i\nadding at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_elements[stack->_size]), stack->_elements);
+#endif
+
+#ifndef MAX_SPEED
+	if (stack->_size == stack->_maxSize) {
+		fprintf(stderr, "Maximum stack size of %i reached.\n", STACK_SIZE);
+	}
+#endif
+
+	stack->_elements[stack->_size].identifier = event.identifier;
+	stack->_size += 1;
+
+#ifdef DEBUG
+	fprintf(stderr, "Leave Function: push event:\nstack-base: %p\nstack-size:%i\nadded element at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_elements[stack->_size-1]), stack->_elements);
+#endif
+
+#ifdef WITH_MAX_SIZE
+	if(stack->_size > stackMaxSize) {
+		stackMaxSize = stack->_size;
+	}
+#endif
+
+}
+
+/*
+ * Pops an event from the stack.
+ * Effectively decreases the size of the stack not freeing any memory.
+ * (internal interface)
+ */
+inline void popEvent(struct Stack *stack) {
+	stack->_size -= 1;
+}
 
 /*
  * This is the public interface.
@@ -77,12 +115,22 @@ inline void pushIdentifier(unsigned long functionIdentifier) {
 	struct StackEvent event;
 	event.identifier = functionIdentifier;		// RN: some smaller identifier for performance reasons?
 
+#ifdef SERIAL_OPT
+	pushEvent(_multithreadStack[0], event);
+#else
 	pushEvent(_multithreadStack[threadId], event);
+#endif
 }
 
 inline void popIdentifier() {
+#ifdef SERIAL_OPT
+	popEvent(_multithreadStack[0]);
+#else
 	popEvent(_multithreadStack[threadId]);
+#endif
 }
+
+
 
 #endif
 

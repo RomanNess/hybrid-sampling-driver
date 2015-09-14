@@ -18,14 +18,14 @@
 
 
 cd $LIBSAMPLING_BASE
-WORKDIR=$LIBSAMPLING_BASE/out-tmp
-
+WORKDIR=$LIBSAMPLING_BASE/out-$LSB_JOBID
+mkdir $WORKDIR
 
 # RUN
 # liboverhead.so (measures and prints the overhead of inidividual samples)
 
 hostname
-
+cpupower frequency-info > $WORKDIR/frequency-info.txt
 
 make measure-unw
 

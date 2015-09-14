@@ -1,5 +1,9 @@
 #include "driver.h"
 
+#ifdef META_BENCHMARK
+#include "../libtiming_papi/timing.h"
+#endif
+
 struct Stack **_multithreadStack = 0;
 struct SampleEvent *_flushToDiskBuffer = 0;
 long int sampleCount = 0;
@@ -222,13 +226,13 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	// warmup
 	startMeasurement();
 	stopMeasurement();
-	printResults("warmup");
+//	printResults("warmup");
 	startMeasurement();
 	stopMeasurement();
-	printResults("warmup");
+//	printResults("warmup");
 	startMeasurement();
 	stopMeasurement();
-	printResults("warmup");
+//	printResults("warmup");
 
 	startMeasurement();
 
@@ -244,7 +248,7 @@ void monitor_fini_process(int how, void* data) {
 
 #ifdef META_BENCHMARK
 	stopMeasurement();
-	printResults("fini");
+	printResults("target");
 #endif
 }
 
