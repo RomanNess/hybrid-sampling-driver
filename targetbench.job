@@ -5,6 +5,7 @@
 #BSUB -x
 
 #BSUB -M 30000		# Hauptspeicher in MByte für alle Threads
+#BSUB -n 2
 
 #BSUB -W 10
 #BSUB -J microbench
@@ -12,20 +13,19 @@
 #BSUB -q special3
 ###BSUB -m hab0005	# host
 
-#BSUB -eo /home/us93buza/test/libsampling/lsf/OUT.out
-#BSUB -oo /home/us93buza/test/libsampling/lsf/OUT.out
-
+#BSUB -eo /home/us93buza/test/libsampling/results-unw/out-%J/OUT.out
+#BSUB -oo /home/us93buza/test/libsampling/results-unw/out-%J/OUT.out
 
 
 cd $LIBSAMPLING_BASE
-WORKDIR=$LIBSAMPLING_BASE/out-$LSB_JOBID
+WORKDIR=$LIBSAMPLING_BASE/results-unw/out-$LSB_JOBID
 mkdir $WORKDIR
 
 # RUN
 # liboverhead.so (measures and prints the overhead of inidividual samples)
 
-hostname
-cpupower frequency-info > $WORKDIR/frequency-info.txt
+hostname 									> $WORKDIR/frequency-info.txt
+cpupower frequency-info  >> $WORKDIR/frequency-info.txt
 
 make measure-unw
 

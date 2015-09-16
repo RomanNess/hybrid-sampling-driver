@@ -1,3 +1,7 @@
+#ifdef META_BENCHMARK
+#include "libtiming_papi/timing.h"
+#endif
+
 void _instroPushIdentifier(unsigned long funcIdentifier);
 void _instroPopIdentifier();
 

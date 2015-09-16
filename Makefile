@@ -46,18 +46,20 @@ measure-unw: LIBNAME=liboverhead
 measure-unw: target timing_papi libsampling
 #	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe &> out
 
+measure-cyg-serial: PP_FLAGS+=-DSERIAL_OPT
+measure-cyg-serial: measure-cyg
+
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
-#measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DSERIAL_OPT
 measure-cyg: LDFLAGS+=-ltiming_papi
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
 measure-cyg: target timing_papi libempty libhash libshadowstack
 	python3 py/gen.py target.exe
-	taskset -c 5 preload.libshadowstack.sh ./target.exe
-	taskset -c 5 preload.libshadowstack.sh ./target.noinstr.exe
-	taskset -c 5 preload.libshadowstack.sh ./target-simple.exe
-	taskset -c 5 preload.libshadowstack.sh ./target-simple.noinstr.exe
-	taskset -c 5 preload.libempty.sh	./target.exe
-	taskset -c 5 preload.libempty.sh	./target-simple.exe
+#	taskset -c 5 preload.libshadowstack.sh ./target.exe
+#	taskset -c 5 preload.libshadowstack.sh ./target.noinstr.exe
+#	taskset -c 5 preload.libshadowstack.sh ./target-simple.exe
+#	taskset -c 5 preload.libshadowstack.sh ./target-simple.noinstr.exe
+#	taskset -c 5 preload.libempty.sh	./target.exe
+#	taskset -c 5 preload.libempty.sh	./target-simple.exe
 
 	
 count-calls: target
@@ -73,7 +75,7 @@ timing_papi:
 
 libempty:	timing_papi
 	$(CC) -O3 $(CFLAGS) -DNO_MONITOR emptypushpop/emptypushpop.c -o lib/libempty.so
-	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -L./lib -ltiming_papi $(LIBMONITOR_FLAGS)
+	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I. -L./lib -ltiming_papi $(LIBMONITOR_FLAGS)
 	
 
 ### Targets & Tests
