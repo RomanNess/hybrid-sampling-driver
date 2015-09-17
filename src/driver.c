@@ -1,7 +1,7 @@
 #include "driver.h"
 
 #ifdef META_BENCHMARK
-#include "../libtiming_papi/timing.h"
+#include "libtiming_papi/timing.h"
 #endif
 
 struct Stack **_multithreadStack = 0;

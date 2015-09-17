@@ -1,4 +1,4 @@
-#include <../libtiming/timing.h>
+#include <libtiming/timing.h>
 
 #include <stdio.h>
 #include <err.h>

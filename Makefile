@@ -43,7 +43,7 @@ measure-unw: PP_FLAGS+=-DNO_CPP_LIB -DNO_PAPI_DRIVER -DNO_CYG_PROF -DNO_MONITOR 
 measure-unw: LDFLAGS:=-L./lib -ltiming_papi $(LD_FLAGS)
 measure-unw: SRC+= overhead/overhead-cyg_profile.c
 measure-unw: LIBNAME=liboverhead
-measure-unw: target timing_papi libsampling
+measure-unw: target timing libsampling
 #	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe &> out
 
 measure-cyg-serial: PP_FLAGS+=-DSERIAL_OPT
@@ -52,15 +52,8 @@ measure-cyg-serial: measure-cyg
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
 measure-cyg: LDFLAGS+=-ltiming_papi
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
-measure-cyg: target timing_papi libempty libhash libshadowstack
+measure-cyg: target timing libempty libhash libshadowstack
 	python3 py/gen.py target.exe
-#	taskset -c 5 preload.libshadowstack.sh ./target.exe
-#	taskset -c 5 preload.libshadowstack.sh ./target.noinstr.exe
-#	taskset -c 5 preload.libshadowstack.sh ./target-simple.exe
-#	taskset -c 5 preload.libshadowstack.sh ./target-simple.noinstr.exe
-#	taskset -c 5 preload.libempty.sh	./target.exe
-#	taskset -c 5 preload.libempty.sh	./target-simple.exe
-
 	
 count-calls: target
 	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
@@ -68,14 +61,13 @@ count-calls: target
 	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target-simple.exe
 	
 timing:
-	$(CC) -O3 $(CFLAGS) libtiming/timing.c -o lib/libtiming.so -lrt
-	
-timing_papi:
-	$(CC) -O2 $(CFLAGS) libtiming_papi/timing.c -o lib/libtiming_papi.so -lrt -lpapi
+	$(CC) -O3 $(CFLAGS) src/libtiming/timing.c -o lib/libtiming.so -lrt
+	$(CC) -O2 $(CFLAGS) src/libtiming_papi/timing.c -o lib/libtiming_papi.so -lrt -lpapi
+	$(CC) -O2 $(CFLAGS) src/libtiming_tsc/timing.c -o lib/libtiming_tsc.so
 
-libempty:	timing_papi
-	$(CC) -O3 $(CFLAGS) -DNO_MONITOR emptypushpop/emptypushpop.c -o lib/libempty.so
-	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I. -L./lib -ltiming_papi $(LIBMONITOR_FLAGS)
+libempty:	timing
+	$(CC) -O3 $(CFLAGS) -DNO_MONITOR src/emptypushpop/emptypushpop.c -o lib/libempty.so
+	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) src/emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I./src -L./lib -ltiming_papi $(LIBMONITOR_FLAGS)
 	
 
 ### Targets & Tests

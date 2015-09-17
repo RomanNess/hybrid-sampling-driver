@@ -1,5 +1,5 @@
 
-#include "../libtiming_papi/timing.h"
+#include "libtiming_papi/timing.h"
 
 //#include "driver.h"
 

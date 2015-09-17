@@ -51,13 +51,6 @@ void initSingleStack(struct Stack *stack, unsigned int maxSize);
 void finiSingleStack(struct Stack *stack);
 
 /*
- * "internal" stack interface
- * pushEvent adds one element (event) to stack (stack)
- * popEvent removes one element from stack (stack)
- */
-//void pushEvent(struct Stack *stack, struct StackEvent event);
-//void popEvent(struct Stack *stack);
-/*
  * Pushes a stack event to the stack
  * (internal interface)
  */
