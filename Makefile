@@ -8,9 +8,10 @@ CFLAGS=-fPIC -shared -Wall -std=gnu99
 OPT_FLAGS=-g -O3 -Wall
 
 SRC=src/stack.c src/driver.c src/unwinding.c
-LIBNAME=libsampling
+LIBNAME=sampling
 
 LDFLAGS=-lc $(PAPI_LD_FLAGS) -lpapi -pthread
+#LDFLAGS=-lc
 LIBMONITOR_FLAGS=-I$(LIBMONITOR_BASE)/include -L$(LIBMONITOR_BASE)/lib -lmonitor -pthread
 LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86_64 -lunwind
 
@@ -18,21 +19,16 @@ INSTRO_FLAGS=-DMAX_SPEED
 TARGET_FLAGS=-g -O0 -std=gnu99
 
 libsampling-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
-libsampling-debug: libsampling
 
-libsampling:
-	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/$(LIBNAME).so $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel: libhash
+	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(HOSTNAME).so $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libhash: $(eval LDFLAGS+=-lhash)
 libhash:
 	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
 
-libshadowstack: PP_FLAGS+=-DNO_PAPI_DRIVER
-libshadowstack: LIBNAME=libshadowstack
-libshadowstack: libhash libsampling
-
-measure: timing libhash libshadowstack
-	$(CC) -std=gnu99 $(OPT_FLAGS) -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
+measure: timing libshadowstack-serial
+	$(CC) -std=gnu99 $(OPT_FLAGS) -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack.serial.$(HOSTNAME) $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
 #	LD_PRELOAD="./lib/libshadowstack.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./overhead.exe
 
@@ -42,17 +38,20 @@ measure-unw-nocache: measure-unw
 measure-unw: PP_FLAGS+=-DNO_CPP_LIB -DNO_PAPI_DRIVER -DNO_CYG_PROF -DNO_MONITOR -DIGNORE_PAPI_CONTEXT
 measure-unw: LDFLAGS:=-L./lib -ltiming_papi $(LD_FLAGS)
 measure-unw: SRC+= overhead/overhead-cyg_profile.c
-measure-unw: LIBNAME=liboverhead
+measure-unw: LIBNAME=overhead
 measure-unw: target timing libsampling
 #	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe &> out
 
-measure-cyg-serial: PP_FLAGS+=-DSERIAL_OPT
-measure-cyg-serial: measure-cyg
+libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER
+libshadowstack-serial: LIBNAME=shadowstack.serial
+
+libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER
+libshadowstack-parallel: LIBNAME=shadowstack.parallel
 
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
 measure-cyg: LDFLAGS+=-ltiming_papi
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
-measure-cyg: target timing libempty libhash libshadowstack
+measure-cyg: target timing libempty libshadowstack-parallel libshadowstack-serial
 	python3 py/gen.py target.exe
 	
 count-calls: target
@@ -77,7 +76,7 @@ testStack:	libshadowstack
 	$(CC) -g -std=gnu99 -I./src -O0 -o test_stack.exe test.c -L./lib -lshadowstack $(LIBMONITOR_FLAGS)
 	./test_stack.exe
 
-sampling: libhash libsampling-debug
+sampling: libsampling-debug
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 overhead/target.c -o target.exe
 	python3 py/gen.py target.exe
 	LD_PRELOAD="./lib/libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
