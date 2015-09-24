@@ -1,0 +1,76 @@
+#!/bin/bash
+
+#####################
+# run "make measure-cyg-serial" before!!
+####################
+
+
+#BSUB -u idleknecht@gmail.com
+#BSUB -B -N
+#BSUB -x
+
+#BSUB -M 30000		# Hauptspeicher in MByte für alle Threads
+#BSUB -n 2
+
+#BSUB -W 20
+#BSUB -J measure-cyg
+
+#BSUB -q special3
+###BSUB -m hpb0344
+###BSUB -m hab0007	# host
+
+#BSUB -eo /home/us93buza/test/libsampling/results-cyg/out-nocompile/OUT.out
+#BSUB -oo /home/us93buza/test/libsampling/results-cyg/out-nocompile/OUT.out
+
+
+HAB=hab0008
+
+cd $LIBSAMPLING_BASE
+WORKDIR=$LIBSAMPLING_BASE/results-cyg/out-nocompile-$HOSTNAME
+mkdir $WORKDIR
+
+RunFlavor () {
+	echo "Running with libshadowstack from $1, target from $2"
+
+	taskset -c 5 bash preload.sh lib/libshadowstack.serial.$1.so		./target.$2.exe 								>> $WORKDIR/target.$2.shadowstack-serial.$1.txt 2>&1
+	taskset -c 5 bash preload.sh lib/libshadowstack.parallel.$1.so	./target.$2.exe 								>> $WORKDIR/target.$2.shadowstack-parallel.$1.txt 2>&1
+
+	taskset -c 5 bash preload.sh lib/libshadowstack.serial.$1.so		./target-simple.$2.exe 					>> $WORKDIR/target-simple.$2.shadowstack-serial.$1.txt 2>&1
+	taskset -c 5 bash preload.sh lib/libshadowstack.parallel.$1.so	./target-simple.$2.exe 					>> $WORKDIR/target-simple.$2.shadowstack-parallel.$1.txt 2>&1
+}
+
+RunIndependent() {
+	taskset -c 5 bash preload.sh lib/libshadowstack.serial.$HOSTNAME.so		./target.$1.noinstr.exe 				>> $WORKDIR/target.$1.noinstr.txt 2>&1
+	taskset -c 5 bash preload.sh lib/libshadowstack.serial.$HOSTNAME.so		./target-simple.$1.noinstr.exe 	>> $WORKDIR/target-simple.$1.noinstr.txt 2>&1
+
+	taskset -c 5 bash preload.libempty.sh				./target.$1.exe									>> $WORKDIR/target.$1.empty.txt 2>&1
+	taskset -c 5 bash preload.libempty.sh				./target-simple.$1.exe					>> $WORKDIR/target-simple.$1.empty.txt 2>&1
+}
+
+# RUN
+
+hostname 									> $WORKDIR/frequency-info.txt 2>&1
+cpupower frequency-info  >> $WORKDIR/frequency-info.txt 2>&1
+
+for i in {1..10}; do
+
+	RunIndependent hlb0003
+	RunIndependent hlb0007
+	RunIndependent $HAB
+	
+	RunFlavor $HAB hlb0003
+	RunFlavor $HAB hlb0007
+	RunFlavor $HAB $HAB
+	
+	RunFlavor hlb0007 hlb0003
+	RunFlavor hlb0007 hlb0007
+	RunFlavor hlb0007 $HAB
+	
+	RunFlavor hlb0003 hlb0003
+	RunFlavor hlb0003 hlb0007
+	RunFlavor hlb0003 $HAB
+	
+done
+
+
+

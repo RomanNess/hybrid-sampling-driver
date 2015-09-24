@@ -5,4 +5,4 @@ if [ ! -f $1 ]; then
 	exit
 fi
 
-LD_PRELOAD="$LIBSAMPLING_BASE/$1 $LIBMONITOR_BASE/lib/libmonitor.so" ${@:2}
+LD_PRELOAD="$PWD/$1 $LIBMONITOR_BASE/lib/libmonitor.so" ${@:2}
