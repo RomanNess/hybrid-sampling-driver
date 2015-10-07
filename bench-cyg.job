@@ -18,102 +18,35 @@
 
 
 cd $LIBSAMPLING_BASE
-WORKDIR=$LIBSAMPLING_BASE/results-cyg/out-$LSB_JOBID
+WORKDIR=$LIBSAMPLING_BASE/results-cyg/out-$HOSTNAME-$LSB_JOBID
+rm -rf $WORKDIR
 mkdir $WORKDIR
+
+# param 0 : lib flavor
+RunFlavor () {
+	echo "Running with $1 flavor."
+
+	taskset -c 13 bash preload.sh lib/libshadowstack.serial.$1.so		./target.exe 								>> $WORKDIR/target.shadowstack-serial.$1.txt 2>&1
+	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target.exe 								>> $WORKDIR/target.shadowstack-parallel.$1.txt 2>&1
+	
+	taskset -c 13 bash preload.sh lib/libempty-monitor.so						./target.exe 								>> $WORKDIR/target.empty.$1.txt 2>&1
+	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target.noinstr.exe 				>> $WORKDIR/target.noinstr.$1.txt 2>&1
+	
+	taskset -c 13 bash preload.sh lib/libshadowstack.serial.$1.so		./target-simple.exe 				>> $WORKDIR/target-simple.shadowstack-serial.$1.txt 2>&1
+	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target-simple.exe 				>> $WORKDIR/target-simple.shadowstack-parallel.$1.txt 2>&1	
+	
+	taskset -c 13 bash preload.sh lib/libempty-monitor.so						./target-simple.exe 				>> $WORKDIR/target-simple.empty.$1.txt 2>&1
+	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target-simple.noinstr.exe >> $WORKDIR/target-simple.noinstr.$1.txt 2>&1
+}
 
 # RUN
 
 hostname 									> $WORKDIR/frequency-info.txt 2>&1
 cpupower frequency-info  >> $WORKDIR/frequency-info.txt 2>&1
 
-make measure-cyg
+#make measure-cyg
 
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-multithread.txt 2>&1
+for i in {1..20}; do
+	RunFlavor $HOSTNAME
+done
 
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.noinstr.exe				>> $WORKDIR/target.noinstr.txt 2>&1 2>&1
-
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-multithread.txt 2>&1
-
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.noinstr.exe	>> $WORKDIR/target-simple.noinstr.txt 2>&1
-
-taskset -c 5 bash preload.libempty.sh				./target.exe								> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target.exe								>> $WORKDIR/target.empty.txt 2>&1
-
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-taskset -c 5 bash preload.libempty.sh				./target-simple.exe					>> $WORKDIR/target-simple.empty.txt 2>&1
-
-make measure-cyg-serial
-
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target.exe 								>> $WORKDIR/target.shadowstack-singlethread.txt 2>&1
-
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1
-taskset -c 5 bash preload.libshadowstack.sh 	./target-simple.exe					>> $WORKDIR/target-simple.shadowstack-singlethread.txt 2>&1

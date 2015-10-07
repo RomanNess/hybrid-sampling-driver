@@ -9,7 +9,7 @@
 #BSUB -W 500
 #BSUB -J interactive
 
-#BSUB -q special3
+###BSUB -q special3
 ###BSUB -m hab0007	# host
 
 bash
