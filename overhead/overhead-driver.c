@@ -120,6 +120,7 @@ double kernel() {
 void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 
 	printf("%17s == ", name);
+	numberOfBufferElements = 0;
 
 	if (handler != NULL) {
 		initPAPI(handler);
@@ -141,31 +142,52 @@ int main() {
 	makeRun(NULL, "Reference");
 	makeRun(NULL, "Reference");
 	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
+	makeRun(NULL, "Reference");
 
 	makeRun(emptyHandler, "Empty");
 	makeRun(emptyHandler, "Empty");
 	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
+	makeRun(emptyHandler, "Empty");
 
-	makeRun(unwindNewContext, "UnwindNewContext");
-	makeRun(unwindNewContext, "UnwindNewContext");
-	makeRun(unwindNewContext, "UnwindNewContext");
+//	makeRun(unwindNewContext, "UnwindNewContext");
+//	makeRun(unwindNewContext, "UnwindNewContext");
+//	makeRun(unwindNewContext, "UnwindNewContext");
+//
+//	makeRun(unwindPAPIContext, "UnwindPAPIContext");
+//	makeRun(unwindPAPIContext, "UnwindPAPIContext");
+//	makeRun(unwindPAPIContext, "UnwindPAPIContext");
+//
+//	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
+//	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
+//	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
+//
+//	makeRun(functionStartAddress, "FunctionStartAddr");
+//	makeRun(functionStartAddress, "FunctionStartAddr");
+//	makeRun(functionStartAddress, "FunctionStartAddr");
+//
+//	makeRun(unwindSteps, "UnwindSteps");
+//	makeRun(unwindSteps, "UnwindSteps");
+//	makeRun(unwindSteps, "UnwindSteps");
 
-	makeRun(unwindPAPIContext, "UnwindPAPIContext");
-	makeRun(unwindPAPIContext, "UnwindPAPIContext");
-	makeRun(unwindPAPIContext, "UnwindPAPIContext");
-
-	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
-	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
-	makeRun(unwindPAPIContextManual, "UnwindPAPIManual");
-
-	makeRun(functionStartAddress, "FunctionStartAddr");
-	makeRun(functionStartAddress, "FunctionStartAddr");
-	makeRun(functionStartAddress, "FunctionStartAddr");
-
-	makeRun(unwindSteps, "UnwindSteps");
-	makeRun(unwindSteps, "UnwindSteps");
-	makeRun(unwindSteps, "UnwindSteps");
-
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
+	makeRun(handler, "libsampling");
 	makeRun(handler, "libsampling");
 	makeRun(handler, "libsampling");
 	makeRun(handler, "libsampling");

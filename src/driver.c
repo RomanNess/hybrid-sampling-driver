@@ -130,6 +130,37 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 	numberOfBufferElements++;
 }
 
+void initSamplingDriver() {
+
+	/* read environment variable to control the sampling driver */
+	char *instroFreqVariable = getenv("INSTRO_SAMPLE_FREQ");
+	if (instroFreqVariable != NULL) {
+		printf("Using sample frequency set with INSTRO_SAMPLE_FREQ = %s\n", instroFreqVariable);
+		overflowCountForSamples = atoi(instroFreqVariable);
+	} else {
+		printf("INSTRO_SAMPLE_FREQ not set, using a sample each %lu cycles\n", overflowCountForSamples);
+	}
+
+	initBuffer();
+
+#ifndef NO_PAPI_DRIVER
+	int retval;
+	/* start the PAPI Library */
+	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
+		errx(retval, "PAPI_library_init failed with %i", retval);
+	}
+	if ((retval = PAPI_thread_init(getThreadId)) != PAPI_OK) {
+		errx(retval, "PAPI_thread_init failed with %i", retval);
+	}
+
+
+	registerThreadForPAPI();
+	printf("Sampling Driver Enabled\n");
+#endif	//  NO_PAPI_DRIVER
+
+}
+
+
 #ifndef NO_PAPI_DRIVER
 
 /*
@@ -150,33 +181,6 @@ void registerThreadForPAPI() {
 	if ((retval = PAPI_start(EventSet)) != PAPI_OK) {
 		errx(retval, "PAPI_start failed with %i", retval);
 	}
-}
-
-void initSamplingDriver() {
-
-	/* read environment variable to control the sampling driver */
-	char *instroFreqVariable = getenv("INSTRO_SAMPLE_FREQ");
-	if (instroFreqVariable != NULL) {
-		printf("Using sample frequency set with INSTRO_SAMPLE_FREQ = %s\n", instroFreqVariable);
-		overflowCountForSamples = atoi(instroFreqVariable);
-	} else {
-		printf("INSTRO_SAMPLE_FREQ not set, using a sample each 2600000 cycles\n");
-	}
-
-	initBuffer();
-
-	int retval;
-	/* start the PAPI Library */
-	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
-		errx(retval, "PAPI_library_init failed with %i", retval);
-	}
-	if ((retval = PAPI_thread_init(getThreadId)) != PAPI_OK) {
-		errx(retval, "PAPI_thread_init failed with %i", retval);
-	}
-
-	registerThreadForPAPI();
-
-	printf("Sampling Driver Enabled\n");
 }
 
 void finishSamplingDriver() {
@@ -216,9 +220,7 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	dumpMemoryMapping();
 #endif
 
-#ifndef NO_PAPI_DRIVER
 	initSamplingDriver();
-#endif
 
 #ifdef META_BENCHMARK
 	initMeasurement();

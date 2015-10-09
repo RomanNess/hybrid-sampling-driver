@@ -36,7 +36,7 @@
 extern struct Stack **_multithreadStack;
 
 /* write buffer */
-#define WRITE_BUFFER_SIZE 50000	/* number of sampling events in the buffer */
+#define WRITE_BUFFER_SIZE 1000000	/* number of sampling events in the buffer */
 extern struct SampleEvent *_flushToDiskBuffer;
 extern unsigned int numberOfBufferElements;
 
