@@ -22,6 +22,7 @@ libsampling-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
 
 libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel: libhash
 	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(HOSTNAME).so $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	#ln -s lib/lib$(LIBNAME).$(HOSTNAME).so lib/lib$(LIBNAME).so
 
 libhash: $(eval LDFLAGS+=-lhash)
 libhash:
@@ -30,7 +31,7 @@ libhash:
 measure: timing libshadowstack-serial
 	$(CC) -std=gnu99 $(OPT_FLAGS) -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack.serial.$(HOSTNAME) $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
-#	LD_PRELOAD="./lib/libshadowstack.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./overhead.exe
+#	taskset -c 13 bash ./preload.sh ./lib/libshadowstack.serial.$(HOSTNAME).so overhead.exe
 
 measure-unw-nocache: PP_FLAGS:=-DNO_UNW_CACHE
 measure-unw-nocache: measure-unw
@@ -49,15 +50,15 @@ libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER
 libshadowstack-parallel: LIBNAME=shadowstack.parallel
 
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
-measure-cyg: LDFLAGS+=-ltiming_papi
+measure-cyg: LDFLAGS+=-ltiming_tsc
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
 measure-cyg: target timing libempty libshadowstack-parallel libshadowstack-serial
 	python3 py/gen.py target.exe
 	
 count-calls: target
 	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
-	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
-	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target-simple.exe
+#	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+#	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target-simple.exe
 	
 timing:
 	$(CC) -O3 $(CFLAGS) src/libtiming/timing.c -o lib/libtiming.so -lrt
@@ -66,7 +67,7 @@ timing:
 
 libempty:	timing
 	$(CC) -O3 $(CFLAGS) -DNO_MONITOR src/emptypushpop/emptypushpop.c -o lib/libempty.so
-	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) src/emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I./src -L./lib -ltiming_papi $(LIBMONITOR_FLAGS)
+	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) src/emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I./src -L./lib -ltiming_tsc $(LIBMONITOR_FLAGS)
 	
 
 ### Targets & Tests

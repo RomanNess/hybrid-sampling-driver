@@ -76,12 +76,6 @@ void unwindSteps(int EventSet, void* address, long long overflow_vector, void* c
 	getUnwindSteps(getFunctionStartAddress((unsigned long) address));
 }
 
-void unwind(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
-
-	doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements++]);
-}
-
 
 void initPAPI(PAPI_overflow_handler_t handler) {
 
@@ -114,13 +108,13 @@ void finiPAPI() {
 	sampleCount = 0;
 }
 
-void kernel() __attribute__ ((noinline));
-void kernel() {
+double kernel() __attribute__ ((noinline)) __attribute__((optimize("O0")));
+double kernel() {
 	double f = 0.f;
 	for (int i = 1; i < NUM_ITERATIONS; i++) {
 		f = f + 1 / (double) i;
 	}
-	printf("", f);
+	return f;
 }
 
 void makeRun(PAPI_overflow_handler_t handler, const char* name) {
@@ -131,8 +125,9 @@ void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 		initPAPI(handler);
 	}
 	startMeasurement();
-	kernel();
+	double result = kernel();
 	stopMeasurement();
+	printf("",result);	// cannot optimize the kernel away now
 	if (handler != NULL) {
 		finiPAPI();
 	}
@@ -170,10 +165,6 @@ int main() {
 	makeRun(unwindSteps, "UnwindSteps");
 	makeRun(unwindSteps, "UnwindSteps");
 	makeRun(unwindSteps, "UnwindSteps");
-
-	makeRun(unwind, "Unwind");
-	makeRun(unwind, "Unwind");
-	makeRun(unwind, "Unwind");
 
 	makeRun(handler, "libsampling");
 	makeRun(handler, "libsampling");
