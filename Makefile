@@ -3,7 +3,8 @@ check-var-defined = $(if $(strip $($1)),,$(error "$1" is not defined))
 $(call check-var-defined,LIBMONITOR_BASE)
 $(call check-var-defined,LIBUNWIND_BASE)
 
-CC=gcc
+CC?=gcc
+CXX?=g++
 CFLAGS=-fPIC -shared -Wall -std=gnu99
 OPT_FLAGS=-g -O3 -Wall
 
@@ -26,7 +27,7 @@ libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel: lib
 
 libhash: $(eval LDFLAGS+=-lhash)
 libhash:
-	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
+	$(CXX) -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
 
 measure: timing libshadowstack-serial
 	$(CC) -std=gnu99 $(OPT_FLAGS) -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack.serial.$(HOSTNAME) $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
@@ -43,7 +44,7 @@ measure-unw: LIBNAME=overhead
 measure-unw: target timing libsampling
 #	LD_PRELOAD="./lib/liboverhead.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe &> out
 
-libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER
+libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER -DNO_CPP_LIB
 libshadowstack-serial: LIBNAME=shadowstack.serial
 
 libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER
