@@ -20,7 +20,8 @@ TARGET_FLAGS=-g -O0 -std=gnu99
 
 libsampling-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
 
-libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel: libhash
+libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel \
+measure measure-sampling-target measure-sampling-target-noHandler: libhash timing
 	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(HOSTNAME).so $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 	#ln -s lib/lib$(LIBNAME).$(HOSTNAME).so lib/lib$(LIBNAME).so
 
@@ -28,10 +29,24 @@ libhash: $(eval LDFLAGS+=-lhash)
 libhash:
 	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
 
-measure: timing libshadowstack-serial
+sampling-bench: measure measure-sampling-target measure-sampling-target-noHandler
+
+measure: PP_FLAGS+=-DMETA_BENCHMARK -DNO_PAPI_DRIVER -DNO_PAPI_HANDLER
+measure: LDFLAGS+=-ltiming_tsc
+measure: LIBNAME=measure
+	
+measure-sampling: timing libshadowstack-serial
 	$(CC) -std=gnu99 $(OPT_FLAGS) -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c -L./lib -ltiming -lhash -lshadowstack.serial.$(HOSTNAME) $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
 #	taskset -c 13 bash ./preload.sh ./lib/libshadowstack.serial.$(HOSTNAME).so overhead.exe
+
+measure-sampling-target: PP_FLAGS+=-DMETA_BENCHMARK 
+measure-sampling-target: LDFLAGS+=-ltiming_tsc
+measure-sampling-target: LIBNAME=benchSampling
+	
+measure-sampling-target-noHandler: PP_FLAGS=-DMETA_BENCHMARK -DNO_PAPI_HANDLER
+measure-sampling-target-noHandler: LDFLAGS+=-ltiming_tsc
+measure-sampling-target-noHandler: LIBNAME=benchSampling.noHandler
 
 measure-unw-nocache: PP_FLAGS:=-DNO_UNW_CACHE
 measure-unw-nocache: measure-unw

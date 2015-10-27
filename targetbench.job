@@ -13,12 +13,18 @@
 #BSUB -q special3
 ###BSUB -m hab0005	# host
 
-#BSUB -eo /home/us93buza/test/libsampling/results-unw/out-%J/OUT.out
-#BSUB -oo /home/us93buza/test/libsampling/results-unw/out-%J/OUT.out
+#BSUB -eo /home/us93buza/test/libsampling/results-unw/out-JOB%J/OUT.out
+#BSUB -oo /home/us93buza/test/libsampling/results-unw/out-JOB%J/OUT.out
 
+
+TARGET_NAME=libquantum
+TARGET_PARAMS="100 8"
+TARGET_BASE_PATH=/home/us93buza/test/InternalTestCodes/codes/spec_cpu.462.libquantum
+TARGET="$TARGET_BASE_PATH/spec_cpu.462.libquantum.instr $TARGET_PARAMS"
+TARGET_NOINSTR="$TARGET_BASE_PATH/spec_cpu.462.libquantum.vanilla $TARGET_PARAMS"
 
 cd $LIBSAMPLING_BASE
-WORKDIR=$LIBSAMPLING_BASE/results-unw/out-$LSB_JOBID
+WORKDIR=$LIBSAMPLING_BASE/results-unw/out-JOB$LSB_JOBID
 mkdir $WORKDIR
 
 # RUN
@@ -27,25 +33,17 @@ mkdir $WORKDIR
 hostname 									> $WORKDIR/frequency-info.txt
 cpupower frequency-info  >> $WORKDIR/frequency-info.txt
 
-make measure-unw
+make clean measure-unw
 
-taskset -c 0 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/target-core0.out
-taskset -c 5 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/target-core5.out
-./preload.liboverhead.sh ./target.exe &> $WORKDIR/target.out
+taskset -c 13 bash preload.sh lib/liboverhead.$HOSTNAME.so ./target.exe &> $WORKDIR/target-core13.out
+taskset -c 13 bash preload.sh lib/liboverhead.$HOSTNAME.so ./target-bigframe.exe &> $WORKDIR/target-bigframe-core13.out
+taskset -c 13 bash preload.sh lib/liboverhead.$HOSTNAME.so $TARGET &> $WORKDIR/$TARGET_NAME-core13.out
 
-taskset -c 0 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core0.out
-taskset -c 5 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/target-bigframe-core5.out
-./preload.liboverhead.sh ./target.exe &> $WORKDIR/target-bigframe.out
+make clean measure-unw-nocache
 
-make measure-unw-nocache
-
-taskset -c 0 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target-core0.out
-taskset -c 5 bash preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target-core5.out
-./preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target.out
-
-taskset -c 0 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core0.out
-taskset -c 5 bash preload.liboverhead.sh ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core5.out
-./preload.liboverhead.sh ./target.exe &> $WORKDIR/nocache-target-bigframe.out
+taskset -c 13 bash preload.sh lib/liboverhead.$HOSTNAME.so ./target.exe &> $WORKDIR/nocache-target-core13.out
+taskset -c 13 bash preload.sh lib/liboverhead.$HOSTNAME.so ./target-bigframe.exe &> $WORKDIR/nocache-target-bigframe-core13.out
+taskset -c 13 bash preload.sh lib/liboverhead.$HOSTNAME.so $TARGET &> $WORKDIR/nocache-$TARGET_NAME-core13.out
 
 
 #LD_PRELOAD="$LIBSAMPLING_BASE/lib/liboverhead.so $LIBMONITOR_BASE/lib/libmonitor.so" ./target.exe &> $WORKDIR/synth-nocache.out
