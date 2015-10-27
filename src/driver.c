@@ -205,14 +205,14 @@ void finishSamplingDriver() {
 
 #endif	// NO_PAPI_DRIVER
 
-#ifndef NO_MONITOR
+#ifndef NO_INIT
 
-#ifdef MONITOR_INTIALIZATION
+#ifdef MONITOR_INIT
 void *monitor_init_process(int *argc, char **argv, void *data) {
-#else	//MONITOR_INTIALIZATION
+#else	//MONITOR_INIT
 __attribute__((constructor))
 void *init_process(int *argc, char **argv, void *data) {
-#endif	//MONITOR_INTIALIZATION
+#endif	//MONITOR_INIT
 
 	printf("#### init sampling driver - Pid is %i #### \n", getpid());
 
@@ -250,12 +250,12 @@ void *init_process(int *argc, char **argv, void *data) {
 	return NULL;
 }
 
-#if MONITOR_INTIALIZATION
+#if MONITOR_INIT
 void monitor_fini_process(int how, void* data) {
-#else //MONITOR_INTIALIZATION
+#else //MONITOR_INIT
 __attribute__((constructor))
 void monitor_fini_process(int how, void* data) {
-#endif	//MONITOR_INTIALIZATION
+#endif	//MONITOR_INIT
 
 #ifdef META_BENCHMARK
 	stopMeasurement();
@@ -286,4 +286,4 @@ void monitor_fini_thread(void* data) {
 	finiSingleStack(_multithreadStack[threadId]);	// RN: or just reset the stack?
 }
 
-#endif	// NO_MONITOR
+#endif	// NO_INIT

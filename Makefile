@@ -51,7 +51,7 @@ measure-sampling-target-noHandler: LIBNAME=benchSampling.noHandler
 measure-unw-nocache: PP_FLAGS:=-DNO_UNW_CACHE
 measure-unw-nocache: measure-unw
 
-measure-unw: PP_FLAGS+=-DNO_CPP_LIB -DNO_PAPI_DRIVER -DNO_CYG_PROF -DNO_MONITOR -DIGNORE_PAPI_CONTEXT
+measure-unw: PP_FLAGS+=-DNO_CPP_LIB -DNO_PAPI_DRIVER -DNO_CYG_PROF -DNO_INIT -DIGNORE_PAPI_CONTEXT
 measure-unw: LDFLAGS:=-L./lib -ltiming_papi $(LD_FLAGS)
 measure-unw: SRC+= overhead/overhead-cyg_profile.c
 measure-unw: LIBNAME=overhead
@@ -81,7 +81,7 @@ timing:
 	$(CC) -O2 $(CFLAGS) src/libtiming_tsc/timing.c -o lib/libtiming_tsc.so
 
 libempty:	timing
-	$(CC) -O3 $(CFLAGS) -DNO_MONITOR src/emptypushpop/emptypushpop.c -o lib/libempty.so
+	$(CC) -O3 $(CFLAGS) -DNO_INIT src/emptypushpop/emptypushpop.c -o lib/libempty.so
 	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) src/emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I./src -L./lib -ltiming_tsc $(LIBMONITOR_FLAGS)
 	
 

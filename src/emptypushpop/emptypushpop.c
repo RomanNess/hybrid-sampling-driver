@@ -27,7 +27,7 @@ void __cyg_profile_func_exit(void *func_ptr, void *call_site) {
 	return;
 }
 
-#ifndef NO_MONITOR
+#ifndef NO_INIT
 
 void *monitor_init_process(int *argc, char **argv, void *data) {
 #ifdef META_BENCHMARK
@@ -57,4 +57,4 @@ void monitor_fini_process(int how, void* data) {
 #endif
 }
 
-#endif // NO_MONITOR
+#endif // NO_INIT
