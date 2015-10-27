@@ -120,6 +120,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
 
+#ifndef NO_PAPI_HANDLER
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
 
@@ -128,6 +129,7 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
 
 	numberOfBufferElements++;
+#endif //NO_PAPI_HANDLER
 }
 
 void initSamplingDriver() {
@@ -205,7 +207,12 @@ void finishSamplingDriver() {
 
 #ifndef NO_MONITOR
 
+#ifdef MONITOR_INTIALIZATION
 void *monitor_init_process(int *argc, char **argv, void *data) {
+#else	//MONITOR_INTIALIZATION
+__attribute__((constructor))
+void *init_process(int *argc, char **argv, void *data) {
+#endif	//MONITOR_INTIALIZATION
 
 	printf("#### init sampling driver - Pid is %i #### \n", getpid());
 
@@ -243,14 +250,20 @@ void *monitor_init_process(int *argc, char **argv, void *data) {
 	return NULL;
 }
 
+#if MONITOR_INTIALIZATION
 void monitor_fini_process(int how, void* data) {
-#ifndef NO_PAPI_DRIVER
-	finishSamplingDriver();
-#endif
+#else //MONITOR_INTIALIZATION
+__attribute__((constructor))
+void monitor_fini_process(int how, void* data) {
+#endif	//MONITOR_INTIALIZATION
 
 #ifdef META_BENCHMARK
 	stopMeasurement();
 	printResults("target");
+#endif
+
+#ifndef NO_PAPI_DRIVER
+	finishSamplingDriver();
 #endif
 }
 
