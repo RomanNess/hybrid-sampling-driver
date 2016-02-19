@@ -13,13 +13,11 @@ LIBNAME=sampling
 LDFLAGS=-lc
 LIBMONITOR_FLAGS=-I$(LIBMONITOR_BASE)/include -L$(LIBMONITOR_BASE)/lib -lmonitor -pthread
 LIBUNWIND_FLAGS=-I$(LIBUNWIND_BASE)/include -L$(LIBUNWIND_BASE)/lib -lunwind-x86_64 -lunwind
-PAPI_FLAGS=-lc $(PAPI_LD_FLAGS) -lpapi -pthread
+PAPI_FLAGS=-lpapi -pthread
 
 STACKWALKER_BASE=/home/us93buza/opt/stackwalker/DyninstAPI-9.0.3
 STACKWALKER_FLAGS=-I$(BOOST)/include \
-	-I/home/us93buza/opt/stackwalker/DyninstAPI-9.0.3/proccontrol/h \
-	-I/home/us93buza/opt/stackwalker/DyninstAPI-9.0.3/common/h \
-	-I/home/us93buza/opt/stackwalker/DyninstAPI-9.0.3/build/common/h \
+	-I$(STACKWALKER_BASE)/proccontrol/h -I$(STACKWALKER_BASE)/common/h -I$(STACKWALKER_BASE)/build/common/h \
 	-I$(STACKWALKER_BASE)/stackwalk/h -L$(STACKWALKER_BASE)/build/stackwalk -lstackwalk
 
 INSTRO_FLAGS=-DMAX_SPEED
@@ -93,8 +91,8 @@ count-calls: target
 	
 timing:
 	$(CC) -O3 $(CFLAGS) src/libtiming/timing.c -o lib/libtiming.so -lrt
-	$(CC) -O2 $(CFLAGS) src/libtiming_papi/timing.c -o lib/libtiming_papi.so -lrt -lpapi
-	$(CC) -O2 $(CFLAGS) src/libtiming_tsc/timing.c -o lib/libtiming_tsc.so
+	$(CC) -O2 $(CFLAGS) src/libtiming/timing_papi.c -o lib/libtiming_papi.so -lrt -lpapi
+	$(CC) -O2 $(CFLAGS) src/libtiming/timing_tsc.c -o lib/libtiming_tsc.so
 
 libempty:	timing
 	$(CC) -O3 $(CFLAGS) -DNO_INIT src/emptypushpop/emptypushpop.c -o lib/libempty.so

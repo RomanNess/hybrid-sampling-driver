@@ -21,4 +21,4 @@ void printResults(const char* name);
 }
 #endif
 
-#endif 	// SRC_TIMING_H_
+#endif	// SRC_TIMING_H_
