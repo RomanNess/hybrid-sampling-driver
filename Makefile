@@ -66,7 +66,7 @@ measure-unw: target timing libsampling
 # stackwalker api overhead
 measure-stackwalker: LIBNAME=stackwalker
 measure-stackwalker: target timing
-	g++ $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -Wall -o lib/lib$(LIBNAME).$(HOSTNAME).so overhead/overhead-stackwalker.cpp -I./src \
+	g++ $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -o lib/lib$(LIBNAME).$(HOSTNAME).so overhead/overhead-stackwalker.cpp -I./src \
 			$(LIBMONITOR_FLAGS)  $(STACKWALKER_FLAGS) -L./lib -ltiming_tsc
 #	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(HOSTNAME).so ./target.exe &> out
 

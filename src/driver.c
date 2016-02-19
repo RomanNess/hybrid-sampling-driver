@@ -209,12 +209,12 @@ void finishSamplingDriver() {
 
 #ifdef MONITOR_INIT
 void *monitor_init_process(int *argc, char **argv, void *data) {
+	printf("#### Init driver with LIBMONITOR - Pid is %i #### \n", getpid());
 #else	//MONITOR_INIT
 __attribute__((constructor))
 void *_init_process(int *argc, char **argv, void *data) {
+	printf("#### Init driver with __attribute__((constructor)) - Pid is %i #### \n", getpid());
 #endif	//MONITOR_INIT
-
-	printf("#### init sampling driver - Pid is %i #### \n", getpid());
 
 	readEnv();
 	assingContinuousThreadId();
@@ -225,6 +225,8 @@ void *_init_process(int *argc, char **argv, void *data) {
 	parseRegions("regions_file", &regionStart, &regionEnd);
 //	dump();
 	dumpMemoryMapping();
+#else
+	printf("NO_CPP_LIB\n");
 #endif
 
 	initSamplingDriver();

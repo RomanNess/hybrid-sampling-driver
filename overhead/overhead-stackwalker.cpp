@@ -10,7 +10,7 @@
 #include <stdlib.h>
 
 //#define NO_UNWIND
-#define UNW_INIT_ONLY
+//#define UNW_INIT_ONLY
 #define PRINT_FUNCTIONS 0
 
 using namespace Dyninst::Stackwalker;
@@ -36,8 +36,8 @@ void __cyg_profile_func_enter(void *func_ptr, void *call_site) {
 #ifndef NO_UNWIND
 
 	Walker* walker = Walker::newWalker();
-//	Frame frame(walker);
-//	walker->getInitialFrame(frame);
+	Frame frame(walker);
+	walker->getInitialFrame(frame);
 
 #if  PRINT_FUNCTIONS
 	printFrame(frame);

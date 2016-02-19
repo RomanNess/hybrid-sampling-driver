@@ -1,0 +1,43 @@
+#!/bin/bash
+
+#BSUB -u idleknecht@gmail.com
+#BSUB -B -N
+#BSUB -x
+
+#BSUB -M 30000		# Hauptspeicher in MByte fuer alle Threads
+#BSUB -n 2
+
+#BSUB -W 10
+#BSUB -J microbench
+
+#BSUB -q special3
+###BSUB -m hab0005	# host
+
+#BSUB -eo /home/us93buza/test/libsampling/results-unw/out-JOB%J/OUT.out
+#BSUB -oo /home/us93buza/test/libsampling/results-unw/out-JOB%J/OUT.out
+
+
+TARGET_NAME=libquantum
+TARGET_PARAMS="100 8"
+TARGET_BASE_PATH=/home/us93buza/test/InternalTestCodes/codes/spec_cpu.462.libquantum
+TARGET="$TARGET_BASE_PATH/spec_cpu.462.libquantum.instr $TARGET_PARAMS"
+TARGET_NOINSTR="$TARGET_BASE_PATH/spec_cpu.462.libquantum.vanilla $TARGET_PARAMS"
+
+cd $LIBSAMPLING_BASE
+WORKDIR=$LIBSAMPLING_BASE/results-stackwalker/out-JOB$LSB_JOBID
+mkdir $WORKDIR
+
+# RUN
+# libshadowstack.so (measures and prints the overhead of stackwalker api)
+
+hostname 									> $WORKDIR/frequency-info.txt
+cpupower frequency-info  >> $WORKDIR/frequency-info.txt
+
+make clean measure-stackwalker
+
+taskset -c 5 bash preload.sh lib/libstackwalker.$HOSTNAME.so ./target.exe &> $WORKDIR/target-core5.out
+taskset -c 5 bash preload.sh lib/libstackwalker.$HOSTNAME.so ./target-bigframe.exe &> $WORKDIR/target-bigframe-core5.out
+#taskset -c 5 bash preload.sh lib/libstackwalker.$HOSTNAME.so $TARGET &> $WORKDIR/$TARGET_NAME-core5.out
+
+
+#LD_PRELOAD="$LIBSAMPLING_BASE/lib/liboverhead.so $LIBMONITOR_BASE/lib/libmonitor.so" ./target.exe &> $WORKDIR/synth-nocache.out
