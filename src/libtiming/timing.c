@@ -1,4 +1,10 @@
 #include "timing.h"
+#include <stdlib.h>
+
+static struct timespec start, end;
+
+void initMeasurement() {}
+void finalizeMeasurement() {}
 
 void startMeasurement() {
 	clock_gettime(CLOCK_MONOTONIC, &start);
@@ -6,26 +12,6 @@ void startMeasurement() {
 
 void stopMeasurement() {
 	clock_gettime(CLOCK_MONOTONIC, &end);
-}
-
-double getResult() {
-	char resultString[32];
-	struct timespec result;
-	timespec_subtract(&result, &start, &end);
-	sprintf(resultString, "%ld.%09ld", result.tv_sec, result.tv_nsec);
-
-	char* stringEnd;
-	return strtod(resultString, &stringEnd);
-}
-
-void printResults() {
-	struct timespec result;
-	timespec_subtract(&result, &start, &end);
-	fprintf(stdout, "Run took: %ld.%09ld seconds.\n", result.tv_sec, result.tv_nsec);
-	start.tv_sec = 0;
-	start.tv_nsec = 0;
-	end.tv_sec = 0;
-	end.tv_nsec = 0;
 }
 
 int timespec_subtract(struct timespec *result, struct timespec *start, struct timespec *end) {
@@ -38,5 +24,26 @@ int timespec_subtract(struct timespec *result, struct timespec *start, struct ti
 		result->tv_nsec = end->tv_nsec - start->tv_nsec;
 		return 0;
 	}
+}
+
+double getResult() {
+	char resultString[32];
+	struct timespec result;
+	timespec_subtract(&result, &start, &end);
+	sprintf(resultString, "%ld.%09ld", result.tv_sec, result.tv_nsec);
+
+	char* stringEnd;
+	return strtod(resultString, &stringEnd);
+}
+
+void printResultsHeader() {}
+void printResults(const char* name) {
+	struct timespec result;
+	timespec_subtract(&result, &start, &end);
+	fprintf(stdout, "%17s | %ld.%09ld seconds\n", name, result.tv_sec, result.tv_nsec);
+	start.tv_sec = 0;
+	start.tv_nsec = 0;
+	end.tv_sec = 0;
+	end.tv_nsec = 0;
 }
 

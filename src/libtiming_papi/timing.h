@@ -1,3 +1,5 @@
+#ifndef SRC_TIMING_H_
+#define SRC_TIMING_H_
 
 #include "time.h"
 #include "stdio.h"
@@ -18,3 +20,5 @@ void printResults(const char* name);
 #ifdef __cplusplus
 }
 #endif
+
+#endif	// SRC_TIMING_H_

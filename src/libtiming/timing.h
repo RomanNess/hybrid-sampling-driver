@@ -1,17 +1,24 @@
-#ifndef SRC_TIMING_H
-#define SRC_TIMING_H
+#ifndef SRC_TIMING_H_
+#define SRC_TIMING_H_
 
-#include <time.h>
-#include <stdio.h>
-#include <stdlib.h>
+#include "time.h"
+#include "stdio.h"
 
-int timespec_subtract(struct timespec* result, struct timespec* start, struct timespec* end);
+#ifdef __cplusplus
+extern "C" {
+#endif
 
-struct timespec start;
-struct timespec end;
+void initMeasurement();
+void finalizeMeasurement();
 
 void startMeasurement();
 void stopMeasurement();
-void printResults();
 
-#endif	// SRC_TIMING_H
+void printResultsHeader();
+void printResults(const char* name);
+
+#ifdef __cplusplus
+}
+#endif
+
+#endif 	// SRC_TIMING_H_

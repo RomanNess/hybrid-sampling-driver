@@ -10,9 +10,9 @@ long int sampleCount = 0;
 unsigned int numberOfBufferElements = 0;
 long overflowCountForSamples = 2500000;
 
-//#ifndef NO_PAPI_DRIVER
+#ifndef NO_PAPI_DRIVER
 __thread int EventSet = PAPI_NULL;
-//#endif
+#endif
 
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {

@@ -11,9 +11,7 @@
 
 #define NUM_ITERATIONS 1000000000
 
-//long overflowCountForSamples = 2600000;
-//long sampleCount = 0;
-//int EventSet = PAPI_NULL;
+__thread int EventSet = PAPI_NULL;
 
 void emptyHandler(int EventSet, void* address, long long overflow_vector, void* context) {
 	sampleCount++;
@@ -119,7 +117,6 @@ double kernel() {
 
 void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 
-	printf("%17s == ", name);
 	numberOfBufferElements = 0;
 
 	if (handler != NULL) {
@@ -132,7 +129,7 @@ void makeRun(PAPI_overflow_handler_t handler, const char* name) {
 	if (handler != NULL) {
 		finiPAPI();
 	}
-	printResults();
+	printResults(name);
 }
 
 int main() {

@@ -1,68 +1,72 @@
 
-#include "libtiming_papi/timing.h"
+#include "libtiming_tsc/timing.h"
 
-//#include "driver.h"
-
-#include <monitor.h>
-#include <libunwind.h>
+#include <walker.h>
+#include <frame.h>
+#include <vector>
+#include <iostream>
 
 #include <stdio.h>
 #include <stdlib.h>
 
 //#define NO_UNWIND
-//#define UNW_INIT_ONLY
+#define UNW_INIT_ONLY
 #define PRINT_FUNCTIONS 0
+
+using namespace Dyninst::Stackwalker;
 
 int calldepth = -1;
 
-/* determine the overhead of libunwind */
+/* determine the overhead of stackwalker api */
 
+inline void printFrame(const Frame& frame) {
+	std::string s;
+	frame.getName(s);
+
+	std::cout << "\t" << s << " - RA: " << std::hex << frame.getRA()
+			<< " - isBottom:" << frame.isBottomFrame() << std::endl;
+}
+
+extern "C" {
 void __cyg_profile_func_enter(void *func_ptr, void *call_site) {
 	calldepth++;
 
 	startMeasurement();
 
 #ifndef NO_UNWIND
-	// driver code here
-	unw_cursor_t cursor;
-	unw_context_t uc;
-	unw_getcontext(&uc);
-	unw_init_local(&cursor, &uc);
+
+	Walker* walker = Walker::newWalker();
+//	Frame frame(walker);
+//	walker->getInitialFrame(frame);
+
+#if  PRINT_FUNCTIONS
+	printFrame(frame);
+#endif
+
 
 #ifndef UNW_INIT_ONLY
 
 	int unwindSteps = calldepth;
 
-#if  PRINT_FUNCTIONS
-	unw_word_t offp;
-	char buf[512];
-#endif
-
 	int status = 1;
-	while (status > 0 && unwindSteps != 0) {
-
-#if PRINT_FUNCTIONS
-		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
-		printf(" %s\n", buf);
-#endif
+	while (unwindSteps != 0) {
 
 		unwindSteps--;
-		status = unw_step(&cursor);
-	}
-
-#if PRINT_FUNCTIONS
-		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
-		printf(" %s\n", buf);
+		Frame tmpFrame(walker);
+		bool result = walker->walkSingleFrame(frame, tmpFrame);
+		if (!result) {
+			std::cout << "Stack walking failed." << std::endl;
+			break;
+		}
+#if  PRINT_FUNCTIONS
+		printFrame(tmpFrame);
 #endif
+
+		frame = tmpFrame;
+	}
 
 #endif	// UNW_INIT_ONLY
 
-#else		// NO_UNWIND
-	double f = 0.f;
-	for (int i = 1; i < 10000; i++) {
-		f = f + 1 / (double) i;
-	}
-	printf("", f);
 #endif	// NO_UNWIND
 
 	stopMeasurement();
@@ -78,12 +82,6 @@ void __cyg_profile_func_exit(void* func_ptr, void* call_site) {
 }
 
 void *monitor_init_process(int* argc, char** argv, void* data) {
-
-//	initBuffer();
-
-#ifdef NO_UNW_CACHE
-	unw_set_caching_policy(unw_local_addr_space, UNW_CACHE_NONE);
-#endif
 
 	initMeasurement();
 	printResultsHeader();
@@ -104,6 +102,9 @@ void *monitor_init_process(int* argc, char** argv, void* data) {
 void monitor_fini_process(int how, void* data) {
 	finalizeMeasurement();
 }
+
+
+}	// extern "C"
 
 int main() {
 

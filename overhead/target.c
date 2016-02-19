@@ -4,7 +4,9 @@
 	#define TARGET_ITERATIONS 1000
 #endif
 
-void rec10() {}
+void rec10() {
+	asm ("");	// cannot optimize it away now, eh gcc?
+}
 
 void rec9() {
 	rec10();
