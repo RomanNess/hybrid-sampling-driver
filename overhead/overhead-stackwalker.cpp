@@ -1,5 +1,5 @@
 
-#include "libtiming_tsc/timing.h"
+#include "libtiming/timing.h"
 
 #include <walker.h>
 #include <frame.h>

@@ -26,6 +26,7 @@ INSTRO_FLAGS=-DMAX_SPEED
 TARGET_FLAGS=-g -O0 -std=gnu99
 
 libsampling-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
+libsampling libsampling-debug: PP_FLAGS+=$(PAPI_FLAGS)
 
 libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel \
 measure measure-sampling-target measure-sampling-target-noHandler: libhash timing
@@ -37,48 +38,48 @@ libhash:
 	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
 
 sampling-bench: measure measure-sampling-target measure-sampling-target-noHandler
-
+#
 measure: PP_FLAGS+=-DMETA_BENCHMARK -DNO_PAPI_DRIVER -DNO_PAPI_HANDLER
 measure: LDFLAGS+=-ltiming_tsc
 measure: LIBNAME=measure
-	
+# sampling overhead
 measure-sampling: timing libshadowstack-serial
 	$(CC) -std=gnu99 $(OPT_FLAGS)  -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c \
 			-L./lib -ltiming -lhash -lshadowstack.serial.$(HOSTNAME) $(PAPI_FLAGS) $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
-#	taskset -c 13 bash ./preload.sh overhead.exe
-
+#	taskset -c 5 monitor-run -i lib/libshadowstack.serial.$(HOSTNAME).so overhead.exe
 measure-sampling-target: PP_FLAGS+=-DMETA_BENCHMARK 
 measure-sampling-target: LDFLAGS+=-ltiming_tsc
 measure-sampling-target: LIBNAME=benchSampling
-	
+#
 measure-sampling-target-noHandler: PP_FLAGS=-DMETA_BENCHMARK -DNO_PAPI_HANDLER
 measure-sampling-target-noHandler: LDFLAGS+=-ltiming_tsc
 measure-sampling-target-noHandler: LIBNAME=benchSampling.noHandler
 
+# libunwind overhead without cache
 measure-unw-nocache: PP_FLAGS:=-DNO_UNW_CACHE
 measure-unw-nocache: measure-unw
-
+# libunwind overhead with cache
 measure-unw: LDFLAGS:=-L./lib -ltiming_tsc $(LD_FLAGS)
 measure-unw: SRC=overhead/overhead-cyg_profile.c
 measure-unw: LIBNAME=overhead
 measure-unw: target timing libsampling
 	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(HOSTNAME).so ./target.exe &> out
-	
-measure-unw-stackwalker: LDFLAGS:=-L./lib -ltiming_tsc $(LD_FLAGS)
-measure-unw-stackwalker: SRC=overhead/overhead-stackwalker.cpp
-measure-unw-stackwalker: LIBNAME=stackwalker
-measure-unw-stackwalker: target timing
-	g++ $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -Wall -o lib/lib$(LIBNAME).$(HOSTNAME).so $(SRC) -I./src \
-			$(LIBMONITOR_FLAGS)  $(STACKWALKER_FLAGS) $(LDFLAGS) 
-	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(HOSTNAME).so ./target.exe &> out
+# stackwalker api overhead
+measure-stackwalker: LIBNAME=stackwalker
+measure-stackwalker: target timing
+	g++ $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -Wall -o lib/lib$(LIBNAME).$(HOSTNAME).so overhead/overhead-stackwalker.cpp -I./src \
+			$(LIBMONITOR_FLAGS)  $(STACKWALKER_FLAGS) -L./lib -ltiming_tsc
+#	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(HOSTNAME).so ./target.exe &> out
 
+# driver without papi sampling
 libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER
 libshadowstack-serial: LIBNAME=shadowstack.serial
-
+# driver wihtout papi sampling
 libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER
 libshadowstack-parallel: LIBNAME=shadowstack.parallel
 
+# overhead of shadow stack (single/multi threaded)
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
 measure-cyg: LDFLAGS+=-ltiming_tsc
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
@@ -87,8 +88,8 @@ measure-cyg: target timing libempty libshadowstack-parallel libshadowstack-seria
 	
 count-calls: target
 	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
-#	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
-#	LD_PRELOAD="./lib/libcount.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target-simple.exe
+#	monitor-run -i ./lib/libcount.so ./target.exe
+#	monitor-run -i ./lib/libcount.so ./target-simple.exe
 	
 timing:
 	$(CC) -O3 $(CFLAGS) src/libtiming/timing.c -o lib/libtiming.so -lrt
@@ -110,7 +111,7 @@ testStack:	libshadowstack
 sampling: libsampling-debug
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 overhead/target.c -o target.exe
 	python3 py/gen.py target.exe
-	LD_PRELOAD="./lib/libsampling.so $(LIBMONITOR_BASE)/lib/libmonitor.so" ./target.exe
+	monitor-run -i ./lib/libsampling.$(HOSTNAME).so ./target.exe
 	
 
 #target: EXCLUDE=-finstrument-functions-exclude-function-list=main,foo

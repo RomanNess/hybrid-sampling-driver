@@ -1,7 +1,7 @@
 #include "driver.h"
 
 #ifdef META_BENCHMARK
-#include "libtiming_papi/timing.h"
+#include "libtiming/timing.h"
 #endif
 
 struct Stack **_multithreadStack = 0;
@@ -211,7 +211,7 @@ void finishSamplingDriver() {
 void *monitor_init_process(int *argc, char **argv, void *data) {
 #else	//MONITOR_INIT
 __attribute__((constructor))
-void *init_process(int *argc, char **argv, void *data) {
+void *_init_process(int *argc, char **argv, void *data) {
 #endif	//MONITOR_INIT
 
 	printf("#### init sampling driver - Pid is %i #### \n", getpid());
@@ -254,7 +254,7 @@ void *init_process(int *argc, char **argv, void *data) {
 void monitor_fini_process(int how, void* data) {
 #else //MONITOR_INIT
 __attribute__((constructor))
-void monitor_fini_process(int how, void* data) {
+void _fini_process(int how, void* data) {
 #endif	//MONITOR_INIT
 
 #ifdef META_BENCHMARK
