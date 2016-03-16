@@ -78,7 +78,7 @@ libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER
 libshadowstack-parallel: LIBNAME=shadowstack.parallel
 
 # overhead of shadow stack (single/multi threaded)
-measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK
+measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DMONITOR_INIT
 measure-cyg: LDFLAGS+=-ltiming_tsc
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
 measure-cyg: target timing libempty libshadowstack-parallel libshadowstack-serial

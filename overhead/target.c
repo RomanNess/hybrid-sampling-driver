@@ -5,7 +5,7 @@
 #endif
 
 void rec10() {
-	asm ("");	// cannot optimize it away now, eh gcc?
+	asm ("");	// avoid optimization
 }
 
 void rec9() {
