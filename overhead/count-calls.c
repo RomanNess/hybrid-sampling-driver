@@ -15,6 +15,6 @@ void *monitor_init_process(int* argc, char** argv, void* data) {
 }
 
 void monitor_fini_process(int how, void* data) {
-	printf("Instrumented calls: %li\n", numberOfCalls);
+	fprintf(stderr, "Instrumented calls: %li\n", numberOfCalls);
 }
 

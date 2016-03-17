@@ -7,46 +7,73 @@
 #BSUB -M 30000		# Hauptspeicher in MByte für alle Threads
 #BSUB -n 2
 
-#BSUB -W 20
+#BSUB -W 25:00
 #BSUB -J measure-cyg
 
-#BSUB -q special3
-#BSUB -m hab0007	# host
+###BSUB -q special3
+###BSUB -m hab0007	# host
 
 #BSUB -eo /home/us93buza/test/libsampling/results-cyg/out-%J/OUT.out
 #BSUB -oo /home/us93buza/test/libsampling/results-cyg/out-%J/OUT.out
 
+SetEnvironment() {
+	WORKDIR=$LIBSAMPLING_BASE/results-cyg/$CC-$TARGET_NAME-${TARGET_PARAMS// /-}/out-$HOSTNAME-JOB$LSB_JOBID
+	mkdir -p $WORKDIR
 
-cd $LIBSAMPLING_BASE
-WORKDIR=$LIBSAMPLING_BASE/results-cyg/out-$HOSTNAME-$LSB_JOBID
-rm -rf $WORKDIR
-mkdir $WORKDIR
+	TARGET_BASE_PATH=/home/us93buza/test/InternalTestCodes/codes/spec_cpu.$TARGET_NAME
+	TARGET="$TARGET_BASE_PATH/spec_cpu.$TARGET_NAME.$CC.instr $TARGET_PARAMS"
+	TARGET_NOINSTR="$TARGET_BASE_PATH/spec_cpu.$TARGET_NAME.$CC.vanilla $TARGET_PARAMS"
 
-# param 0 : lib flavor
-RunFlavor () {
-	echo "Running with $1 flavor."
+	hostname 	 			>>	$WORKDIR/info.txt 2>&1
+	cpupower frequency-info >> 	$WORKDIR/info.txt 2>&1
 
-	taskset -c 13 bash preload.sh lib/libshadowstack.serial.$1.so		./target.exe 								>> $WORKDIR/target.shadowstack-serial.$1.txt 2>&1
-	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target.exe 								>> $WORKDIR/target.shadowstack-parallel.$1.txt 2>&1
-	
-	taskset -c 13 bash preload.sh lib/libempty-monitor.so						./target.exe 								>> $WORKDIR/target.empty.$1.txt 2>&1
-	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target.noinstr.exe 				>> $WORKDIR/target.noinstr.$1.txt 2>&1
-	
-	taskset -c 13 bash preload.sh lib/libshadowstack.serial.$1.so		./target-simple.exe 				>> $WORKDIR/target-simple.shadowstack-serial.$1.txt 2>&1
-	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target-simple.exe 				>> $WORKDIR/target-simple.shadowstack-parallel.$1.txt 2>&1	
-	
-	taskset -c 13 bash preload.sh lib/libempty-monitor.so						./target-simple.exe 				>> $WORKDIR/target-simple.empty.$1.txt 2>&1
-	taskset -c 13 bash preload.sh lib/libshadowstack.parallel.$1.so	./target-simple.noinstr.exe >> $WORKDIR/target-simple.noinstr.$1.txt 2>&1
+	echo "TARGET"			>>	$WORKDIR/info.txt 2>&1
+	echo "$TARGET"			>>  $WORKDIR/info.txt 2>&1
+
+	cd $TARGET_BASE_PATH
+	make vanilla 	>/dev/null
+	make sampling	>/dev/null
+
+	$PRE_ENV $LIBSAMPLING_BASE/lib/libcount.so $TARGET >/dev/null 2>> $WORKDIR/info.txt
 }
 
-# RUN
 
-hostname 									> $WORKDIR/frequency-info.txt 2>&1
-cpupower frequency-info  >> $WORKDIR/frequency-info.txt 2>&1
+# param 0 : lib hostname
+RunCygBenchmark () {
+	echo "Running $TARGET_NAME with $1 flavor."
 
-#make measure-cyg
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.serial.$1.so		$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-serial.$1.txt
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.parallel.$1.so	$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-parallel.$1.txt
 
-for i in {1..20}; do
-	RunFlavor $HOSTNAME
-done
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libempty-monitor.so      		$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.empty.$1.txt
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.serial.$1.so		$TARGET_NOINSTR	>/dev/null 2>> $WORKDIR/$TARGET_NAME.noinstr.$1.txt
+}
+
+RunSamplingBenchmark () {
+	echo "Running $TARGET_NAME with ---."
+
+	# full libsampling
+	$PRE_ENV $LIBSAMPLING_BASE/lib/libbenchSampling.$1.so				$TARGET_NOINSTR		>> $WORKDIR/$TARGET_NAME.$1.benchSampling.txt 2>&1
+	# libsampling but empty handler
+	$PRE_ENV $LIBSAMPLING_BASE/lib/libbenchSampling.noHandler.$1.so		$TARGET_NOINSTR		>> $WORKDIR/$TARGET_NAME.$1.benchSampling.noHandler.txt 2>&1
+	# reference run
+	$PRE_ENV $LIBSAMPLING_BASE/lib/libmeasure.$1.so						$TARGET_NOINSTR 	>> $WORKDIR/$TARGET_NAME.$1.noinstr.txt 2>&1
+}
+
+
+##### RUN #####
+
+export INSTRO_SAMPLE_FREQ=250000
+PRE_ENV="taskset -c 5 monitor-run -i"
+
+#TARGET_NAME=473.astar && TARGET_PARAMS="lake.cfg" && export CC=clang && export CXX=clang++
+#SetEnvironment
+#for i in {1..20}; do RunCygBenchmark $HOSTNAME; done
+
+TARGET_NAME=462.libquantum && TARGET_PARAMS="242 11" && export CC=clang && export CXX=clang++
+SetEnvironment
+for i in {1..20}; do RunCygBenchmark $HOSTNAME; done
+
+
+#for i in {1..10}; do RunSamplingBenchmark $HOSTNAME; done
 

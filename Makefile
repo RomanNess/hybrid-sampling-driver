@@ -3,7 +3,9 @@ check-var-defined = $(if $(strip $($1)),,$(error "$1" is not defined))
 $(call check-var-defined,LIBMONITOR_BASE)
 $(call check-var-defined,LIBUNWIND_BASE)
 
-CC=gcc
+CC=clang
+#CC=gcc
+
 CFLAGS=-fPIC -shared -Wall -std=gnu99
 OPT_FLAGS=-g -O3 -Wall
 
@@ -33,7 +35,7 @@ measure measure-sampling-target measure-sampling-target-noHandler: libhash timin
 
 libhash: $(eval LDFLAGS+=-lhash)
 libhash:
-	g++ -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
+	$(CXX) -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
 
 sampling-bench: measure measure-sampling-target measure-sampling-target-noHandler
 #
@@ -66,7 +68,7 @@ measure-unw: target timing libsampling
 # stackwalker api overhead
 measure-stackwalker: LIBNAME=stackwalker
 measure-stackwalker: target timing
-	g++ $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -o lib/lib$(LIBNAME).$(HOSTNAME).so overhead/overhead-stackwalker.cpp -I./src \
+	$(CXX) $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -o lib/lib$(LIBNAME).$(HOSTNAME).so overhead/overhead-stackwalker.cpp -I./src \
 			$(LIBMONITOR_FLAGS)  $(STACKWALKER_FLAGS) -L./lib -ltiming_tsc
 #	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(HOSTNAME).so ./target.exe &> out
 
@@ -81,13 +83,11 @@ libshadowstack-parallel: LIBNAME=shadowstack.parallel
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DMONITOR_INIT
 measure-cyg: LDFLAGS+=-ltiming_tsc
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
-measure-cyg: target timing libempty libshadowstack-parallel libshadowstack-serial
+measure-cyg: target timing libempty count-calls libshadowstack-parallel libshadowstack-serial
 	python3 py/gen.py target.exe
 	
 count-calls: target
 	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
-#	monitor-run -i ./lib/libcount.so ./target.exe
-#	monitor-run -i ./lib/libcount.so ./target-simple.exe
 	
 timing:
 	$(CC) -O3 $(CFLAGS) src/libtiming/timing.c -o lib/libtiming.so -lrt
@@ -123,8 +123,8 @@ target:
 	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target-bigframe.c -o target-bigframe.exe
 
 	# scorep benchmark
-	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline overhead/target.c -o target.scorep.$(HOSTNAME).exe
-	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline -finstrument-functions-exclude-function-list=rec overhead/target.c -o target.scorep.filter.exe
+#	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline overhead/target.c -o target.scorep.$(HOSTNAME).exe
+#	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline -finstrument-functions-exclude-function-list=rec overhead/target.c -o target.scorep.filter.exe
 	
 .PHONY : clean target
 clean:
