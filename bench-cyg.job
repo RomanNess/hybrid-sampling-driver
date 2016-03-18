@@ -17,13 +17,9 @@
 #BSUB -oo /home/us93buza/test/libsampling/results-cyg/out-%J/OUT.out
 
 SetEnvironment() {
-	WORKDIR=$LIBSAMPLING_BASE/results-cyg/$CC-$TARGET_NAME-${TARGET_PARAMS// /-}/out-$HOSTNAME-JOB$LSB_JOBID
+	WORKDIR=$LIBSAMPLING_BASE/results-cyg/$CC/$TARGET_NAME-${TARGET_PARAMS// /-}/$HOSTNAME-JOB$LSB_JOBID
 	mkdir -p $WORKDIR
-
-	TARGET_BASE_PATH=/home/us93buza/test/InternalTestCodes/codes/spec_cpu.$TARGET_NAME
-	TARGET="$TARGET_BASE_PATH/spec_cpu.$TARGET_NAME.$CC.instr $TARGET_PARAMS"
-	TARGET_NOINSTR="$TARGET_BASE_PATH/spec_cpu.$TARGET_NAME.$CC.vanilla $TARGET_PARAMS"
-
+	
 	hostname 	 			>>	$WORKDIR/info.txt 2>&1
 	cpupower frequency-info >> 	$WORKDIR/info.txt 2>&1
 
@@ -31,26 +27,41 @@ SetEnvironment() {
 	echo "$TARGET"			>>  $WORKDIR/info.txt 2>&1
 
 	cd $TARGET_BASE_PATH
-	make vanilla 	>/dev/null
-	make sampling	>/dev/null
+	make vanilla
+	make instr	
 
-	$PRE_ENV $LIBSAMPLING_BASE/lib/libcount.so $TARGET >/dev/null 2>> $WORKDIR/info.txt
+	$PRE_ENV $LIBSAMPLING_BASE/lib/libcount.$CC.$HOSTNAME.so $TARGET >/dev/null 2>> $WORKDIR/info.txt
 }
 
+SetEnvSpec() {
+	TARGET_BASE_PATH=/home/us93buza/test/InternalTestCodes/codes/spec_cpu.$TARGET_NAME
+	TARGET="$TARGET_BASE_PATH/spec_cpu.$TARGET_NAME.$CC.instr $TARGET_PARAMS"
+	TARGET_NOINSTR="$TARGET_BASE_PATH/spec_cpu.$TARGET_NAME.$CC.vanilla $TARGET_PARAMS"
+	SetEnvironment
+}
+
+SetEnvTarget() {
+	TARGET_BASE_PATH=$LIBSAMPLING_BASE
+	TARGET="$TARGET_BASE_PATH/$TARGET_NAME.$CC.instr $TARGET_PARAMS"
+	TARGET_NOINSTR="$TARGET_BASE_PATH/$TARGET_NAME.$CC.vanilla $TARGET_PARAMS"
+	SetEnvironment
+}
 
 # param 0 : lib hostname
 RunCygBenchmark () {
-	echo "Running $TARGET_NAME with $1 flavor."
+	echo "Running $TARGET_NAME $TARGET_PARAMS with $1 flavor."
 
-    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.serial.$1.so		$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-serial.$1.txt
-    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.parallel.$1.so	$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-parallel.$1.txt
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.serial.$1.so			$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-serial.$1.txt
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.serial.unsafe.$1.so	$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-serial-unsafe.$1.txt
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.parallel.$1.so		$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-parallel.$1.txt
+    $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.parallel.unsafe.$1.so	$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.shadowstack-parallel-unsafe.$1.txt
 
     $PRE_ENV $LIBSAMPLING_BASE/lib/libempty-monitor.so      		$TARGET         >/dev/null 2>> $WORKDIR/$TARGET_NAME.empty.$1.txt
     $PRE_ENV $LIBSAMPLING_BASE/lib/libshadowstack.serial.$1.so		$TARGET_NOINSTR	>/dev/null 2>> $WORKDIR/$TARGET_NAME.noinstr.$1.txt
 }
 
 RunSamplingBenchmark () {
-	echo "Running $TARGET_NAME with ---."
+	echo "Running $TARGET_NAME $TARGET_PARAMS with ---."
 
 	# full libsampling
 	$PRE_ENV $LIBSAMPLING_BASE/lib/libbenchSampling.$1.so				$TARGET_NOINSTR		>> $WORKDIR/$TARGET_NAME.$1.benchSampling.txt 2>&1
@@ -66,14 +77,19 @@ RunSamplingBenchmark () {
 export INSTRO_SAMPLE_FREQ=250000
 PRE_ENV="taskset -c 5 monitor-run -i"
 
-#TARGET_NAME=473.astar && TARGET_PARAMS="lake.cfg" && export CC=clang && export CXX=clang++
-#SetEnvironment
-#for i in {1..20}; do RunCygBenchmark $HOSTNAME; done
+export CC=gcc && export CXX=g++
 
-TARGET_NAME=462.libquantum && TARGET_PARAMS="242 11" && export CC=clang && export CXX=clang++
-SetEnvironment
-for i in {1..20}; do RunCygBenchmark $HOSTNAME; done
+#TARGET_NAME=462.libquantum && TARGET_PARAMS="100 8" && SetEnvSpec
+#for i in {1..10}; do RunCygBenchmark $CC.$HOSTNAME; done
 
+#TARGET_NAME=462.libquantum && TARGET_PARAMS="242 11" && SetEnvSpec
+#for i in {1..10}; do RunCygBenchmark $CC.$HOSTNAME; done
+
+#TARGET_NAME=473.astar && TARGET_PARAMS="lake.cfg" && SetEnvSpec
+#for i in {1..10}; do RunCygBenchmark $CC.$HOSTNAME; done
+
+TARGET_NAME=target && TARGET_PARAMS="" && SetEnvTarget
+for i in {1..50}; do RunCygBenchmark $CC.$HOSTNAME; done
 
 #for i in {1..10}; do RunSamplingBenchmark $HOSTNAME; done
 
