@@ -86,32 +86,36 @@ void initMeasurement()
 uint64_t startInS, stopInS;
 void startMeasurement() {
 
+#ifdef AVOID_OUT_OF_ORDER_EXECUTION
+	asm volatile ("CPUID\n\t"
+	"RDTSC\n\t"
+	"mov %%edx, %0\n\t"
+	"mov %%eax, %1\n\t": "=r" (high), "=r" (low)::
+	"%rax", "%rbx", "%rcx", "%rdx");
+#else	// AVOID_OUT_OF_ORDER_EXECUTION
 	uint32_t low = 0;
 	uint32_t high = 0;
 	asm volatile ("rdtscp" : "=a" (low), "=d" (high));
-
-//	asm volatile ("CPUID\n\t"
-//	"RDTSC\n\t"
-//	"mov %%edx, %0\n\t"
-//	"mov %%eax, %1\n\t": "=r" (high), "=r" (low)::
-//	"%rax", "%rbx", "%rcx", "%rdx");
+#endif	// AVOID_OUT_OF_ORDER_EXECUTION
 
 	startInS = ((uint64_t) high << 32) + low;
 }
 
 void stopMeasurement() {
+
+#ifdef AVOID_OUT_OF_ORDER_EXECUTION
+	asm volatile("RDTSCP\n\t"
+	"mov %%edx,  %0\n\t"
+	"mov %%eax,  %1\n\t"
+	"CPUID\n\t": "=r" (high), "=r" (low)::
+	"%rax", "%rbx", "%rcx", "%rdx");
+#else	// AVOID_OUT_OF_ORDER_EXECUTION
 	uint32_t low = 0;
 	uint32_t high = 0;
 	asm volatile ("rdtscp" : "=a" (low), "=d" (high));
-
-//	asm volatile("RDTSCP\n\t"
-//	"mov %%edx,  %0\n\t"
-//	"mov %%eax,  %1\n\t"
-//	"CPUID\n\t": "=r" (high), "=r" (low)::
-//	"%rax", "%rbx", "%rcx", "%rdx");
+#endif	// AVOID_OUT_OF_ORDER_EXECUTION
 
 	stopInS = ((uint64_t) high << 32) + low;
-
 }
 
 void finalizeMeasurement() {
