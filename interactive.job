@@ -3,10 +3,10 @@
 #BSUB -x
 
 #BSUB -M 3000		# Hauptspeicher in MByte für alle Threads
-#BSUB -n 2
+#BSUB -n 1
 #BUSB -Is
 
-#BSUB -W 500
+#BSUB -W 24:00
 #BSUB -J interactive
 
 ###BSUB -q special3
