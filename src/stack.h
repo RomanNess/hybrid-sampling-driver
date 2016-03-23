@@ -33,6 +33,7 @@ int instroNumThreads;
  * XXX rename this variable!
  */
 extern struct Stack **_multithreadStack;
+extern int initialized;
 
 /*
  * selfmade continuous ids
@@ -105,21 +106,43 @@ void __cyg_profile_func_exit(void *func, void *callsite);
 /* common interface */
 inline void pushIdentifier(unsigned long functionIdentifier) {
 
-	struct StackEvent event;
-	event.identifier = functionIdentifier;		// RN: some smaller identifier for performance reasons?
+#ifndef UNSAFE_SS
+	if (!initialized) {
+//		fprintf(stderr, "### shadow stack was uninitialized.");
+		return;
+	} else {
+#endif
+
+		struct StackEvent event;
+		event.identifier = functionIdentifier;		// RN: some smaller identifier for performance reasons?
 
 #ifdef SERIAL_OPT
-	pushEvent(_multithreadStack[0], event);
+		pushEvent(_multithreadStack[0], event);
 #else
-	pushEvent(_multithreadStack[threadId], event);
+		pushEvent(_multithreadStack[threadId], event);
+#endif
+
+#ifndef UNSAFE_SS
+	}
 #endif
 }
 
 inline void popIdentifier() {
+
+#ifndef UNSAFE_SS
+	if (!initialized) {
+		return;
+	} else {
+#endif
+
 #ifdef SERIAL_OPT
-	popEvent(_multithreadStack[0]);
+		popEvent(_multithreadStack[0]);
 #else
-	popEvent(_multithreadStack[threadId]);
+		popEvent(_multithreadStack[threadId]);
+#endif
+
+#ifndef UNSAFE_SS
+	}
 #endif
 }
 

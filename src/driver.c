@@ -4,6 +4,10 @@
 #include "libtiming/timing.h"
 #endif
 
+#include <assert.h>
+
+int initialized = 0;
+
 struct Stack **_multithreadStack = 0;
 struct SampleEvent *_flushToDiskBuffer = 0;
 long int sampleCount = 0;
@@ -231,6 +235,8 @@ void *_init_process(int *argc, char **argv, void *data) {
 
 	initSamplingDriver();
 
+	initialized = 1;
+
 #ifdef META_BENCHMARK
 	initMeasurement();
 	printResultsHeader();
@@ -264,12 +270,20 @@ void _fini_process(int how, void* data) {
 	printResults("target");
 #endif
 
+	///XXX
+	fprintf(stderr, "monitor_fini_process\n");
+
+	assert(_multithreadStack[threadId]->_size==0);
+
 #ifndef NO_PAPI_DRIVER
 	finishSamplingDriver();
 #endif
 }
 
 void *monitor_init_thread(int tid, void *data) {
+
+	///XXX
+	fprintf(stderr, "monitor_init_thread\n");
 
 #ifndef NO_PAPI_DRIVER
 	PAPI_register_thread();
@@ -285,6 +299,10 @@ void *monitor_init_thread(int tid, void *data) {
 }
 
 void monitor_fini_thread(void* data) {
+
+	///XXX
+	fprintf(stderr, "monitor_fini_thread\n");
+
 	finiSingleStack(_multithreadStack[threadId]);	// RN: or just reset the stack?
 }
 

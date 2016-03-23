@@ -3,9 +3,6 @@ check-var-defined = $(if $(strip $($1)),,$(error "$1" is not defined))
 $(call check-var-defined,LIBMONITOR_BASE)
 $(call check-var-defined,LIBUNWIND_BASE)
 
-CC=clang
-#CC=gcc
-
 CFLAGS=-fPIC -shared -Wall -std=gnu99
 OPT_FLAGS=-g -O3 -Wall
 
@@ -30,12 +27,12 @@ libsampling libsampling-debug: PP_FLAGS+=$(PAPI_FLAGS)
 
 libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel \
 measure measure-sampling-target measure-sampling-target-noHandler: libhash timing
-	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(HOSTNAME).so $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
-	#ln -s lib/lib$(LIBNAME).$(HOSTNAME).so lib/lib$(LIBNAME).so
+	$(CC) $(PAPI_INCLUDE_FLAGS)             $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so        $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DUNSAFE_SS $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).unsafe.$(CC).$(HOSTNAME).so $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
-libhash: $(eval LDFLAGS+=-lhash)
+libhash: $(eval LDFLAGS+=-lhash.$(CC).$(HOSTNAME))
 libhash:
-	$(CXX) -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.so
+	$(CXX) -fPIC -shared $(OPT_FLAGS) -std=c++0x -Wall src/cpp/hash.cpp -o lib/libhash.$(CC).$(HOSTNAME).so
 
 sampling-bench: measure measure-sampling-target measure-sampling-target-noHandler
 #
@@ -45,9 +42,9 @@ measure: LIBNAME=measure
 # sampling overhead
 measure-sampling: timing libshadowstack-serial
 	$(CC) -std=gnu99 $(OPT_FLAGS)  -I./src -I$(LIBMONITOR_BASE)/include overhead/overhead-driver.c \
-			-L./lib -ltiming -lhash -lshadowstack.serial.$(HOSTNAME) $(PAPI_FLAGS) $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
+			-L./lib -ltiming -lhash -lshadowstack.serial.$(CC).$(HOSTNAME) $(PAPI_FLAGS) $(LIBUNWIND_FLAGS) $(LDFLAGS) -o overhead.exe
 	python3 py/gen.py overhead.exe
-#	taskset -c 5 monitor-run -i lib/libshadowstack.serial.$(HOSTNAME).so overhead.exe
+#	taskset -c 5 monitor-run -i lib/libshadowstack.serial.$(CC).$(HOSTNAME).so overhead.exe
 measure-sampling-target: PP_FLAGS+=-DMETA_BENCHMARK 
 measure-sampling-target: LDFLAGS+=-ltiming_tsc
 measure-sampling-target: LIBNAME=benchSampling
@@ -64,19 +61,19 @@ measure-unw: LDFLAGS:=-L./lib -ltiming_tsc $(LD_FLAGS)
 measure-unw: SRC=overhead/overhead-cyg_profile.c
 measure-unw: LIBNAME=overhead
 measure-unw: target timing libsampling
-	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(HOSTNAME).so ./target.exe &> out
+	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so ./target.exe &> out
 # stackwalker api overhead
 measure-stackwalker: LIBNAME=stackwalker
 measure-stackwalker: target timing
-	$(CXX) $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -o lib/lib$(LIBNAME).$(HOSTNAME).so overhead/overhead-stackwalker.cpp -I./src \
+	$(CXX) $(PP_FLAGS) -std=gnu++11 $(OPT_FLAGS) -fPIC -shared -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so overhead/overhead-stackwalker.cpp -I./src \
 			$(LIBMONITOR_FLAGS)  $(STACKWALKER_FLAGS) -L./lib -ltiming_tsc
-#	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(HOSTNAME).so ./target.exe &> out
+#	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so ./target.exe &> out
 
 # driver without papi sampling
-libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER
+libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER -DNO_CPP_LIB
 libshadowstack-serial: LIBNAME=shadowstack.serial
 # driver wihtout papi sampling
-libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER
+libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER -DNO_CPP_LIB
 libshadowstack-parallel: LIBNAME=shadowstack.parallel
 
 # overhead of shadow stack (single/multi threaded)
@@ -87,7 +84,7 @@ measure-cyg: target timing libempty count-calls libshadowstack-parallel libshado
 	python3 py/gen.py target.exe
 	
 count-calls: target
-	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
+	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.$(CC).$(HOSTNAME).so $(LIBMONITOR_FLAGS)
 	
 timing:
 	$(CC) -O3 $(CFLAGS) src/libtiming/timing.c -o lib/libtiming.so -lrt
@@ -109,22 +106,27 @@ testStack:	libshadowstack
 sampling: libsampling-debug
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 overhead/target.c -o target.exe
 	python3 py/gen.py target.exe
-	monitor-run -i ./lib/libsampling.$(HOSTNAME).so ./target.exe
+	monitor-run -i ./lib/libsampling.$(CC).$(HOSTNAME).so ./target.exe
 	
 
 #target: EXCLUDE=-finstrument-functions-exclude-function-list=main,foo
 target:
-	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
-	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
+	$(CC) $(TARGET_FLAGS) -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
+	$(CC) $(TARGET_FLAGS) -fno-inline -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
 	
 	$(CC) $(TARGET_FLAGS) -fno-inline overhead/target.c -o target.noinstr.exe
 	$(CC) $(TARGET_FLAGS) -fno-inline overhead/target-simple.c -o target-simple.noinstr.exe
 	
-	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target-bigframe.c -o target-bigframe.exe
+#	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target-bigframe.c -o target-bigframe.exe
 
 	# scorep benchmark
 #	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline overhead/target.c -o target.scorep.$(HOSTNAME).exe
 #	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline -finstrument-functions-exclude-function-list=rec overhead/target.c -o target.scorep.filter.exe
+
+vanilla:
+	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline overhead/target.c -o target.$(CC).vanilla
+instr:
+	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target.$(CC).instr
 	
 .PHONY : clean target
 clean:
