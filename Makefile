@@ -125,8 +125,10 @@ target:
 
 vanilla:
 	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline overhead/target.c -o target.$(CC).vanilla
+	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline overhead/target-simple.c -o target-simple.$(CC).vanilla
 instr:
 	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target.$(CC).instr
+	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.$(CC).instr
 	
 .PHONY : clean target
 clean:
