@@ -223,6 +223,8 @@ void *_init_process(int *argc, char **argv, void *data) {
 	readEnv();
 	assingContinuousThreadId();
 	initShadowStack();
+	
+	_myStack = _multithreadStack[threadId]; 
 
 #ifndef NO_CPP_LIB
 	parseFunctions("nm_file");
@@ -243,13 +245,10 @@ void *_init_process(int *argc, char **argv, void *data) {
 	// warmup
 	startMeasurement();
 	stopMeasurement();
-//	printResults("warmup");
 	startMeasurement();
 	stopMeasurement();
-//	printResults("warmup");
 	startMeasurement();
 	stopMeasurement();
-//	printResults("warmup");
 
 	startMeasurement();
 
@@ -290,6 +289,7 @@ void *monitor_init_thread(int tid, void *data) {
 #endif
 
 	assingContinuousThreadId();
+	_myStack = _multithreadStack[threadId];
 
 #ifndef NO_PAPI_DRIVER
 	registerThreadForPAPI();	// PAPI is registered per thread

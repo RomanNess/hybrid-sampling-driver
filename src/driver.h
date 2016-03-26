@@ -1,7 +1,6 @@
 /*
  * This sample driver implements the InstRO Shadow Stack interface as well as
  * the GCC _cyg_profile_func_enter/exit interface.
- * It uses PAPI to sample at defined cycle rates.
  *
  * Authors:     Jan-Patrick Lehr
  *              Christian Iwainsky

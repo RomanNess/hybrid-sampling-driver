@@ -35,13 +35,19 @@ int instroNumThreads;
 extern struct Stack **_multithreadStack;
 extern int initialized;
 
-/*
- * selfmade continuous ids
- */
+/* the stack corresponding to this thread */
+#ifdef SERIAL_OPT
+extern          struct Stack* _myStack;
+#else
+extern __thread struct Stack* _myStack;
+#endif
+
+/* selfmade continuous ids */
 extern __thread int threadId;
 extern volatile int currentThreadNum;
 void assingContinuousThreadId();
 unsigned long getThreadId();	// for PAPI_init()
+
 
 void readEnv();
 void initShadowStack();
@@ -107,20 +113,13 @@ void __cyg_profile_func_exit(void *func, void *callsite);
 inline void pushIdentifier(unsigned long functionIdentifier) {
 
 #ifndef UNSAFE_SS
-	if (!initialized) {
-//		fprintf(stderr, "### shadow stack was uninitialized.");
-		return;
-	} else {
+	if (initialized) {
 #endif
 
 		struct StackEvent event;
 		event.identifier = functionIdentifier;		// RN: some smaller identifier for performance reasons?
 
-#ifdef SERIAL_OPT
-		pushEvent(_multithreadStack[0], event);
-#else
-		pushEvent(_multithreadStack[threadId], event);
-#endif
+		pushEvent(_myStack, event);
 
 #ifndef UNSAFE_SS
 	}
@@ -130,16 +129,10 @@ inline void pushIdentifier(unsigned long functionIdentifier) {
 inline void popIdentifier() {
 
 #ifndef UNSAFE_SS
-	if (!initialized) {
-		return;
-	} else {
+	if (initialized) {
 #endif
 
-#ifdef SERIAL_OPT
-		popEvent(_multithreadStack[0]);
-#else
-		popEvent(_multithreadStack[threadId]);
-#endif
+		popEvent(_myStack);
 
 #ifndef UNSAFE_SS
 	}

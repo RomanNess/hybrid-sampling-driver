@@ -2,6 +2,12 @@
 
 int instroNumThreads;
 
+#ifdef SERIAL_OPT
+         struct Stack* _myStack;
+#else
+__thread struct Stack* _myStack;
+#endif
+
 __thread int threadId;
 volatile int currentThreadNum = 0;
 
