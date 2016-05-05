@@ -140,8 +140,19 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 #endif //NO_PAPI_HANDLER
 }
 
-int signalHandler(int sig, siginfo_t *siginfo, void *context) {
+int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 	sampleCount++;
+
+	// This is where the work happens
+	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
+
+	void* address = ((siginfo_t*) context)->si_addr;
+	long startAddress = doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements]);
+
+	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
+
+	numberOfBufferElements++;
+
 	return 0;
 }
 
@@ -182,8 +193,10 @@ void initPapiSamplingDriver() {
 	printf("Sampling Driver Enabled\n");
 }
 
+#ifdef ITIMER_DRIVER
 void initItimerSamplingDriver() {
-	long int micros=1000;
+	long int micros=overflowCountForSamples/2500;
+
 
 	itimer.it_value.tv_sec  = 0;
 	itimer.it_value.tv_usec = micros;
@@ -195,8 +208,9 @@ void initItimerSamplingDriver() {
 	if (monitor_sigaction(SIGALRM, &signalHandler, 0, NULL) != 0) {
 		printf("ERROR: monitor_sigacton() failed.\n");
 	}
-	printf("Initialized itimer driver.\n");
+	printf("Initialized itimer driver. Sampling every %li micros\n", micros);
 }
+#endif
 
 #ifndef NO_PAPI_DRIVER
 
