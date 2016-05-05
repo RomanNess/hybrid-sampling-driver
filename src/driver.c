@@ -6,6 +6,10 @@
 
 #include <assert.h>
 
+#include <stdio.h>
+#include <sys/time.h>	// itimer
+#include <signal.h>		// signal
+
 int initialized = 0;
 
 struct Stack **_multithreadStack = 0;
@@ -136,6 +140,11 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 #endif //NO_PAPI_HANDLER
 }
 
+int signalHandler(int sig, siginfo_t *siginfo, void *context) {
+	sampleCount++;
+	return 0;
+}
+
 void initSamplingDriver() {
 
 	/* read environment variable to control the sampling driver */
@@ -150,6 +159,15 @@ void initSamplingDriver() {
 	initBuffer();
 
 #ifndef NO_PAPI_DRIVER
+	initPapiSamplingDriver();
+#endif	//  NO_PAPI_DRIVER
+#ifdef ITIMER_DRIVER
+	initItimerSamplingDriver();
+#endif
+
+}
+
+void initPapiSamplingDriver() {
 	int retval;
 	/* start the PAPI Library */
 	if ((retval = PAPI_library_init(PAPI_VER_CURRENT)) != PAPI_VER_CURRENT) {
@@ -162,10 +180,23 @@ void initSamplingDriver() {
 
 	registerThreadForPAPI();
 	printf("Sampling Driver Enabled\n");
-#endif	//  NO_PAPI_DRIVER
-
 }
 
+void initItimerSamplingDriver() {
+	long int micros=1000;
+
+	itimer.it_value.tv_sec  = 0;
+	itimer.it_value.tv_usec = micros;
+	itimer.it_interval = itimer.it_value;
+
+	if (setitimer(ITIMER_REAL, &itimer, NULL) != 0) {
+		printf("ERROR: setitimer() failed\n");
+	}
+	if (monitor_sigaction(SIGALRM, &signalHandler, 0, NULL) != 0) {
+		printf("ERROR: monitor_sigacton() failed.\n");
+	}
+	printf("Initialized itimer driver.\n");
+}
 
 #ifndef NO_PAPI_DRIVER
 
@@ -260,7 +291,7 @@ void *_init_process(int *argc, char **argv, void *data) {
 #if MONITOR_INIT
 void monitor_fini_process(int how, void* data) {
 #else //MONITOR_INIT
-__attribute__((constructor))
+__attribute__((destructor))
 void _fini_process(int how, void* data) {
 #endif	//MONITOR_INIT
 
@@ -273,6 +304,10 @@ void _fini_process(int how, void* data) {
 	fprintf(stderr, "monitor_fini_process\n");
 
 	assert(_multithreadStack[threadId]->_size==0);
+
+#ifdef ITIMER_DRIVER
+	printf("%li samples taken\n", sampleCount);
+#endif
 
 #ifndef NO_PAPI_DRIVER
 	finishSamplingDriver();

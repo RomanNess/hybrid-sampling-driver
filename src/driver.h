@@ -46,6 +46,10 @@ extern long overflowCountForSamples; /* CPU-cycles per sample (set by INSTRO_SAM
 extern __thread int EventSet; /* PAPI related thing */
 #endif
 
+#ifdef ITIMER_DRIVER
+static struct itimerval itimer;
+#endif
+
 /*
  * FUNCTIONS 
  */
@@ -59,6 +63,8 @@ void flushBufferToFile(struct SampleEvent *buffer);
 void handler(int EventSet, void *address, long long overflow_vector, void *context);
 
 void initSamplingDriver();
+void initPapiSamplingDriver();
+void initItimerSamplingDriver();
 void registerThreadForPAPI();
 void finishSamplingDriver();
 

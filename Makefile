@@ -75,6 +75,9 @@ libshadowstack-serial: LIBNAME=shadowstack.serial
 # driver wihtout papi sampling
 libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER -DNO_CPP_LIB
 libshadowstack-parallel: LIBNAME=shadowstack.parallel
+# driver with itimer sampling
+itimer: PP_FLAGS+=-DITIMER_DRIVER -DNO_PAPI_DRIVER -DSERIAL_OPT #-DMONITOR_INIT
+itimer:	libsampling
 
 # overhead of shadow stack (single/multi threaded)
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DMONITOR_INIT
@@ -107,7 +110,6 @@ sampling: libsampling-debug
 	$(CC) -fopenmp -finstrument-functions -g -std=gnu99 overhead/target.c -o target.exe
 	python3 py/gen.py target.exe
 	monitor-run -i ./lib/libsampling.$(CC).$(HOSTNAME).so ./target.exe
-	
 
 #target: EXCLUDE=-finstrument-functions-exclude-function-list=main,foo
 target:
