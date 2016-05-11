@@ -23,12 +23,12 @@ INSTRO_FLAGS=-DMAX_SPEED
 TARGET_FLAGS=-g -O0 -std=gnu99
 
 libsampling-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
-libsampling libsampling-debug: PP_FLAGS+=$(PAPI_FLAGS)
+libsampling libsampling-debug: PP_FLAGS+=$(PAPI_FLAGS) -DSERIAL_OPT -DMETA_BENCHMARK
 
 libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel \
 measure measure-sampling-target measure-sampling-target-noHandler: libhash timing
-	$(CC) $(PAPI_INCLUDE_FLAGS)             $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so        $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
-	$(CC) $(PAPI_INCLUDE_FLAGS) -DUNSAFE_SS $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).unsafe.$(CC).$(HOSTNAME).so $(SRC) -L./lib $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS)             $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so        $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) -DUNSAFE_SS $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).unsafe.$(CC).$(HOSTNAME).so $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libhash: $(eval LDFLAGS+=-lhash.$(CC).$(HOSTNAME))
 libhash:
@@ -76,7 +76,7 @@ libshadowstack-serial: LIBNAME=shadowstack.serial
 libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER -DNO_CPP_LIB
 libshadowstack-parallel: LIBNAME=shadowstack.parallel
 # driver with itimer sampling
-itimer: PP_FLAGS+=-DITIMER_DRIVER -DNO_PAPI_DRIVER -DSERIAL_OPT #-DMONITOR_INIT
+itimer: PP_FLAGS+=-DITIMER_DRIVER -DNO_PAPI_DRIVER -DSERIAL_OPT  -DMETA_BENCHMARK #-DMONITOR_INIT
 itimer:	libsampling
 
 # overhead of shadow stack (single/multi threaded)
@@ -96,7 +96,7 @@ timing:
 
 libempty:	timing
 	$(CC) -O3 $(CFLAGS) -DNO_INIT src/emptypushpop/emptypushpop.c -o lib/libempty.so
-	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) src/emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I./src -L./lib -ltiming_tsc $(LIBMONITOR_FLAGS)
+	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) -DMETA_BENCHMARK src/emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I./src -L./lib -ltiming_tsc $(LIBMONITOR_FLAGS)
 	
 
 ### Targets & Tests
@@ -118,10 +118,9 @@ target:
 	$(CC) $(TARGET_FLAGS) -fno-inline -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
 	
 	$(CC) $(TARGET_FLAGS) -fno-inline overhead/target.c -o target.noinstr.exe
+	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline overhead/target.c -o target-big.noinstr.exe
 	$(CC) $(TARGET_FLAGS) -fno-inline overhead/target-simple.c -o target-simple.noinstr.exe
 	
-#	$(CC) $(TARGET_FLAGS) -finstrument-functions $(EXCLUDE) overhead/target-bigframe.c -o target-bigframe.exe
-
 	# scorep benchmark
 #	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline overhead/target.c -o target.scorep.$(HOSTNAME).exe
 #	scorep $(CC) -std=gnu99 -O3 -DMETA_BENCHMARK -fno-inline -finstrument-functions-exclude-function-list=rec overhead/target.c -o target.scorep.filter.exe
