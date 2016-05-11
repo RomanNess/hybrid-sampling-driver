@@ -114,6 +114,7 @@ sampling: libsampling-debug
 #target: EXCLUDE=-finstrument-functions-exclude-function-list=main,foo
 target:
 	$(CC) $(TARGET_FLAGS) -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
+	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target-big.exe
 	$(CC) $(TARGET_FLAGS) -fno-inline -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
 	
 	$(CC) $(TARGET_FLAGS) -fno-inline overhead/target.c -o target.noinstr.exe
@@ -136,4 +137,4 @@ instr:
 clean:
 	rm -f lib/*.so
 	rm -f *.exe
-	rm -f nm_file regions_file map_file stack_file
+#	rm -f nm_file regions_file map_file stack_file
