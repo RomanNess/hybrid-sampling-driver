@@ -1,6 +1,7 @@
 #include "unwinding.h"
 
-//#define IGNORE_PAPI_CONTEXT 0
+#define IGNORE_PAPI_CONTEXT 0
+#define PRINT_FUNCTIONS 0
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used
@@ -31,8 +32,10 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 #endif
 
 	// unwind till first interesting function
+	unsigned long oldFunctionAddress = 0;
 	unsigned long functionAddress = address;
 	while (functionAddress < regionStart || functionAddress > regionEnd) {
+		oldFunctionAddress = functionAddress;
 #if PRINT_FUNCTIONS
 		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
 		printf("ip = %lx \t| %s (SKIP)\n", functionAddress, buf);
@@ -45,6 +48,10 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 			return -1;
 		}
 		unw_get_reg(&cursor, UNW_REG_IP, &functionAddress);
+
+		if (functionAddress == oldFunctionAddress) {
+			return -1L;	// can not unwind
+		}
 	}
 
 	functionAddress = getFunctionStartAddress(functionAddress);

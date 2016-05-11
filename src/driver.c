@@ -9,6 +9,7 @@
 #include <stdio.h>
 #include <sys/time.h>	// itimer
 #include <signal.h>		// signal
+#include <bits/siginfo.h> // si_addr
 
 int initialized = 0;
 
@@ -188,9 +189,8 @@ void initPapiSamplingDriver() {
 		errx(retval, "PAPI_thread_init failed with %i", retval);
 	}
 
-
 	registerThreadForPAPI();
-	printf("Sampling Driver Enabled\n");
+	printf("PAPI sampling driver enabled. Sampling every %li micros.\n", overflowCountForSamples/2500);
 }
 
 #ifdef ITIMER_DRIVER
