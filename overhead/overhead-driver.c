@@ -14,11 +14,11 @@
 __thread int EventSet = PAPI_NULL;
 
 void emptyHandler(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
+	samplesTaken++;
 }
 
 void unwindNewContext(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
+	samplesTaken++;
 
 	unw_cursor_t cursor;
 	unw_context_t uc;
@@ -27,7 +27,7 @@ void unwindNewContext(int EventSet, void* address, long long overflow_vector, vo
 }
 
 void unwindPAPIContext(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
+	samplesTaken++;
 
 	unw_cursor_t cursor;
 	unw_context_t* uc = (unw_context_t*) context;
@@ -35,7 +35,7 @@ void unwindPAPIContext(int EventSet, void* address, long long overflow_vector, v
 }
 
 void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
+	samplesTaken++;
 
 	unw_cursor_t cursor;
 	unw_context_t uc;
@@ -63,13 +63,13 @@ void unwindPAPIContextManual(int EventSet, void* address, long long overflow_vec
 }
 
 void functionStartAddress(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
+	samplesTaken++;
 
 	getFunctionStartAddress((unsigned long) address);
 }
 
 void unwindSteps(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
+	samplesTaken++;
 
 	getUnwindSteps(getFunctionStartAddress((unsigned long) address));
 }
@@ -102,8 +102,8 @@ void finiPAPI() {
 	long long instructionCounter;
 	PAPI_stop(EventSet, &instructionCounter);
 
-	printf("%li samples taken == ", sampleCount);
-	sampleCount = 0;
+	printf("%li samples taken == ", samplesTaken);
+	samplesTaken = 0;
 }
 
 double kernel() __attribute__ ((noinline)) __attribute__((optimize("O0")));

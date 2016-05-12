@@ -15,7 +15,8 @@ int initialized = 0;
 
 struct Stack **_multithreadStack = 0;
 struct SampleEvent *_flushToDiskBuffer = 0;
-long int sampleCount = 0;
+long samplesTaken = 0;
+long samplesInDriverRegion = 0;
 unsigned int numberOfBufferElements = 0;
 long overflowCountForSamples = 2500000;
 
@@ -61,10 +62,10 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 	}
 
 	buffer[numberOfBufferElements].thread = threadId;
-	buffer[numberOfBufferElements].sampleNumber = sampleCount;
+	buffer[numberOfBufferElements].sampleNumber = samplesTaken;
 	if (stack->_size == 0) {
 #if DEBBUG
-		fprintf(stderr, "FlushStackToBuffer: %li with stack size == 0\n", sampleCount);
+		fprintf(stderr, "FlushStackToBuffer: %li with stack size == 0\n", samplesTaken);
 #endif
 		numberOfBufferElements++;
 		return;
@@ -127,7 +128,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 
 /* PAPI Sampling handler */
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
-	sampleCount++;
+	samplesTaken++;
 
 #ifndef NO_PAPI_HANDLER
 	abstractHandler((unsigned long) address, context);
@@ -135,7 +136,7 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 }
 
 int signalHandler(int sig, siginfo_t* siginfo, void* context) {
-	sampleCount++;
+	samplesTaken++;
 
 #ifndef NO_PAPI_HANDLER
 	void* address = ((siginfo_t*) context)->si_addr;
@@ -227,7 +228,7 @@ void finishSamplingDriver() {
 	long long instructionCounter;
 	PAPI_stop(EventSet, &instructionCounter);
 
-	printf("%li samples taken\n", sampleCount);
+	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
 	printf("%u elements in buffer\n", numberOfBufferElements);
 
 	flushBufferToFile(_flushToDiskBuffer);
@@ -308,7 +309,7 @@ void _fini_process(int how, void* data) {
 	assert(_multithreadStack[threadId]->_size==0);
 
 #ifdef ITIMER_DRIVER
-	printf("%li samples taken\n", sampleCount);
+	printf("%li samples taken\n", samplesTaken);
 #endif
 
 #ifndef NO_PAPI_DRIVER

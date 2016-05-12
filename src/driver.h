@@ -39,7 +39,8 @@ extern struct Stack **_multithreadStack;
 extern struct SampleEvent *_flushToDiskBuffer;
 extern unsigned int numberOfBufferElements;
 
-extern long int sampleCount; /* total samples taken */
+extern long samplesTaken; /* total samples taken */
+extern long samplesInDriverRegion; /* samples taken in regions of this driver */
 extern long overflowCountForSamples; /* CPU-cycles per sample (set by INSTRO_SAMPLE_FREQ) */
 
 #ifndef NO_PAPI_DRIVER
@@ -69,6 +70,7 @@ void abstractHandler(unsigned long address, void* context) {
 	long startAddress;
 	if (address > driverRegionStart && address < driverRegionEnd) {
 		startAddress = 0;	// sample in driver region (call context already known)
+		samplesInDriverRegion++;
 //		printf("Sample in driver region: %lx", address);
 	} else {
 		startAddress = doUnwind(address, context, &_flushToDiskBuffer[numberOfBufferElements]);
