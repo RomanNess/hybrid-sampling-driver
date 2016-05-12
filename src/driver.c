@@ -130,14 +130,7 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 	sampleCount++;
 
 #ifndef NO_PAPI_HANDLER
-	// This is where the work happens
-	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
-
-	long startAddress = doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements]);
-
-	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
-
-	numberOfBufferElements++;
+	abstractHandler((unsigned long) address, context);
 #endif //NO_PAPI_HANDLER
 }
 
@@ -145,16 +138,10 @@ int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 	sampleCount++;
 
 #ifndef NO_PAPI_HANDLER
-	// This is where the work happens
-	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
-
 	void* address = ((siginfo_t*) context)->si_addr;
-	long startAddress = doUnwind((unsigned long) address, context, &_flushToDiskBuffer[numberOfBufferElements]);
-
-	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
-
-	numberOfBufferElements++;
+	abstractHandler((unsigned long) address, context);
 #endif //NO_PAPI_HANDLER
+
 	return 0;
 }
 

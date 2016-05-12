@@ -61,6 +61,22 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer);
 void flushBufferToFile(struct SampleEvent *buffer);
 
 void handler(int EventSet, void *address, long long overflow_vector, void *context);
+inline
+void abstractHandler(unsigned long address, void* context) {
+	// This is where the work happens
+	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
+
+	long startAddress;
+	if (address > driverRegionStart && address < driverRegionEnd) {
+		startAddress = 0;	// sample in driver region (call context already known)
+//		printf("Sample in driver region: %lx", address);
+	} else {
+		startAddress = doUnwind(address, context, &_flushToDiskBuffer[numberOfBufferElements]);
+	}
+	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
+
+	numberOfBufferElements++;
+}
 
 void initSamplingDriver();
 void initPapiSamplingDriver();
