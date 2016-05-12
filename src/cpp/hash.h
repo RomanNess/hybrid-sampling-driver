@@ -14,7 +14,7 @@ const char* getName(key_type key);
 void parseFunctions(char* filename);
 void dump();
 
-void dumpMemoryMapping();
+void dumpMemoryMapping(unsigned long* start, unsigned long* end);
 
 void parseRegions(char* filename, unsigned long* start, unsigned long* end);
 

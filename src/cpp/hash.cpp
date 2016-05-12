@@ -14,13 +14,18 @@
 
 #include "hash.h"
 
+#define DEBUG 1
+
 struct FuncMap {
 
 	std::map<key_type, int> unwindSteps;
 	std::map<key_type, std::string> names;
 
-	unsigned long regionStart;
-	unsigned long regionEnd;
+	unsigned long targetRegionStart;
+	unsigned long targetRegionEnd;
+
+	unsigned long driverRegionStart;
+	unsigned long driverRegionEnd;
 
 } FuncMap;
 
@@ -32,7 +37,7 @@ extern "C" {
 
 	key_type getFunctionStartAddress(key_type address) {
 
-		if (address < FuncMap.regionStart || address > FuncMap.regionEnd) {
+		if (address < FuncMap.targetRegionStart || address > FuncMap.targetRegionEnd) {
 			return address;	// XXX not in interesting region
 		}
 
@@ -98,14 +103,17 @@ extern "C" {
 		inFile >> std::hex >> *start;
 		inFile >> std::hex >> *end;
 
-		FuncMap.regionStart = *start;
-		FuncMap.regionEnd = *end;
-
+		FuncMap.targetRegionStart = *start;
+		FuncMap.targetRegionEnd = *end;
+#if DEBUG
+		std::cout << "Parsed target regions: " << std::hex << FuncMap.targetRegionStart
+			<< " - " << FuncMap.targetRegionEnd << std::endl;
+#endif
 	}
 
 	/* note that executing "cp" in the shell would create a new process
 	 * and trigger libmonitors callbacks */
-	void dumpMemoryMapping() {
+	void dumpMemoryMapping(unsigned long* start, unsigned long* end) {
 		int pid = getpid();
 		std::string srcFile = "/proc/" + std::to_string(pid) +  "/maps";
 		std::string destFile = "map_file";
@@ -117,10 +125,32 @@ extern "C" {
 			std::cout << "Error: Could not read map from " << srcFile << std::endl;
 		}
 
-		dest << src.rdbuf();
+		std::string stringBuf;
+		std::string line;
+		while (std::getline(src, line)) {
+			if (line.find("libsampling/lib/libsampling") != std::string::npos) {
+				// found
+//				std::cout << "line: " << line << std::endl;
+
+				std::stringstream lineStream(line);
+				lineStream >> std::hex >> *start;
+				lineStream.ignore(1);
+				lineStream >> std::hex >> *end;
+
+				break;
+			}
+			dest << line << std::endl;
+		}
+
+		FuncMap.driverRegionStart = *start;
+		FuncMap.driverRegionEnd = *end;
 
 		src.close();
 		dest.close();
+#if DEBUG
+		std::cout << "Parsed driver regions: " << std::hex << FuncMap.driverRegionStart
+			<< " - " << FuncMap.driverRegionEnd << std::endl;
+#endif
 	}
 }
 

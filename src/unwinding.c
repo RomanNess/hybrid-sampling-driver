@@ -34,7 +34,7 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 	// unwind till first interesting function
 	unsigned long oldFunctionAddress = 0;
 	unsigned long functionAddress = address;
-	while (functionAddress < regionStart || functionAddress > regionEnd) {
+	while (functionAddress < targetRegionStart || functionAddress > targetRegionEnd) {
 		oldFunctionAddress = functionAddress;
 #if PRINT_FUNCTIONS
 		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
@@ -73,7 +73,7 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 		unw_get_reg(&cursor, UNW_REG_IP, &ip);
 		unw_get_reg(&cursor, UNW_REG_SP, &sp);
 
-		if (regionStart < ip && ip < regionEnd) {
+		if (targetRegionStart < ip && ip < targetRegionEnd) {
 
 			unwindSteps--;	// interesting frame
 

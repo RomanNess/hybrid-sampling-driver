@@ -11,7 +11,9 @@
 
 #define MAX_UNWIND_FACTOR 20	/* max unwind factor */
 
-unsigned long regionStart, regionEnd;
+unsigned long targetRegionStart, targetRegionEnd;
+unsigned long driverRegionStart, driverRegionEnd;
+
 
 long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer);
 

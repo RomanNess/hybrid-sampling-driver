@@ -144,6 +144,7 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 	sampleCount++;
 
+#ifndef NO_PAPI_HANDLER
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
 
@@ -153,7 +154,7 @@ int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
 
 	numberOfBufferElements++;
-
+#endif //NO_PAPI_HANDLER
 	return 0;
 }
 
@@ -273,9 +274,9 @@ void *_init_process(int *argc, char **argv, void *data) {
 
 #ifndef NO_CPP_LIB
 	parseFunctions("nm_file");
-	parseRegions("regions_file", &regionStart, &regionEnd);
+	parseRegions("regions_file", &targetRegionStart, &targetRegionEnd);
 //	dump();
-	dumpMemoryMapping();
+	dumpMemoryMapping(&driverRegionStart, &driverRegionEnd);
 #else
 	printf("NO_CPP_LIB\n");
 #endif
