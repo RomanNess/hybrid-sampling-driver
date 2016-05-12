@@ -16,7 +16,8 @@ void dump();
 
 void dumpMemoryMapping(unsigned long* start, unsigned long* end);
 
-void parseRegions(char* filename, unsigned long* start, unsigned long* end);
+void parseRegions(char* filename, unsigned long* targetRegionStart, unsigned long* targetRegionEnd,
+		unsigned long* mainRegionStart, unsigned long* mainRegionEnd);
 
 #ifdef __cplusplus
 }

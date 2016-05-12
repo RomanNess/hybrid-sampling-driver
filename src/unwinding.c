@@ -1,7 +1,7 @@
 #include "unwinding.h"
 
 #define IGNORE_PAPI_CONTEXT 0
-#define PRINT_FUNCTIONS 0
+#define PRINT_FUNCTIONS 1
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used
@@ -69,6 +69,10 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 	unsigned long sp;
 	int status = 1;
 	while (status > 0 && unwindSteps != 0) {
+
+		if (mainRegionStart < ip && ip < mainRegionEnd) {
+			break;
+		}
 
 		unw_get_reg(&cursor, UNW_REG_IP, &ip);
 		unw_get_reg(&cursor, UNW_REG_SP, &sp);

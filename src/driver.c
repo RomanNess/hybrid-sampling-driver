@@ -49,8 +49,6 @@ void finiBuffer() {
 }
 
 /*
- * XXX JP: The function needs some attention.
- *
  * This is the function to be called when PAPI interrupts and a sample is taken by our handler.
  * It saves the state of the shadow stack and the PAPI instruction counter address to a
  * SampleEvent object and puts it in the buffer.
@@ -262,7 +260,7 @@ void *_init_process(int *argc, char **argv, void *data) {
 
 #ifndef NO_CPP_LIB
 	parseFunctions("nm_file");
-	parseRegions("regions_file", &targetRegionStart, &targetRegionEnd);
+	parseRegions("regions_file", &targetRegionStart, &targetRegionEnd, &mainRegionStart, &mainRegionEnd);
 //	dump();
 	dumpMemoryMapping(&driverRegionStart, &driverRegionEnd);
 #else

@@ -51,6 +51,19 @@ for line in objdumpHead.stdout:
 		break
 objdumpHead.kill()
 
+# ahahaha ugly hack
+objdumpMain = subprocess.Popen(objdumpCommand + ' | grep -A1000 "<main>:"', shell=True, stdout=subprocess.PIPE, universal_newlines=True)
+for line in objdumpMain.stdout:
+	cols = line.rstrip().split(" ")
+	if len(cols) == 2:	
+		mainFunctionStart = int(cols[0], 16)
+		continue
+	if len(cols) == 1:
+		break
+	else:
+		mainFunctionEnd = int(cols[2].split(':')[0], 16)
+objdumpMain.kill()
+
 objdumpTail = subprocess.Popen(objdumpCommand + " | tail", shell=True, stdout=subprocess.PIPE, universal_newlines=True)
 for line in objdumpTail.stdout:
 	cols = line.rstrip().split("\t")
@@ -59,4 +72,5 @@ for line in objdumpTail.stdout:
 
 file = open("regions_file", "w")
 file.write(str(hex(start)) + " " + str(hex(end)) + " " + sys.argv[1] + "\n")
+file.write(str(hex(mainFunctionStart)) + " " + str(hex(mainFunctionEnd)) + " main" + "\n")
 file.close()

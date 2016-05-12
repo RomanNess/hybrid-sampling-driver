@@ -94,20 +94,26 @@ extern "C" {
 		}
 	}
 
-	void parseRegions(char* filename, unsigned long* start, unsigned long* end) {
+	void parseRegions(char* filename, unsigned long* start, unsigned long* end,
+			unsigned long* mainStart, unsigned long* mainEnd) {
+
 		std::ifstream inFile(filename);
 		if (inFile == NULL) {
 			errx(1, "Error: File \"%s\" not found.", filename);
 		}
 
-		inFile >> std::hex >> *start;
-		inFile >> std::hex >> *end;
+		inFile >> std::hex >> *start >> *end;
 
 		FuncMap.targetRegionStart = *start;
 		FuncMap.targetRegionEnd = *end;
+
+		inFile.ignore(256, '\n'); // get next line
+		inFile >> std::hex >> *mainStart >> *mainEnd;
+
 #if DEBUG
 		std::cout << "Parsed target regions: " << std::hex << FuncMap.targetRegionStart
-			<< " - " << FuncMap.targetRegionEnd << std::endl;
+			<< " - " << FuncMap.targetRegionEnd
+			<< " (mainFunction: " << *mainStart << " - " << *mainEnd << " )" << std::endl;
 #endif
 	}
 

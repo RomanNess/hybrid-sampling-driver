@@ -68,10 +68,9 @@ void abstractHandler(unsigned long address, void* context) {
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
 
 	long startAddress;
-	if (address > driverRegionStart && address < driverRegionEnd) {
+	if (driverRegionStart < address && address < driverRegionEnd) {
 		startAddress = 0;	// sample in driver region (call context already known)
 		samplesInDriverRegion++;
-//		printf("Sample in driver region: %lx", address);
 	} else {
 		startAddress = doUnwind(address, context, &_flushToDiskBuffer[numberOfBufferElements]);
 	}

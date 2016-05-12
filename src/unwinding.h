@@ -13,7 +13,7 @@
 
 unsigned long targetRegionStart, targetRegionEnd;
 unsigned long driverRegionStart, driverRegionEnd;
-
+unsigned long mainRegionStart, mainRegionEnd;
 
 long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer);
 
