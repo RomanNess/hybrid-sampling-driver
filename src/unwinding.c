@@ -1,7 +1,7 @@
 #include "unwinding.h"
 
 #define IGNORE_PAPI_CONTEXT 0
-#define PRINT_FUNCTIONS 1
+#define PRINT_FUNCTIONS 0
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used
@@ -56,29 +56,31 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 
 	functionAddress = getFunctionStartAddress(functionAddress);
 
-#if PRINT_FUNCTIONS
-		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
-		printf("Starting Function: ip = %lx \t| %s \n", (unsigned long) functionAddress, buf);
-#endif
-
 	int unwindSteps = getUnwindSteps(functionAddress);
 	buffer->numUnwindEvents = unwindSteps;
 	buffer->unwindEvents = (struct StackEvent *) malloc(unwindSteps * sizeof(struct StackEvent));
+
+#if PRINT_FUNCTIONS
+		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
+		printf("Starting Function: ip = %lx \t| %s (%i)\n", (unsigned long) functionAddress, buf, unwindSteps);
+#endif
 
 	unsigned long ip;
 	unsigned long sp;
 	int status = 1;
 	while (status > 0 && unwindSteps != 0) {
 
-		if (mainRegionStart < ip && ip < mainRegionEnd) {
+		if (mainRegionStart <= ip && ip <= mainRegionEnd) {
 			break;
 		}
 
 		unw_get_reg(&cursor, UNW_REG_IP, &ip);
 		unw_get_reg(&cursor, UNW_REG_SP, &sp);
 
-		if (targetRegionStart < ip && ip < targetRegionEnd) {
+		if (targetRegionStart <= ip && ip <= targetRegionEnd) {
 
+			// TODO count down after unwind
+		status = unw_step(&cursor);
 			unwindSteps--;	// interesting frame
 
 			buffer->unwindEvents[unwindSteps].identifier = ip;
@@ -94,7 +96,6 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 #endif
 		}
 
-		status = unw_step(&cursor);
 	}
 
 #if  PRINT_FUNCTIONS
