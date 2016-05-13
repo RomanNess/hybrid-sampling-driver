@@ -35,7 +35,7 @@
 extern struct Stack **_multithreadStack;
 
 /* write buffer */
-#define WRITE_BUFFER_SIZE 1000000	/* number of sampling events in the buffer */
+#define WRITE_BUFFER_SIZE 50*1000*1000	/* number of sampling events in the buffer */
 extern struct SampleEvent *_flushToDiskBuffer;
 extern unsigned int numberOfBufferElements;
 
@@ -67,8 +67,6 @@ void handler(int EventSet, void *address, long long overflow_vector, void *conte
 __attribute((always_inline)) inline
 void abstractHandler(unsigned long address, void* context) {
 	// This is where the work happens
-	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
-
 	long startAddress;
 	if (driverRegionStart < address && address < driverRegionEnd) {
 		startAddress = 0;	// sample in driver region (call context already known)
@@ -77,6 +75,8 @@ void abstractHandler(unsigned long address, void* context) {
 		startAddress = doUnwind(address, context, &_flushToDiskBuffer[numberOfBufferElements]);
 	}
 	_flushToDiskBuffer[numberOfBufferElements].icAddress = startAddress;
+
+	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
 
 	numberOfBufferElements++;
 }

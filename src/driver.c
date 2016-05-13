@@ -137,7 +137,7 @@ int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 
 	if (itimerLock) {
 		samplesOmitted++;
-		printf("# sample omitted\n");
+		printf("#");
 		return 0;
 	}
 	itimerLock = 1;
@@ -319,7 +319,7 @@ void _fini_process(int how, void* data) {
 
 	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
 #ifdef ITIMER_DRIVER
-	printf("%li overlapping samples omitted", samplesOmitted);
+	printf("%li overlapping samples omitted.\n", samplesOmitted);
 #endif
 	printf("%u elements in buffer\n", numberOfBufferElements);
 }
