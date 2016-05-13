@@ -87,7 +87,7 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 
 /*
  * Flushes the SampleEvents to a file
- * XXX: ATTENTION this produces LOTS OF DATA
+ * ATTENTION this produces LOTS OF DATA
  */
 void flushBufferToFile(struct SampleEvent *buffer) {
 	fprintf(stdout, "Starting to write out\n");
@@ -208,6 +208,14 @@ void initItimerSamplingDriver() {
 	}
 	printf("Initialized itimer driver. Sampling every %li micros\n", micros);
 }
+int emptyHandler(int sig, siginfo_t* siginfo, void* context) {
+	return 0;
+}
+void finiItimerSamplingDriver() {
+	if (monitor_sigaction(SIGALRM, &emptyHandler, 0, NULL) != 0) {
+		printf("ERROR: monitor_sigacton() failed in fini.\n");
+	}
+}
 #endif
 
 #ifndef NO_PAPI_DRIVER
@@ -305,23 +313,32 @@ void _fini_process(int how, void* data) {
 
 #ifdef META_BENCHMARK
 	stopMeasurement();
-	printResults("target");
+#endif
+
+#ifndef NO_PAPI_DRIVER
+	finishSamplingDriver();
+#endif
+#ifdef ITIMER_DRIVER
+	finiItimerSamplingDriver();
 #endif
 
 	///XXX
 	fprintf(stderr, "monitor_fini_process\n");
 
-	assert(_multithreadStack[threadId]->_size==0);
-
-#ifndef NO_PAPI_DRIVER
-	finishSamplingDriver();
+#ifdef META_BENCHMARK
+	printResults("target");
 #endif
+
+
+	while (1);
 
 	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
 #ifdef ITIMER_DRIVER
 	printf("%li overlapping samples omitted.\n", samplesOmitted);
 #endif
 	printf("%u elements in buffer\n", numberOfBufferElements);
+
+	assert(_multithreadStack[threadId]->_size==0);
 }
 
 void *monitor_init_thread(int tid, void *data) {
