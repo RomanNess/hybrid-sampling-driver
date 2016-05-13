@@ -329,9 +329,6 @@ void _fini_process(int how, void* data) {
 	printResults("target");
 #endif
 
-
-	while (1);
-
 	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
 #ifdef ITIMER_DRIVER
 	printf("%li overlapping samples omitted.\n", samplesOmitted);
