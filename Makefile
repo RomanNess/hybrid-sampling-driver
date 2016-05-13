@@ -27,8 +27,7 @@ libsampling libsampling-debug: PP_FLAGS+=$(PAPI_FLAGS) -DSERIAL_OPT -DMETA_BENCH
 
 libsampling libsampling-debug libshadowstack-serial libshadowstack-parallel \
 measure measure-sampling-target measure-sampling-target-noHandler: libhash timing
-	$(CC) $(PAPI_INCLUDE_FLAGS)             $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so        $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
-	$(CC) $(PAPI_INCLUDE_FLAGS) -DUNSAFE_SS $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).unsafe.$(CC).$(HOSTNAME).so $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libhash: $(eval LDFLAGS+=-lhash.$(CC).$(HOSTNAME))
 libhash:
@@ -70,7 +69,7 @@ measure-stackwalker: target timing
 #	taskset -c 5 monitor-run -i ./lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so ./target.exe &> out
 
 # driver without papi sampling
-libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER -DNO_CPP_LIB
+libshadowstack-serial: PP_FLAGS+=-DSERIAL_OPT -DNO_PAPI_DRIVER -DNO_CPP_LIB -DMETA_BENCHMARK
 libshadowstack-serial: LIBNAME=shadowstack.serial
 # driver wihtout papi sampling
 libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER -DNO_CPP_LIB
@@ -83,11 +82,11 @@ itimer:	libsampling
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DMONITOR_INIT
 measure-cyg: LDFLAGS+=-ltiming_tsc
 measure-cyg: TARGET_FLAGS+=-DMETA_BENCHMARK
-measure-cyg: target timing libempty count-calls libshadowstack-parallel libshadowstack-serial
+measure-cyg: target timing libempty libcount libshadowstack-parallel libshadowstack-serial
 	python3 py/gen.py target.exe
 	
-count-calls: target
-	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.$(CC).$(HOSTNAME).so $(LIBMONITOR_FLAGS)
+libcount: target
+	$(CC) $(OPT_FLAGS) $(CFLAGS) overhead/count-calls.c -o lib/libcount.so $(LIBMONITOR_FLAGS)
 	
 timing:
 	$(CC) -O3 $(CFLAGS) src/libtiming/timing.c -o lib/libtiming.so -lrt
