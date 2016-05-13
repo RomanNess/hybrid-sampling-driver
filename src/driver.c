@@ -24,6 +24,11 @@ long overflowCountForSamples = 2500000;
 __thread int EventSet = PAPI_NULL;
 #endif
 
+#ifdef ITIMER_DRIVER
+static int itimerLock = 0;
+static long samplesOmitted = 0;
+#endif
+
 void initBuffer() {
 	if (_flushToDiskBuffer != 0) {
 		return;
@@ -133,7 +138,16 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 #endif //NO_PAPI_HANDLER
 }
 
+#ifdef ITIMER_DRIVER
 int signalHandler(int sig, siginfo_t* siginfo, void* context) {
+
+	if (itimerLock) {
+		samplesOmitted++;
+		printf("# sample omitted\n");
+		return 0;
+	}
+	itimerLock = 1;
+
 	samplesTaken++;
 
 #ifndef NO_PAPI_HANDLER
@@ -141,8 +155,11 @@ int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 	abstractHandler((unsigned long) address, context);
 #endif //NO_PAPI_HANDLER
 
+	itimerLock = 0;
+
 	return 0;
 }
+#endif // ITIMER_DRIVER
 
 void initSamplingDriver() {
 
@@ -226,11 +243,7 @@ void finishSamplingDriver() {
 	long long instructionCounter;
 	PAPI_stop(EventSet, &instructionCounter);
 
-	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
-	printf("%u elements in buffer\n", numberOfBufferElements);
-
 	flushBufferToFile(_flushToDiskBuffer);
-
 	finiBuffer();
 	printf("Sampling Driver Disabled\n");
 
@@ -306,13 +319,15 @@ void _fini_process(int how, void* data) {
 
 	assert(_multithreadStack[threadId]->_size==0);
 
-#ifdef ITIMER_DRIVER
-	printf("%li samples taken\n", samplesTaken);
-#endif
-
 #ifndef NO_PAPI_DRIVER
 	finishSamplingDriver();
 #endif
+
+	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
+#ifdef ITIMER_DRIVER
+	printf("%li overlapping samples omitted", samplesOmitted);
+#endif
+	printf("%u elements in buffer\n", numberOfBufferElements);
 }
 
 void *monitor_init_thread(int tid, void *data) {

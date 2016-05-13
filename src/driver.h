@@ -49,6 +49,8 @@ extern __thread int EventSet; /* PAPI related thing */
 
 #ifdef ITIMER_DRIVER
 static struct itimerval itimer;
+static int itimerLock;
+static long samplesOmitted;
 #endif
 
 /*
