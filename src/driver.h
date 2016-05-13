@@ -64,7 +64,7 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer);
 void flushBufferToFile(struct SampleEvent *buffer);
 
 void handler(int EventSet, void *address, long long overflow_vector, void *context);
-inline
+__attribute((always_inline)) inline
 void abstractHandler(unsigned long address, void* context) {
 	// This is where the work happens
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
