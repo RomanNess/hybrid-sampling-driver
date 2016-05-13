@@ -13,8 +13,8 @@
 #BSUB -q special3
 ###BSUB -m hab0005	# host
 
-#BSUB -eo /home/us93buza/test/libsampling/results-unw/out-JOB%J/OUT.out
-#BSUB -oo /home/us93buza/test/libsampling/results-unw/out-JOB%J/OUT.out
+#BSUB -eo /home/us93buza/repos/libsampling/results-unw/out-JOB%J/OUT.out
+#BSUB -oo /home/us93buza/repos/libsampling/results-unw/out-JOB%J/OUT.out
 
 
 TARGET_NAME=libquantum

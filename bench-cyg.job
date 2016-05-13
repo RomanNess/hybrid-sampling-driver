@@ -13,8 +13,8 @@
 ###BSUB -q special3
 ###BSUB -m hab0007	# host
 
-#BSUB -eo /home/us93buza/test/libsampling/results-cyg/out-%J/OUT.out
-#BSUB -oo /home/us93buza/test/libsampling/results-cyg/out-%J/OUT.out
+#BSUB -eo /home/us93buza/repos/libsampling/results-cyg/out-%J/OUT.out
+#BSUB -oo /home/us93buza/repos/libsampling/results-cyg/out-%J/OUT.out
 
 SetEnvironment() {
 	WORKDIR=$LIBSAMPLING_BASE/results-cyg/$CC/$TARGET_NAME-${TARGET_PARAMS// /-}/$HOSTNAME-JOB$LSB_JOBID

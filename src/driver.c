@@ -88,12 +88,6 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 /*
  * Flushes the SampleEvents to a file
  * XXX: ATTENTION this produces LOTS OF DATA
- * For example we could use /scratch to output lots of GB ...
- * Dataformat:
- * [Sample ID] [icAddress] [stackelems]
- *
- * XXX 2014-05-12 JP: Move the whole file operation thing to a different file?
- * XXX 2014-05-12 JP: Use the cube file writer lib to output cubex files?
  */
 void flushBufferToFile(struct SampleEvent *buffer) {
 	fprintf(stdout, "Starting to write out\n");

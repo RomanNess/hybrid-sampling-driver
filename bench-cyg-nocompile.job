@@ -19,8 +19,8 @@
 ###BSUB -m hpb0344
 ###BSUB -m hab0007	# host
 
-#BSUB -eo /home/us93buza/test/libsampling/results-cyg/out-nocompile/OUT.out
-#BSUB -oo /home/us93buza/test/libsampling/results-cyg/out-nocompile/OUT.out
+#BSUB -eo /home/us93buza/repos/libsampling/results-cyg/out-nocompile/OUT.out
+#BSUB -oo /home/us93buza/repos/libsampling/results-cyg/out-nocompile/OUT.out
 
 
 HAB=hab0008
