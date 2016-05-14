@@ -322,11 +322,12 @@ void _fini_process(int how, void* data) {
 	finiItimerSamplingDriver();
 #endif
 
-	flushBufferToFile(_flushToDiskBuffer);
-	finiBuffer();
-
 	///XXX
 	fprintf(stderr, "monitor_fini_process\n");
+
+	printf("%u elements in buffer\n", numberOfBufferElements);
+	flushBufferToFile(_flushToDiskBuffer);
+	finiBuffer();
 
 #ifdef META_BENCHMARK
 	printResults("target");
@@ -336,7 +337,6 @@ void _fini_process(int how, void* data) {
 #ifdef ITIMER_DRIVER
 	printf("%li overlapping samples omitted.\n", samplesOmitted);
 #endif
-	printf("%u elements in buffer\n", numberOfBufferElements);
 
 	assert(_multithreadStack[threadId]->_size==0);
 }
