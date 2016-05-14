@@ -102,14 +102,16 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 			fprintf(fp, "ShadowStack size: %i, Unwind size: %i\n", buffer[i].numStackEvents, buffer[i].numUnwindEvents);
 
 			for (int j = 0; j < buffer[i].numStackEvents; j++) {
-				fprintf(fp, "Thread: %i in Function: %lx\n", buffer[i].thread, stackEvents[j].identifier);
+				unsigned long address  = stackEvents[j].identifier;
+				char* name = getName(address);
+				fprintf(fp, "Thread: %i in Function: %lx (%s)\n", buffer[i].thread, address, name);
 			}
 
 			const struct StackEvent* unwindEvents = buffer[i].unwindEvents;
 			for (int j = 0; j < buffer[i].numUnwindEvents; j++) {
-
-
-				fprintf(fp, "Unwind: %lx\n", unwindEvents[j].identifier);
+				unsigned long address = unwindEvents[j].identifier;
+				char* name = getName(address);
+				fprintf(fp, "Unwind: %lx (%s)\n", address, name);
 			}
 
 			fprintf(fp, "\n");

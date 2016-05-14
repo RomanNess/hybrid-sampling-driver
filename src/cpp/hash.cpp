@@ -58,6 +58,7 @@ extern "C" {
 	}
 
 	const char* getName(key_type key) {
+		key = getFunctionStartAddress(key);
 		if (FuncMap.names.find(key) != FuncMap.names.end()) {
 			return FuncMap.names[key].c_str();
 		}
