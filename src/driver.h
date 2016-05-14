@@ -66,6 +66,7 @@ void flushBufferToFile(struct SampleEvent *buffer);
 void handler(int EventSet, void *address, long long overflow_vector, void *context);
 __attribute((always_inline)) inline
 void abstractHandler(unsigned long address, void* context) {
+
 	// This is where the work happens
 	long startAddress;
 	if (driverRegionStart < address && address < driverRegionEnd) {
@@ -85,6 +86,6 @@ void initSamplingDriver();
 void initPapiSamplingDriver();
 void initItimerSamplingDriver();
 void registerThreadForPAPI();
-void finishSamplingDriver();
+void finiPapiSamplingDriver();
 
 #endif	// DRIVER_H

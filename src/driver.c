@@ -1,3 +1,4 @@
+#define _GNU_SOURCE	// for REG_RIP
 #include "driver.h"
 
 #ifdef META_BENCHMARK
@@ -9,7 +10,7 @@
 #include <stdio.h>
 #include <sys/time.h>	// itimer
 #include <signal.h>		// signal
-#include <bits/siginfo.h> // si_addr
+#include <ucontext.h>	// greps[REG_RIP]
 
 int initialized = 0;
 
@@ -145,8 +146,9 @@ int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 	samplesTaken++;
 
 #ifndef NO_PAPI_HANDLER
-	void* address = ((siginfo_t*) context)->si_addr;
-	abstractHandler((unsigned long) address, context);
+	ucontext_t* uc = (ucontext_t*) context;
+	unsigned long address = uc->uc_mcontext.gregs[REG_RIP];
+	abstractHandler(address, context);
 #endif //NO_PAPI_HANDLER
 
 	itimerLock = 0;
@@ -240,14 +242,12 @@ void registerThreadForPAPI() {
 	}
 }
 
-void finishSamplingDriver() {
+void finiPapiSamplingDriver() {
 
 	long long instructionCounter;
 	PAPI_stop(EventSet, &instructionCounter);
 
-	flushBufferToFile(_flushToDiskBuffer);
-	finiBuffer();
-	printf("Sampling Driver Disabled\n");
+	printf("PAPI sampling driver disabled\n");
 
 #ifdef WITH_MAX_SIZE
 	printf("The max stack size reached was: %u\n", stackMaxSize);
@@ -316,11 +316,14 @@ void _fini_process(int how, void* data) {
 #endif
 
 #ifndef NO_PAPI_DRIVER
-	finishSamplingDriver();
+	finiPapiSamplingDriver();
 #endif
 #ifdef ITIMER_DRIVER
 	finiItimerSamplingDriver();
 #endif
+
+	flushBufferToFile(_flushToDiskBuffer);
+	finiBuffer();
 
 	///XXX
 	fprintf(stderr, "monitor_fini_process\n");
