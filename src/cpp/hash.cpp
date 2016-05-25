@@ -68,7 +68,7 @@ extern "C" {
 	void parseFunctions(char* filename) {
 
 		std::ifstream inFile(filename);
-		if (inFile == NULL) {
+		if (!inFile.is_open()) {
 			errx(1, "Error: File \"%s\" not found.", filename);
 		}
 
@@ -99,7 +99,7 @@ extern "C" {
 			unsigned long* mainStart, unsigned long* mainEnd) {
 
 		std::ifstream inFile(filename);
-		if (inFile == NULL) {
+		if (!inFile.is_open()) {
 			errx(1, "Error: File \"%s\" not found.", filename);
 		}
 
