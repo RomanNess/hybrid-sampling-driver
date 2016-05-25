@@ -47,7 +47,7 @@ extern long overflowCountForSamples; /* CPU-cycles per sample (set by INSTRO_SAM
 extern __thread int EventSet; /* PAPI related thing */
 #endif
 
-#ifdef ITIMER_DRIVER
+#ifndef NO_ITIMER_DRIVER
 static struct itimerval itimer;
 static int itimerLock;
 static long samplesOmitted;

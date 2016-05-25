@@ -25,7 +25,7 @@ long overflowCountForSamples = 2500000;
 __thread int EventSet = PAPI_NULL;
 #endif
 
-#ifdef ITIMER_DRIVER
+#ifndef NO_ITIMER_DRIVER
 static int itimerLock = 0;
 static long samplesOmitted = 0;
 #endif
@@ -135,7 +135,7 @@ void handler(int EventSet, void* address, long long overflow_vector, void* conte
 #endif //NO_PAPI_HANDLER
 }
 
-#ifdef ITIMER_DRIVER
+#ifndef NO_ITIMER_DRIVER
 int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 
 	if (itimerLock) {
@@ -157,7 +157,7 @@ int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 
 	return 0;
 }
-#endif // ITIMER_DRIVER
+#endif // NO_ITIMER_DRIVER
 
 void initSamplingDriver() {
 
@@ -175,7 +175,7 @@ void initSamplingDriver() {
 #ifndef NO_PAPI_DRIVER
 	initPapiSamplingDriver();
 #endif	//  NO_PAPI_DRIVER
-#ifdef ITIMER_DRIVER
+#ifndef NO_ITIMER_DRIVER
 	initItimerSamplingDriver();
 #endif
 
@@ -195,7 +195,7 @@ void initPapiSamplingDriver() {
 	printf("PAPI sampling driver enabled. Sampling every %li micros.\n", overflowCountForSamples/2500);
 }
 
-#ifdef ITIMER_DRIVER
+#ifndef NO_ITIMER_DRIVER
 void initItimerSamplingDriver() {
 	long int micros=overflowCountForSamples/2500;
 
@@ -284,8 +284,9 @@ void *_init_process(int *argc, char **argv, void *data) {
 	printf("NO_CPP_LIB\n");
 #endif
 
+#ifndef NO_SAMPLING
 	initSamplingDriver();
-
+#endif
 	initialized = 1;
 
 #ifdef META_BENCHMARK
@@ -317,12 +318,14 @@ void _fini_process(int how, void* data) {
 	stopMeasurement();
 #endif
 
+#ifndef NO_SAMPLING
 #ifndef NO_PAPI_DRIVER
 	finiPapiSamplingDriver();
 #endif
-#ifdef ITIMER_DRIVER
+#ifndef NO_ITIMER_DRIVER
 	finiItimerSamplingDriver();
 #endif
+#endif // NO_SAMPLOING
 
 	///XXX
 	fprintf(stderr, "monitor_fini_process\n");
@@ -335,10 +338,12 @@ void _fini_process(int how, void* data) {
 	printResults("target");
 #endif
 
+#ifndef NO_SAMPLING
 	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
-#ifdef ITIMER_DRIVER
+#ifndef NO_ITIMER_DRIVER
 	printf("%li overlapping samples omitted.\n", samplesOmitted);
 #endif
+#endif // NO_SAMPLING
 
 	assert(_multithreadStack[threadId]->_size==0);
 }
