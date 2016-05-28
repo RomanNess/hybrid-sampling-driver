@@ -16,6 +16,9 @@ int initialized = 0;
 
 struct Stack **_multithreadStack = 0;
 struct SampleEvent *_flushToDiskBuffer = 0;
+struct StackEvent *_innerBuffer = 0;
+unsigned long _innerBufferSize = 0;
+
 long samplesTaken = 0;
 long samplesInDriverRegion = 0;
 unsigned int numberOfBufferElements = 0;
@@ -37,9 +40,15 @@ void initBuffer() {
 
 	size_t allocSize = WRITE_BUFFER_SIZE * 2 * sizeof(struct SampleEvent);
 	_flushToDiskBuffer = (struct SampleEvent *) malloc(allocSize);
+	size_t innerAllocSize = WRITE_BUFFER_SIZE * 5 * sizeof(struct StackEvent);
+	_innerBuffer = (struct StackEvent *) malloc(innerAllocSize);
+
 
 	if (_flushToDiskBuffer == 0) {
 		errx(1, "Could not allocate a write-out buffer with size: %lu bytes", allocSize);
+	}
+	if (_innerBuffer == 0) {
+		errx(1, "Could not allocate _innerBuffer");
 	}
 	printf("Allocated %lu bytes for buffer.\n", allocSize);
 
@@ -47,10 +56,8 @@ void initBuffer() {
 
 void finiBuffer() {
 	if (_flushToDiskBuffer != 0) {
-		for (int i = 0; i < numberOfBufferElements; i++) {
-			free(_flushToDiskBuffer[i].stackEvents); // Correct?
-		}
 		free(_flushToDiskBuffer);
+		free(_innerBuffer);
 	}
 }
 
@@ -75,7 +82,11 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 		return;
 	}
 
-	buffer[numberOfBufferElements].stackEvents = (struct StackEvent *) malloc(stack->_size * sizeof(struct StackEvent));
+	buffer[numberOfBufferElements].stackEvents = &_innerBuffer[_innerBufferSize];
+	_innerBufferSize += stack->_size;
+	///XXX
+//	printf("buffer[numberOfBufferElements].stackEvents = %lu \n", buffer[numberOfBufferElements].stackEvents);
+
 	if (buffer[numberOfBufferElements].stackEvents == 0) {
 		errx(-7, "Error creating buffer[bufferElements].stackEvents buffer");
 	}
@@ -97,6 +108,7 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 	if (fp) {
 		// write all buffered elements to a file
 		for (int i = 0; i < numberOfBufferElements; i++) {
+
 			const struct StackEvent *stackEvents = buffer[i].stackEvents;
 			fprintf(fp, "Sample: %lu\nAddress: %lx\n", buffer[i].sampleNumber, buffer[i].icAddress);
 			fprintf(fp, "ShadowStack size: %i, Unwind size: %i\n", buffer[i].numStackEvents, buffer[i].numUnwindEvents);
@@ -115,7 +127,6 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 			}
 
 			fprintf(fp, "\n");
-			free((struct StackEvent *) stackEvents);
 		}
 		numberOfBufferElements = 0;
 
@@ -217,7 +228,7 @@ int emptyHandler(int sig, siginfo_t* siginfo, void* context) {
 }
 void finiItimerSamplingDriver() {
 	if (monitor_sigaction(SIGALRM, &emptyHandler, 0, NULL) != 0) {
-		printf("ERROR: monitor_sigacton() failed in fini.\n");
+		printf("ERROR: monitor_sigaction() failed in fini.\n");
 	}
 }
 #endif
@@ -325,7 +336,7 @@ void _fini_process(int how, void* data) {
 #ifndef NO_ITIMER_DRIVER
 	finiItimerSamplingDriver();
 #endif
-#endif // NO_SAMPLOING
+#endif // NO_SAMPLING
 
 	///XXX
 	fprintf(stderr, "monitor_fini_process\n");
