@@ -39,6 +39,7 @@ extern struct Stack **_multithreadStack;
 extern struct SampleEvent *_flushToDiskBuffer;
 extern struct StackEvent* _innerBuffer;
 extern unsigned int numberOfBufferElements;
+extern unsigned long _innerBufferSize;
 
 extern long samplesTaken; /* total samples taken */
 extern long samplesInDriverRegion; /* samples taken in regions of this driver */

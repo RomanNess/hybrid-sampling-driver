@@ -1,7 +1,8 @@
 #include "unwinding.h"
+#include "driver.h"
 
 #define IGNORE_PAPI_CONTEXT 0
-#define PRINT_FUNCTIONS 1
+#define PRINT_FUNCTIONS 0
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used
@@ -73,7 +74,8 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 		return functionAddress;
 	}
 
-	buffer->unwindEvents = (struct StackEvent *) malloc(unwindSteps * sizeof(struct StackEvent));
+	buffer->unwindEvents = &_innerBuffer[_innerBufferSize];
+	_innerBufferSize += unwindSteps;
 
 	unsigned long ip = 0;
 	oldFunctionAddress = 42;
