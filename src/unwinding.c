@@ -1,7 +1,7 @@
 #include "unwinding.h"
 
 #define IGNORE_PAPI_CONTEXT 0
-#define PRINT_FUNCTIONS 0
+#define PRINT_FUNCTIONS 1
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used
@@ -45,31 +45,46 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 #if PRINT_FUNCTIONS
 			printf("### skipped unwind method.\n\n");
 #endif
-			return -1;
+			return -1L;
 		}
 		unw_get_reg(&cursor, UNW_REG_IP, &functionAddress);
 
 		if (functionAddress == oldFunctionAddress) {
-			return -1L;	// can not unwind
+#if PRINT_FUNCTIONS
+			printf("unwind got stuck and was skipped.\n");
+#endif
+			return -3L;	// can not unwind
 		}
 	}
 
 	functionAddress = getFunctionStartAddress(functionAddress);
-
 	int unwindSteps = getUnwindSteps(functionAddress);
-	buffer->numUnwindEvents = unwindSteps;
-	buffer->unwindEvents = (struct StackEvent *) malloc(unwindSteps * sizeof(struct StackEvent));
 
 #if PRINT_FUNCTIONS
 		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
 		printf("Starting Function: ip = %lx \t| %s (%i)\n", (unsigned long) functionAddress, buf, unwindSteps);
 #endif
+	
+	buffer->numUnwindEvents = unwindSteps;
+	if (unwindSteps == 0) {
+#if PRINT_FUNCTIONS
+		printf("\n");
+#endif
+		return functionAddress;
+	}
+
+	buffer->unwindEvents = (struct StackEvent *) malloc(unwindSteps * sizeof(struct StackEvent));
 
 	unsigned long ip = 0;
 	oldFunctionAddress = 42;
 	unsigned long sp;
 	int status = 1;
 	while (status > 0 && unwindSteps != 0) {
+
+#if  PRINT_FUNCTIONS
+	printf("loop.\n");
+#endif
+
 
 		if (mainRegionStart <= ip && ip <= mainRegionEnd) {
 			break;
@@ -105,9 +120,9 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 
 	}
 
-#if  PRINT_FUNCTIONS
-	printf("\n");
-#endif
+	#if  PRINT_FUNCTIONS
+		printf("\n");
+	#endif
 
 	return (long int) functionAddress;
 }

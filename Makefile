@@ -29,6 +29,7 @@ libpapi libpapi-debug: libsampling
 libsampling libshadowstack-serial libshadowstack-parallel \
 measure measure-sampling-target measure-sampling-target-noHandler: libhash timing
 	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
+	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -g -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).debug.so $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
 
 libhash: $(eval LDFLAGS+=-lhash.$(CC).$(HOSTNAME))
 libhash:
