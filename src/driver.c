@@ -16,6 +16,7 @@ int initialized = 0;
 
 struct Stack **_multithreadStack = 0;
 struct SampleEvent *_flushToDiskBuffer = 0;
+struct StackEvent* _innerBuffer = 0;
 long samplesTaken = 0;
 long samplesInDriverRegion = 0;
 unsigned int numberOfBufferElements = 0;
@@ -37,6 +38,8 @@ void initBuffer() {
 
 	size_t allocSize = WRITE_BUFFER_SIZE * 2 * sizeof(struct SampleEvent);
 	_flushToDiskBuffer = (struct SampleEvent *) malloc(allocSize);
+	_innerBuffer = (struct StackEvent *) malloc(allocSize * 20);
+
 
 	if (_flushToDiskBuffer == 0) {
 		errx(1, "Could not allocate a write-out buffer with size: %lu bytes", allocSize);
@@ -75,7 +78,7 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 		return;
 	}
 
-	buffer[numberOfBufferElements].stackEvents = (struct StackEvent *) malloc(stack->_size * sizeof(struct StackEvent));
+	buffer[numberOfBufferElements].stackEvents = &_innerBuffer[numberOfBufferElements*20];
 	if (buffer[numberOfBufferElements].stackEvents == 0) {
 		errx(-7, "Error creating buffer[bufferElements].stackEvents buffer");
 	}
