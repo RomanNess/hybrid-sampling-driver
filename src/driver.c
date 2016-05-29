@@ -29,6 +29,7 @@ __thread int EventSet = PAPI_NULL;
 #endif
 
 #ifndef NO_ITIMER_DRIVER
+static struct itimerval itimer;
 static int itimerLock = 0;
 static long samplesOmitted = 0;
 #endif
@@ -84,8 +85,6 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
 
 	buffer[numberOfBufferElements].stackEvents = &_innerBuffer[_innerBufferSize];
 	_innerBufferSize += stack->_size;
-	///XXX
-//	printf("buffer[numberOfBufferElements].stackEvents = %lu \n", buffer[numberOfBufferElements].stackEvents);
 
 	if (buffer[numberOfBufferElements].stackEvents == 0) {
 		errx(-7, "Error creating buffer[bufferElements].stackEvents buffer");
@@ -115,14 +114,14 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 
 			for (int j = 0; j < buffer[i].numStackEvents; j++) {
 				unsigned long address  = stackEvents[j].identifier;
-				char* name = getName(address);
+				const char* name = getName(address);
 				fprintf(fp, "Thread: %i in Function: %lx (%s)\n", buffer[i].thread, address, name);
 			}
 
 			const struct StackEvent* unwindEvents = buffer[i].unwindEvents;
 			for (int j = 0; j < buffer[i].numUnwindEvents; j++) {
 				unsigned long address = unwindEvents[j].identifier;
-				char* name = getName(address);
+				const char* name = getName(address);
 				fprintf(fp, "Unwind: %lx (%s)\n", address, name);
 			}
 
