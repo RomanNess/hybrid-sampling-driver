@@ -74,13 +74,12 @@ extern "C" {
 
 		std::string line;
 		while (std::getline(inFile, line)) {
-			int key = (int) strtol(line.c_str(), NULL, 16);
-			char delimiter = ' ';
-			size_t secondColStart = line.find(delimiter) + 1;
-			size_t secondDelimiter = line.find(delimiter, secondColStart);
-			std::string name = line.substr(secondColStart, secondDelimiter-secondColStart);
 
-			int amount = (int) strtol(line.substr(secondDelimiter).c_str(), NULL, 10);
+			int key, amount;
+			std::string name;
+
+			// parse: "address unwindSteps functionName"
+			inFile >> std::hex >> key >> std::dec >> amount >> name ;
 
 			FuncMap.names[key] = name.c_str();
 			FuncMap.unwindSteps[key] = amount;
