@@ -21,6 +21,8 @@ unsigned long _innerBufferSize = 0;
 
 long samplesTaken = 0;
 long samplesInDriverRegion = 0;
+long unwindStepsTaken = 0;
+long unwindStepsTakenPre = 0;
 unsigned int numberOfBufferElements = 0;
 long overflowCountForSamples = 2500000;
 
@@ -350,6 +352,7 @@ void _fini_process(int how, void* data) {
 
 #ifndef NO_SAMPLING
 	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
+	printf("%li unwind steps taken (%li before lookup). %f per sample.\n", unwindStepsTaken, unwindStepsTakenPre, (double) unwindStepsTaken / (double) samplesTaken);
 #ifndef NO_ITIMER_DRIVER
 	printf("%li overlapping samples omitted.\n", samplesOmitted);
 #endif

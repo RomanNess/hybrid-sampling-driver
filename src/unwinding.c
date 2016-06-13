@@ -3,6 +3,9 @@
 
 #define IGNORE_PAPI_CONTEXT 0
 #define PRINT_FUNCTIONS 0
+#define COUNT_UNW_STEPS() unwindStepsTaken++;
+#define COUNT_PRE_UNW_STEPS() unwindStepsTakenPre++;
+
 
 // XXX RN: this only categorizes functions of the target binary (not linked libs) as interesting
 // XXX RN: note that the SPs are currently not used
@@ -42,6 +45,10 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 		printf("ip = %lx \t| %s (SKIP)\n", functionAddress, buf);
 #endif
 		if (unw_step(&cursor) < 0) {
+
+			COUNT_UNW_STEPS()
+			COUNT_PRE_UNW_STEPS()
+
 			buffer->numUnwindEvents = 0;
 #if PRINT_FUNCTIONS
 			printf("### skipped unwind method.\n\n");
@@ -104,8 +111,10 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 		if (targetRegionStart <= ip && ip <= targetRegionEnd) {
 
 			// TODO count down after unwind
-		status = unw_step(&cursor);
+			status = unw_step(&cursor);
 			unwindSteps--;	// interesting frame
+
+			COUNT_UNW_STEPS()
 
 			buffer->unwindEvents[unwindSteps].identifier = ip;
 

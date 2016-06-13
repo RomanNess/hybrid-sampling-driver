@@ -43,6 +43,8 @@ extern unsigned long _innerBufferSize;
 
 extern long samplesTaken; /* total samples taken */
 extern long samplesInDriverRegion; /* samples taken in regions of this driver */
+extern long unwindStepsTaken;
+extern long unwindStepsTakenPre;
 extern long overflowCountForSamples; /* CPU-cycles per sample (set by INSTRO_SAMPLE_FREQ) */
 
 #ifndef NO_PAPI_DRIVER
