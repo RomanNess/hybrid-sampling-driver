@@ -2,7 +2,7 @@
 
 # wit default values
 Bench=${PGOE_BENCHMARK:-462.libquantum.clang}
-Phase=${PGOE_PHASE:-UnwindSample}
+Phase=${PGOE_PHASE:-hybrid-dyn}
 Compiler=${CC:-cc}
 
 export PGOE_TARGET_EXE=./$Bench-$Phase-$Compiler
