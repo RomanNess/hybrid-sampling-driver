@@ -358,7 +358,12 @@ void _fini_process(int how, void* data) {
 #endif
 #endif // NO_SAMPLING
 
-	assert(_multithreadStack[threadId]->_size==0);
+	if (_multithreadStack[threadId]->_size!=0) {
+		printf("WARNING: __multithreadStack size = %u, (0x%lx)\n",
+				_multithreadStack[threadId]->_size,
+				_multithreadStack[threadId]->_elements[_multithreadStack[threadId]->_size-1]
+		);
+	}
 }
 
 void *monitor_init_thread(int tid, void *data) {
