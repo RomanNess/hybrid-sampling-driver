@@ -27,5 +27,5 @@ WL_FILE=$INSTR_NODES make sel-instr -j 8 # this is just for testing on my laptop
 python $LIBSAMPLING_BASE/py/gen.py $PGOE_TARGET_EXE.sel $UNW_NODES
 
 
-echo "taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.sel"
+echo "taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.sel $(< ref)"
 
