@@ -5,6 +5,8 @@
 #include "libtiming/timing.h"
 #endif
 
+#define DO_NOT_FLUSH_BUFFER
+
 #include <assert.h>
 
 #include <stdio.h>
@@ -339,16 +341,16 @@ void _fini_process(int how, void* data) {
 #endif
 #endif // NO_SAMPLING
 
-	///XXX
-	fprintf(stderr, "monitor_fini_process\n");
-
-	printf("%u elements in buffer\n", numberOfBufferElements);
-	flushBufferToFile(_flushToDiskBuffer);
-	finiBuffer();
 
 #ifdef META_BENCHMARK
 	printResults("target");
 #endif
+
+	printf("%u elements in buffer\n", numberOfBufferElements);
+#ifndef DO_NOT_FLUSH_BUFFER
+	flushBufferToFile(_flushToDiskBuffer);
+#endif
+	finiBuffer();
 
 #ifndef NO_SAMPLING
 	printf("%li samples taken. %li in driver regions.\n", samplesTaken, samplesInDriverRegion);
