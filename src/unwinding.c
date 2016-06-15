@@ -44,11 +44,10 @@ long doUnwind(unsigned long address, void* context, struct SampleEvent *buffer) 
 		unw_get_proc_name(&cursor, buf, sizeof(buf), &offp);
 		printf("ip = %lx \t| %s (SKIP)\n", functionAddress, buf);
 #endif
-		if (unw_step(&cursor) < 0) {
-
-			COUNT_UNW_STEPS()
-			COUNT_PRE_UNW_STEPS()
-
+		int ret = unw_step(&cursor);
+		COUNT_UNW_STEPS()
+		COUNT_PRE_UNW_STEPS()
+		if (ret < 0) {
 			buffer->numUnwindEvents = 0;
 #if PRINT_FUNCTIONS
 			printf("### skipped unwind method.\n\n");
