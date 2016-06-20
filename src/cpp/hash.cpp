@@ -102,18 +102,18 @@ extern "C" {
 			errx(1, "Error: File \"%s\" not found.", filename);
 		}
 
-		inFile >> std::hex >> *start >> *end;
+		inFile >> std::hex >> *start >> *end >> std::dec;
 
 		FuncMap.targetRegionStart = *start;
 		FuncMap.targetRegionEnd = *end;
 
 		inFile.ignore(256, '\n'); // get next line
-		inFile >> std::hex >> *mainStart >> *mainEnd;
+		inFile >> std::hex >> *mainStart >> *mainEnd >> std::dec;
 
 #if DEBUG
 		std::cout << "Parsed target regions: " << std::hex << FuncMap.targetRegionStart
 			<< " - " << FuncMap.targetRegionEnd
-			<< " (mainFunction: " << *mainStart << " - " << *mainEnd << " )" << std::endl;
+			<< " (mainFunction: " << *mainStart << " - " << *mainEnd << " )" << std::dec << std::endl;
 #endif
 	}
 
@@ -141,7 +141,7 @@ extern "C" {
 				std::stringstream lineStream(line);
 				lineStream >> std::hex >> *start;
 				lineStream.ignore(1);
-				lineStream >> std::hex >> *end;
+				lineStream >> std::hex >> *end >> std::dec;
 
 				break;
 			}
@@ -155,7 +155,7 @@ extern "C" {
 		dest.close();
 #if DEBUG
 		std::cout << "Parsed driver regions: " << std::hex << FuncMap.driverRegionStart
-			<< " - " << FuncMap.driverRegionEnd << std::endl;
+			<< " - " << FuncMap.driverRegionEnd << std::dec << std::endl;
 #endif
 	}
 }
