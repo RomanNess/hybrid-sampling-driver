@@ -9,6 +9,8 @@
 #ifndef DRIVER_H
 #define DRIVER_H
 
+//#define EMPTY_HANDLER
+
 #include <papi.h>
 #include <err.h>	// for errx
 #include <unistd.h>	// for getpid
@@ -64,7 +66,7 @@ void flushBufferToFile(struct SampleEvent *buffer);
 void handler(int EventSet, void *address, long long overflow_vector, void *context);
 __attribute((always_inline)) inline
 void abstractHandler(unsigned long address, void* context) {
-
+#ifndef EMPTY_HANDLER
 	// This is where the work happens
 	long startAddress;
 	if (driverRegionStart < address && address < driverRegionEnd) {
@@ -78,6 +80,7 @@ void abstractHandler(unsigned long address, void* context) {
 	flushStackToBuffer(_multithreadStack[threadId], _flushToDiskBuffer);
 
 	numberOfBufferElements++;
+#endif
 }
 
 void initSamplingDriver();
