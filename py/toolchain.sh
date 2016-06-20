@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # wit default values
-Bench=${PGOE_BENCHMARK:-462.libquantum.clang}
+Bench=${PGOE_BENCHMARK:-462.libquantum}.clang
 Phase=${PGOE_PHASE:-hybrid-dyn}
 Compiler=${CC:-cc}
 
