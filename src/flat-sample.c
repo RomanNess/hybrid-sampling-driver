@@ -61,7 +61,7 @@ void flushBufferToFile() {
 		// write all buffered elements to a file
 		for (int i = 0; i < numberOfBufferElements; i++) {
 
-			fprintf(fp, "%llu\n", buffer[i]);
+			fprintf(fp, "%llx\n", buffer[i]);
 		}
 		numberOfBufferElements = 0;
 
@@ -148,11 +148,11 @@ void finiPapiSamplingDriver() {
 
 #ifdef MONITOR_INIT
 void *monitor_init_process(int *argc, char **argv, void *data) {
-	printf("#### Init driver with LIBMONITOR - Pid is %i #### \n", getpid());
+	printf("#### Init flat driver with LIBMONITOR - Pid is %i #### \n", getpid());
 #else	//MONITOR_INIT
 __attribute__((constructor))
 void *_init_process(int *argc, char **argv, void *data) {
-	printf("#### Init driver with __attribute__((constructor)) - Pid is %i #### \n", getpid());
+	printf("#### Init flat driver with __attribute__((constructor)) - Pid is %i #### \n", getpid());
 #endif	//MONITOR_INIT
 
 #ifndef NO_SAMPLING

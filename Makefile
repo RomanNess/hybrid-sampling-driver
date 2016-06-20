@@ -134,6 +134,9 @@ instr:
 	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target.$(CC).instr
 	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.$(CC).instr
 	
+flat: timing
+	cc  -I./src  $(OPT_FLAGS) $(CFLAGS) -o lib/libflat.so src/flat-sample.c -L./lib -ltiming_tsc $(LIBMONITOR_FLAGS)
+	
 .PHONY : clean target
 clean:
 	rm -f lib/*.so
