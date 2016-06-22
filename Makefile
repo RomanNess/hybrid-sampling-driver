@@ -96,7 +96,6 @@ timing:
 	$(CC) -O2 $(CFLAGS) src/libtiming/timing_tsc.c -o lib/libtiming_tsc.so
 
 libempty:	timing
-	$(CC) -O3 $(CFLAGS) -DNO_INIT src/emptypushpop/emptypushpop.c -o lib/libempty.so
 	$(CC) -O3 $(CFLAGS) $(PP_FLAGS) -DMETA_BENCHMARK src/emptypushpop/emptypushpop.c -o lib/libempty-monitor.so -I./src -L./lib -ltiming_tsc $(LIBMONITOR_FLAGS)
 	
 
