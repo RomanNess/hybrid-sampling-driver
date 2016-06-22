@@ -50,13 +50,9 @@ void finiBuffer() {
 	}
 }
 
-/*
- * Flushes the SampleEvents to a file
- * ATTENTION this produces LOTS OF DATA
- */
 void flushBufferToFile() {
 	fprintf(stdout, "Starting to write out\n");
-	FILE *fp = fopen("flat_profile", "a+");
+	FILE *fp = fopen("flat_profile", "w");
 
 	if (fp) {
 		// write all buffered elements to a file
