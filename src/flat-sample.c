@@ -141,10 +141,6 @@ void finiPapiSamplingDriver() {
 	PAPI_stop(EventSet, &instructionCounter);
 
 	printf("PAPI sampling driver disabled\n");
-
-#ifdef WITH_MAX_SIZE
-	printf("The max stack size reached was: %u\n", stackMaxSize);
-#endif
 }
 
 #ifdef MONITOR_INIT

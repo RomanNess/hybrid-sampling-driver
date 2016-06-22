@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# wit default values
+# with default values
 Bench=${PGOE_BENCHMARK:-462.libquantum}.clang
 Phase=${PGOE_PHASE:-hybrid-dyn}
 Compiler=${CC:-cc}
@@ -27,6 +27,8 @@ rm -f flat_profile
 
 python $LIBSAMPLING_BASE/py/gen.py $PGOE_TARGET_EXE.vanilla
 
-echo "taskset -c 13 monitor-run -i $Driver -i $PAPI_BASE/lib/libpapi.so $PGOE_TARGET_EXE.vanilla $(< ref)"
+#echo "taskset -c 13 monitor-run -i $Driver -i $PAPI_BASE/lib/libpapi.so $PGOE_TARGET_EXE.vanilla $(< ref)"
+echo "taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.vanilla $(< ref)"
+
 
 #python $LIBSAMPLING_BASE/py/flat.py .
