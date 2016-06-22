@@ -1,5 +1,6 @@
 #define _GNU_SOURCE	// for REG_RIP
 
+#define META_BENCHMARK
 #ifdef META_BENCHMARK
 #include "libtiming/timing.h"
 #endif
