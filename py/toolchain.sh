@@ -1,7 +1,8 @@
 #!/bin/bash
 
 # wit default values
-Bench=${PGOE_BENCHMARK:-462.libquantum}.clang
+CUR_DIR=${PWD##*/}
+Bench=${PGOE_BENCHMARK:-${CUR_DIR/spec_cpu./}}.clang
 Phase=${PGOE_PHASE:-hybrid-dyn}
 Compiler=${CC:-cc}
 
