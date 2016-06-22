@@ -1,4 +1,3 @@
-
 import bisect
 import sys
 
@@ -7,16 +6,27 @@ function_bounds = []
 function_names = {}
 
 function_invocations = {}
+no_function_invocation = 0
+overall_function_invocations = 0
 
 
 def get_function_name_for_address(address):
-
     if address < target_region_start or address > target_region_end:
         return
 
     index = bisect.bisect_left(function_bounds, address)
-    print("{} -> {} -> {}".format(index, function_bounds[index - 1], function_names[function_bounds[index - 1]]))
+    # print("{} -> {} -> {}".format(index, function_bounds[index - 1], function_names[function_bounds[index - 1]]))
     return function_names[function_bounds[index - 1]]
+
+
+def dump_invocations():
+    functions_with_no_samples = 0
+    for k, v in function_invocations.items():
+        if v > 0:
+            print("{} -- {}".format(v, k))
+        else:
+            functions_with_no_samples += 1
+    print("{} functions with no samples".format(functions_with_no_samples))
 
 if len(sys.argv) > 1:
     base = sys.argv[1] + "/"
@@ -49,4 +59,13 @@ file = open(base + "flat_profile", "r")
 for line in file:
     address = int(line, 16)
     name = get_function_name_for_address(address)
-    # print(name)
+
+    if name:
+        function_invocations[name] += 1
+    else:
+        no_function_invocation += 1
+    overall_function_invocations += 1
+
+print("{} overall invocations ({} in unknown functions.)".format(overall_function_invocations, no_function_invocation))
+# print(function_invocations)
+dump_invocations()
