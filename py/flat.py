@@ -1,13 +1,12 @@
 import bisect
 import sys
 
-target_region_start, target_region_end = 0, 0
 function_bounds = []
-function_names = {}
+address_to_fname = {}
 
-function_invocations = {}
-no_function_invocation = 0
-overall_function_invocations = 0
+fname_to_sample = {}
+unknown_samples = 0
+overall_samples = 0
 
 
 def get_function_name_for_address(address):
@@ -16,17 +15,26 @@ def get_function_name_for_address(address):
 
     index = bisect.bisect_left(function_bounds, address)
     # print("{} -> {} -> {}".format(index, function_bounds[index - 1], function_names[function_bounds[index - 1]]))
-    return function_names[function_bounds[index - 1]]
+    return address_to_fname[function_bounds[index - 1]]
 
 
 def dump_invocations():
     functions_with_no_samples = 0
-    for k, v in function_invocations.items():
-        if v > 0:
-            print("{} -- {}".format(v, k))
-        else:
+    known_samples = overall_samples - unknown_samples
+
+    file = open(base + "sample_percent.txt", "w")
+
+    for name, samples in fname_to_sample.items():
+        sample_percent = 10000. * samples / known_samples
+
+        file.write("{} % ")
+        if samples > 1:
+            print("{} -- {} [per 10000] -- {}".format(samples, sample_percent, name))
+
+        if samples <= 1:
             functions_with_no_samples += 1
     print("{} functions with no samples".format(functions_with_no_samples))
+
 
 if len(sys.argv) > 1:
     base = sys.argv[1] + "/"
@@ -42,7 +50,7 @@ for line in file:
     name = " ".join(cols[2:])
 
     function_bounds.append(address)
-    function_names[address] = name
+    address_to_fname[address] = name
 # prepare bounds
 function_bounds.sort()
 target_region_start = function_bounds[0]
@@ -51,8 +59,8 @@ target_region_end = function_bounds[-1]
 # print(function_names)
 # print(function_bounds)
 
-for name in function_names.values():
-    function_invocations[name] = 0
+for name in address_to_fname.values():
+    fname_to_sample[name] = 1
 
 # parse flat profile
 file = open(base + "flat_profile", "r")
@@ -61,11 +69,12 @@ for line in file:
     name = get_function_name_for_address(address)
 
     if name:
-        function_invocations[name] += 1
+        fname_to_sample[name] += 1
     else:
-        no_function_invocation += 1
-    overall_function_invocations += 1
+        unknown_samples += 1
+    overall_samples += 1
+file.close()
 
-print("{} overall invocations ({} in unknown functions.)".format(overall_function_invocations, no_function_invocation))
+print("{} overall invocations ({} in unknown functions.)".format(overall_samples, unknown_samples))
 # print(function_invocations)
 dump_invocations()
