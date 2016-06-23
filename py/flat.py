@@ -22,14 +22,13 @@ def dump_invocations():
     functions_with_no_samples = 0
     known_samples = overall_samples - unknown_samples
 
-    file = open(base + "sample_percent.txt", "w")
+    file = open(base + "samples_file.txt", "w")
 
     for name, samples in fname_to_sample.items():
-        sample_percent = 10000. * samples / known_samples
 
-        file.write("{} % ")
+        file.write("{} {}\n".format(samples, name))
         if samples > 1:
-            print("{} -- {} [per 10000] -- {}".format(samples, sample_percent, name))
+            print("{} {}".format(samples, name))
 
         if samples <= 1:
             functions_with_no_samples += 1
