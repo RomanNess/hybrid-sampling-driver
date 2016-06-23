@@ -20,10 +20,11 @@ python $LIBSAMPLING_BASE/py/gen.py $PGOE_TARGET_EXE.vanilla
 echo "taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.vanilla $(< ref)"
 if [ "$1" = "go" ]; then
 	monitor-run -i $Driver $PGOE_TARGET_EXE.vanilla $(< ref)
+	python $LIBSAMPLING_BASE/py/flat.py .
 fi
 
 if [ "$1" = "t420" ]; then
 	monitor-run -i $Driver -i $PAPI_BASE/lib/libpapi.so $PGOE_TARGET_EXE.vanilla $(< ref)
+	python $LIBSAMPLING_BASE/py/flat.py .
 fi
 
-python $LIBSAMPLING_BASE/py/flat.py .
