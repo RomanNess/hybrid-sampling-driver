@@ -25,15 +25,32 @@ fi
 
 Driver=$LIBSAMPLING_BASE/lib/libsampling.$Compiler.$HOSTNAME.so
 
-# compile target binary
-echo "WL_FILE=$INSTR_NODES make sel-instr -j 8"
-#WL_FILE=$INSTR_NODES make sel-instr
-WL_FILE=$INSTR_NODES make sel-instr -j 8 # this is just for testing on my laptop without the clang fork
+if [ "$CC" = "clang" ]; then
+    # compile target binary
+    echo "WL_FILE=$INSTR_NODES make sel-instr -j 8"
+    WL_FILE=$INSTR_NODES make sel-instr -j 8 # this is just for testing on my laptop without the clang fork
+
+    fullBinaryName=$PGOE_TARGET_EXE.sel
+else
+    echo "WARNING: CC is: $CC, CXX is: $CXX"
+    make instr
+
+    fullBinaryName=$PGOE_TARGET_EXE.instr
+fi
 
 # create nm_file and regions_file
-python $LIBSAMPLING_BASE/py/gen.py $PGOE_TARGET_EXE.sel $UNW_NODES
+python $LIBSAMPLING_BASE/py/gen.py $fullBinaryName $UNW_NODES
 
-echo "taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.sel $(< ref)"
+echo "taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)"
 if [ "$1" = "go" ]; then
-	taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.sel $(< ref)
+    outFile=out-sampling/$Phase
+
+    if [ "$2" = "log" ]; then
+        timestamp=`date --rfc-3339=seconds`
+        echo " ================ $timestamp ================ " >> $outFile
+        echo "taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)" >> $outFile
+        echo "" >> $outFile
+        taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)  2>&1 | tee -a $outFile
+        echo "" >> $outFile
+    fi
 fi
