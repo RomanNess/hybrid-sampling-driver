@@ -371,7 +371,7 @@ void _fini_process(int how, void* data) {
 	if (_multithreadStack[threadId]->_size!=0) {
 		printf("WARNING: __multithreadStack size = %u, (0x%lx)\n",
 				_multithreadStack[threadId]->_size,
-				_multithreadStack[threadId]->_elements[_multithreadStack[threadId]->_size-1]
+				_multithreadStack[threadId]->_elements[_multithreadStack[threadId]->_size-1].identifier
 		);
 	}
 }

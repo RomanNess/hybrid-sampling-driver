@@ -118,7 +118,7 @@ sampling: libsampling-debug
 target:
 	$(CC) $(TARGET_FLAGS) -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target.exe
 	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions $(EXCLUDE) overhead/target.c -o target-big.exe
-	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions -finstrument-functions-exclude-function-list="rec10,rec9,rec8,rec7,rec6" $(EXCLUDE) overhead/target.c -o target-sel.exe
+#	$(CC) $(TARGET_FLAGS) -DMETA_BENCHMARK -fno-inline -finstrument-functions -finstrument-functions-exclude-function-list="rec10,rec9,rec8,rec7,rec6" $(EXCLUDE) overhead/target.c -o target-sel.exe
 	$(CC) $(TARGET_FLAGS) -fno-inline -finstrument-functions $(EXCLUDE) overhead/target-simple.c -o target-simple.exe
 	
 	$(CC) $(TARGET_FLAGS) -fno-inline overhead/target.c -o target.noinstr.exe
