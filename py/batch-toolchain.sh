@@ -5,7 +5,7 @@ for i in {1..10}; do
 
     for phase in "hybrid-dyn" "hybrid-st" "ss-min" "unw-min"; do
         echo -e "$phase \c"
-        PGOE_PHASE=$phase toolchain.sh go log
+        PGOE_PHASE=$phase toolchain.sh go log > /dev/null
     done
     echo ""
 
