@@ -27,6 +27,7 @@ WL_FILE=$INSTR_NODES make sel-instr -j 8 # this is just for testing on my laptop
 # create nm_file and regions_file
 python $LIBSAMPLING_BASE/py/gen.py $PGOE_TARGET_EXE.sel $UNW_NODES
 
-
 echo "taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.sel $(< ref)"
-
+if [ "$1" = "go" ]; then
+	taskset -c 13 monitor-run -i $Driver $PGOE_TARGET_EXE.sel $(< ref)
+fi
