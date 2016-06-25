@@ -2,7 +2,13 @@
 
 # wit default values
 CUR_DIR=${PWD##*/}
-Bench=${PGOE_BENCHMARK:-${CUR_DIR/spec_cpu./}}.clang
+tmp=${PGOE_BENCHMARK:-${CUR_DIR/spec_cpu./}}
+if [[ $tmp == *"povray"* ]]; then
+    Bench=$tmp.gcc
+else
+    Bench=$tmp.clang
+fi
+
 Phase=${PGOE_PHASE:-hybrid-dyn}
 Compiler=${CC:-cc}
 
