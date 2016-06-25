@@ -1,5 +1,7 @@
 #define _GNU_SOURCE	// for REG_RIP
 
+#define NO_SAMPLING_HANDLER
+
 #define META_BENCHMARK
 #ifdef META_BENCHMARK
 #include "libtiming/timing.h"
@@ -73,9 +75,9 @@ void flushBufferToFile() {
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	samplesTaken++;
 
-#ifndef NO_PAPI_HANDLER
+#ifndef NO_SAMPLING_HANDLER
 	buffer[numberOfBufferElements++] = (unsigned long long) address;
-#endif //NO_PAPI_HANDLER
+#endif //NO_SAMPLING_HANDLER
 }
 
 

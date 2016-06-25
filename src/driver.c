@@ -6,6 +6,10 @@
 #endif
 
 #define DO_NOT_FLUSH_BUFFER
+//#define NO_PAPI_DRIVER
+//#define NO_ITIMER_DRIVER
+//#define SERIAL_OPT
+//#define META_BENCHMARK
 
 #include <assert.h>
 
@@ -144,9 +148,9 @@ void flushBufferToFile(struct SampleEvent *buffer) {
 void handler(int EventSet, void* address, long long overflow_vector, void* context) {
 	samplesTaken++;
 
-#ifndef NO_PAPI_HANDLER
+#ifndef NO_SAMPLING_HANDLER
 	abstractHandler((unsigned long) address, context);
-#endif //NO_PAPI_HANDLER
+#endif //NO_SAMPLING_HANDLER
 }
 
 #ifndef NO_ITIMER_DRIVER
@@ -161,11 +165,11 @@ int signalHandler(int sig, siginfo_t* siginfo, void* context) {
 
 	samplesTaken++;
 
-#ifndef NO_PAPI_HANDLER
+#ifndef NO_SAMPLING_HANDLER
 	ucontext_t* uc = (ucontext_t*) context;
 	unsigned long address = uc->uc_mcontext.gregs[REG_RIP];
 	abstractHandler(address, context);
-#endif //NO_PAPI_HANDLER
+#endif //NO_SAMPLING_HANDLER
 
 	itimerLock = 0;
 

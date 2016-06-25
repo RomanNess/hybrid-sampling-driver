@@ -37,7 +37,7 @@ libhash:
 
 sampling-bench: measure measure-sampling-target measure-sampling-target-noHandler
 #
-measure: PP_FLAGS+=-DMETA_BENCHMARK -DNO_PAPI_DRIVER -DNO_PAPI_HANDLER
+measure: PP_FLAGS+=-DMETA_BENCHMARK -DNO_PAPI_DRIVER -DNO_SAMPLING_HANDLER
 measure: LDFLAGS+=-ltiming_tsc
 measure: LIBNAME=measure
 # sampling overhead
@@ -50,7 +50,7 @@ measure-sampling-target: PP_FLAGS+=-DMETA_BENCHMARK
 measure-sampling-target: LDFLAGS+=-ltiming_tsc
 measure-sampling-target: LIBNAME=benchSampling
 #
-measure-sampling-target-noHandler: PP_FLAGS=-DMETA_BENCHMARK -DNO_PAPI_HANDLER
+measure-sampling-target-noHandler: PP_FLAGS=-DMETA_BENCHMARK -DNO_SAMPLING_HANDLER
 measure-sampling-target-noHandler: LDFLAGS+=-ltiming_tsc
 measure-sampling-target-noHandler: LIBNAME=benchSampling.noHandler
 
@@ -79,6 +79,9 @@ libshadowstack-parallel: LIBNAME=shadowstack.parallel
 # driver with itimer sampling
 itimer: PP_FLAGS+=-DNO_PAPI_DRIVER -DSERIAL_OPT  -DMETA_BENCHMARK #-DMONITOR_INIT
 itimer:	libsampling
+# no sampling driver
+nodriver: PP_FLAGS+=-DNO_PAPI_DRIVER -DNO_ITIMER_DRIVER -DSERIAL_OPT  -DMETA_BENCHMARK #-DMONITOR_INIT
+nodriver:	libsampling
 
 # overhead of shadow stack (single/multi threaded)
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DMONITOR_INIT
