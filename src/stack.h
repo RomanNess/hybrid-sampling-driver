@@ -7,6 +7,8 @@
 
 #include "event.h"
 
+//#define REPORT_INSTRUMENTED_CALLS
+
 /*
  * TODO I don't know if it makes sense to have a fixed number of stack size
  * This limits our capabilities sampling programs with very very deep call trees.
@@ -34,6 +36,7 @@ int instroNumThreads;
  */
 extern struct Stack **_multithreadStack;
 extern int initialized;
+extern long long unsigned instrumentedCalls;
 
 /* the stack corresponding to this thread */
 #ifdef SERIAL_OPT
@@ -64,6 +67,10 @@ void finiSingleStack(struct Stack *stack);
 inline void pushEvent(struct Stack *stack, struct StackEvent event) {
 #ifdef DEBUG
 	fprintf(stderr, "Enter Function: push event:\nstack-base: %p\nstack-size:%i\nadding at stack[size]: %p.\nstack-start: %p\n", stack, stack->_size, &(stack->_elements[stack->_size]), stack->_elements);
+#endif
+
+#ifdef REPORT_INSTRUMENTED_CALLS
+	instrumentedCalls++;
 #endif
 
 #ifndef MAX_SPEED

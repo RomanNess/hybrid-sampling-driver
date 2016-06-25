@@ -19,6 +19,7 @@
 #include <ucontext.h>	// greps[REG_RIP]
 
 int initialized = 0;
+long long unsigned instrumentedCalls = 0;
 
 struct Stack **_multithreadStack = 0;
 struct SampleEvent *_flushToDiskBuffer = 0;
@@ -363,6 +364,9 @@ void _fini_process(int how, void* data) {
 	printf("%li overlapping samples omitted.\n", samplesOmitted);
 #endif
 #endif // NO_SAMPLING
+#ifdef REPORT_INSTRUMENTED_CALLS
+	printf("%llu instrumented calls\n (WARNING THIS MEASUREMENT CAUSED ADDITIONAL OVERHEAD)", instrumentedCalls);
+#endif
 
 	if (_multithreadStack[threadId]->_size!=0) {
 		printf("WARNING: __multithreadStack size = %u, (0x%lx)\n",
