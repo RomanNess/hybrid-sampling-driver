@@ -82,6 +82,9 @@ itimer:	libsampling
 # no sampling driver
 nodriver: PP_FLAGS+=-DNO_PAPI_DRIVER -DNO_ITIMER_DRIVER -DSERIAL_OPT  -DMETA_BENCHMARK #-DMONITOR_INIT
 nodriver:	libsampling
+# empty papi handler
+emptyhandler: PP_FLAGS+=$(PAPI_FLAGS) -DSERIAL_OPT -DMETA_BENCHMARK -DNO_ITIMER_DRIVER -DEMPTY_HANDLER
+emptyhandler: libsampling
 
 # overhead of shadow stack (single/multi threaded)
 measure-cyg: PP_FLAGS+=-DMETA_BENCHMARK -DMONITOR_INIT
