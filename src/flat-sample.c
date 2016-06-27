@@ -1,6 +1,6 @@
 #define _GNU_SOURCE	// for REG_RIP
 
-#define NO_SAMPLING_HANDLER
+//#define NO_SAMPLING_HANDLER
 
 #define META_BENCHMARK
 #ifdef META_BENCHMARK

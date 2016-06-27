@@ -10,8 +10,7 @@ Driver=$LIBSAMPLING_BASE/lib/libflat.so
 if [ ! -f $Driver ]; then echo "Cannot find driver: $Driver"; exit; fi
 
 # compile target binary
-echo "make vanilla -j 8"
-make vanilla -j 8
+make vanilla-no-inline -j 8
 
 rm -f flat_profile
 

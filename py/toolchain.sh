@@ -57,6 +57,6 @@ if [ "$1" = "go" ]; then
         echo "taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)"
         taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)
     fi
-
-
+else
+    echo "taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)"
 fi
