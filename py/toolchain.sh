@@ -26,21 +26,25 @@ fi
 Driver=$LIBSAMPLING_BASE/lib/libsampling.$Compiler.$HOSTNAME.so
 
 if [ "$CC" = "clang" ]; then
+    fullBinaryName=$PGOE_TARGET_EXE.sel
+    rm -f $fullBinaryName
+
     # compile target binary
     echo "WL_FILE=$INSTR_NODES make sel-instr -j 8"
     WL_FILE=$INSTR_NODES make sel-instr -j 8  &> /dev/null
 
-    fullBinaryName=$PGOE_TARGET_EXE.sel
 else
+    fullBinaryName=$PGOE_TARGET_EXE.instr
+    rm -f $fullBinaryName
+
     (>&2 echo "WARNING: CC is: $CC, CXX is: $CXX")
     make instr  &> /dev/null
-
-    fullBinaryName=$PGOE_TARGET_EXE.instr
 fi
 
 # create nm_file and regions_file
 python $LIBSAMPLING_BASE/py/gen.py $fullBinaryName $UNW_NODES
 
+ToEval="taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)"
 if [ "$1" = "go" ]; then
     outFile=out-sampling/$Phase
 
@@ -48,15 +52,15 @@ if [ "$1" = "go" ]; then
 
         timestamp=`date --rfc-3339=seconds`
         echo " ================ $timestamp ================ " >> $outFile
-        echo "taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)" &>> $outFile
+        echo "$ToEval" &>> $outFile
         echo "" >> $outFile
 
-        taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)  2>&1 &>> $outFile
+        eval $ToEval 2>&1 &>> $outFile
         echo "" >> $outFile
     else
-        echo "taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)"
-        taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)
+        echo "$ToEval"
+        eval $ToEval
     fi
 else
-    echo "taskset -c 13 monitor-run -i $Driver $fullBinaryName $(< ref)"
+    echo $ToEval
 fi

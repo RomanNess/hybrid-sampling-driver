@@ -21,19 +21,20 @@ fullBinaryName=$PGOE_TARGET_EXE.vanilla
 
 RunBenchmark() {
     outFile=out-vanilla/$3
-
+		ToEval="taskset -c 13 monitor-run -i $1 $fullBinaryName $(cat ref)"
+		
     if [ "$2" = "log" ]; then
 
         timestamp=`date --rfc-3339=seconds`
         echo " ================ $timestamp ================ " >> $outFile
-        echo "taskset -c 13 monitor-run -i $1 $fullBinaryName $(< ref)" &>> $outFile
+        echo "$ToEval" &>> $outFile
         echo "" >> $outFile
 
-        taskset -c 13 monitor-run -i $1 $fullBinaryName $(< ref)  2>&1 &>> $outFile
+        eval $ToEval 2>&1 &>> $outFile
         echo "" >> $outFile
     else
-        echo "taskset -c 13 monitor-run -i $1 $fullBinaryName $(< ref)"
-        taskset -c 13 monitor-run -i $1 $fullBinaryName $(< ref)
+        echo "$ToEval"
+        eval $ToEval
     fi
 }
 
@@ -43,7 +44,7 @@ make vanilla -j &> /dev/null
 if [ ! -f $fullBinaryName ]; then (>&2 echo echo "Cannot find binary: $fullBinaryName"); exit; fi
 
 for i in {1..10}; do
-    echo -e " $i\c"
+  echo -e " $i\c"
 	RunBenchmark $DriverVanilla "log" "vanilla"
 	echo -e " $i\c"
 	RunBenchmark $DriverPAPI "log" "papi"
