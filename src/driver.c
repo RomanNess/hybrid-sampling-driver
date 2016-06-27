@@ -303,6 +303,9 @@ void *_init_process(int *argc, char **argv, void *data) {
 	printf("NO_CPP_LIB\n");
 #endif
 
+	///XXX
+//	unw_set_caching_policy(unw_local_addr_space, UNW_CACHE_PER_THREAD);
+
 #ifndef NO_SAMPLING
 	initSamplingDriver();
 #endif
