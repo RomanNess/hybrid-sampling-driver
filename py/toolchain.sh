@@ -51,7 +51,7 @@ if [ "$1" = "go" ]; then
     if [ "$2" = "log" ]; then
 
         timestamp=`date --rfc-3339=seconds`
-        echo " ================ $timestamp ================ " >> $outFile
+        echo " ================ $HOSTNAME $timestamp ================ " >> $outFile
         echo "$ToEval" &>> $outFile
         echo "" >> $outFile
 
