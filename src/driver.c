@@ -111,7 +111,7 @@ void flushStackToBuffer(struct Stack *stack, struct SampleEvent *buffer) {
  */
 void flushBufferToFile(struct SampleEvent *buffer) {
 	fprintf(stdout, "Starting to write out\n");
-	FILE *fp = fopen("stack_file", "a+");
+	FILE *fp = fopen("stack_file", "w");
 
 	if (fp) {
 		// write all buffered elements to a file
