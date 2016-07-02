@@ -14,7 +14,7 @@ export PGOE_TARGET_EXE=./$Bench-$Compiler
 DriverVanilla=$LIBSAMPLING_BASE/lib/libempty-monitor.so
 if [ ! -f $DriverVanilla ]; then (>&2 echo echo "Cannot find driver: $DriverVanilla"); exit; fi
 
-DriverPAPI=$LIBSAMPLING_BASE/lib/libsampling.$Compiler.$HOSTNAME.so
+DriverPAPI=$LIBSAMPLING_BASE/lib/libemptyhandler.$Compiler.$HOSTNAME.so
 if [ ! -f $DriverPAPI ]; then (>&2 echo echo "Cannot find driver: $DriverPAPI"); exit; fi
 
 fullBinaryName=$PGOE_TARGET_EXE.vanilla
