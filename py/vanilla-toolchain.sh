@@ -26,7 +26,7 @@ RunBenchmark() {
     if [ "$2" = "log" ]; then
 
         timestamp=`date --rfc-3339=seconds`
-        echo " ================ $timestamp ================ " >> $outFile
+        echo " ================ `hostname` $timestamp ================ " >> $outFile
         echo "$ToEval" &>> $outFile
         echo "" >> $outFile
 

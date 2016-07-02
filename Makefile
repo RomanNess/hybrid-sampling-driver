@@ -22,10 +22,6 @@ STACKWALKER_FLAGS=-I$(BOOST)/include \
 INSTRO_FLAGS=-DMAX_SPEED
 TARGET_FLAGS=-g -O0 -std=gnu99
 
-libpapi-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
-libpapi libpapi-debug: PP_FLAGS+=$(PAPI_FLAGS) -DSERIAL_OPT -DMETA_BENCHMARK -DNO_ITIMER_DRIVER
-libpapi libpapi-debug: libsampling
-
 libsampling libshadowstack-serial libshadowstack-parallel \
 measure measure-sampling-target measure-sampling-target-noHandler: libhash timing
 	$(CC) $(PAPI_INCLUDE_FLAGS) $(PP_FLAGS) -I./src $(INSTRO_FLAGS) $(OPT_FLAGS) $(CFLAGS) -o lib/lib$(LIBNAME).$(CC).$(HOSTNAME).so $(SRC) -L./lib -ltiming_tsc $(LIBUNWIND_FLAGS) $(LIBMONITOR_FLAGS) $(LDFLAGS)
@@ -76,6 +72,10 @@ libshadowstack-serial: LIBNAME=shadowstack.serial
 # driver wihtout papi sampling
 libshadowstack-parallel: PP_FLAGS+=-DNO_PAPI_DRIVER -DNO_CPP_LIB -DNO_ITIMER_DRIVER 
 libshadowstack-parallel: LIBNAME=shadowstack.parallel
+# driver with papi sampling
+libpapi-debug: PP_FLAGS+=-DPRINT_FUNCTIONS
+libpapi libpapi-debug: PP_FLAGS+=$(PAPI_FLAGS) -DSERIAL_OPT -DMETA_BENCHMARK -DNO_ITIMER_DRIVER
+libpapi libpapi-debug: libsampling
 # driver with itimer sampling
 itimer: PP_FLAGS+=-DNO_PAPI_DRIVER -DSERIAL_OPT  -DMETA_BENCHMARK #-DMONITOR_INIT
 itimer:	libsampling
